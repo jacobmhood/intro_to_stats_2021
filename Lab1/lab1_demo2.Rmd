@@ -1,0 +1,547 @@
+---
+title: "Lab1 Demo 2"
+author: "Di Zhou"
+date: "1/27/2021"
+output: html_document
+---
+
+# Lab 1 Demo
+Part 1. Basics of R & Rstudio
+Part 2. Tidydata & `Tidyverse`, including how to use `Tidyverse` for descriptive statistics and plots
+  
+  
+## Part 1: Basics of R & Rstudio
+
+### Setting up your environment  
+
+- Create Rproject
+
+- Create a .Rmd file
+
+- Load necessary packages (so your script is replicatable)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Install package
+# (after you install, you can delete this line and keep only the 'library' line)
+# install.packages(c("tidyverse", "gridExtra"))
+
+# Load package to environment
+library(tidyverse)
+library(gridExtra)
+library(kableExtra)
+
+```
+
+
+
+
+## Part 2: Tidyverse
+
+Now we move on to working with dataframes in R. 
+
+
+### Loading Comma-separated files
+
+- Comma-separated files (.csv) are the most common data files.
+
+- Here I use the built-in function `read.csv()` to load a .csv file. Since we use Rproject, we only need to type in the *relative* file path instead of the absolute file path. 
+
+- To find out your absolute path, use `getwd()`.
+
+- If you don't use Rproject, you can also install and load the `here` package to find your absolute file path (google the package to learn more).
+
+```{r }
+# Load csv file
+gapminder <- read.csv("data/gapminder.csv")
+
+```
+
+### Quickly get to know your data
+
+```{r }
+# 1. Check dataframe information
+
+# View them
+View(gapminder)
+
+# Summary statistics by variable
+summary(gapminder)
+
+# variable names
+names(gapminder)
+
+# number of rows and columnes
+nrow(gapminder)
+ncol(gapminder)
+
+# Check first several observations
+head(gapminder, n = 10)
+
+# Check last several observations
+tail(gapminder, n = 5)
+
+```
+
+### Basic tidyverse command
+
+```{r }
+
+# 2. Select variables
+gapminder_country_pop <- select(gapminder, country, pop)
+
+
+# 3. Filter observations
+## filter only Asian countries:
+gapminder_asia <- filter(gapminder, continent == "Asia")
+## filter only 2007 data:
+gapminder_2007 <- filter(gapminder, year == 2007)
+## filter observations with higher than 80th percentile GDP in 2007
+### first, find quantile value
+gdp_quantile_2007 <- quantile(gapminder_2007$gdpPercap, seq(0, 1, 0.2))
+gdp_80perc_plus_2007 <- filter(gapminder_2007, gdpPercap >= gdp_quantile_2007[5])
+
+
+# 4. Sort observations by variables
+## Sort by GDP per capita, from lowest to highest
+gapminder_2007_gdpsort <- arrange(gapminder_2007, gdpPercap)
+## Sort by GDP per capita, from highest to lowest
+gapminder_2007_gdpsort2 <- arrange(gapminder_2007, desc(gdpPercap))
+
+
+# 5. Create new variables using "mutate"
+gapminder_2007 <- mutate(gapminder_2007, 
+                            if_gdp_80perc_above = ifelse(gdpPercap >= gdp_quantile_2007[5], 1, 0)
+                            )
+
+
+
+
+```
+
+### "Pipe" in tidyverse coding
+
+For the benefit of writing and reading codes, there is a special syntax in tidyverse called "piping." The general idea is that you start from a dataframe, or an object, and use the pipe `%>%` command to lay out the actions you want to take to that object. 
+
+For example, if you want to first arrange the GDP and then take the top 5 countries, you can pipe these two actions:
+
+```{r }
+
+gapminder_2007 %>%
+  arrange(desc(gdpPercap)) %>%
+  slice(1:5)
+
+# You can also do the above use one single function: 
+# gapminder_2007 %>% top_n(5, wt = gdpPercap)
+
+
+# Piping make your code looks cleaner and is more efficient because you don't need to save objects created in the middle steps. For example, we can skip the step to create `gapminder_2007` by piping the `filter` step
+
+gapminder %>% 
+  filter(year == 2007) %>%
+  arrange(desc(gdpPercap)) %>%
+  slice(1:5)
+
+# Piping also makes plotting easier, we will cover it later.
+
+```
+
+### What's "tidy" data?
+
+- Before doing analysis to your data, look carefully at your dataframe, and ask: is it a "tidy" data set? 
+- In a tidy data set: 
+  1. Each *variable* is saved in its own *column*
+  2. Each *observation* is saved in its own *row*
+- Tidy data is a foundation for data transformation in R using the `tidyverse` package. 
+- In the real world, we usually need to clean the original dataset so that it's tidy.
+- What count as tidy *depends on your questions*, specifically, what count as *an observation* in your study? 
+
+
+```{r }
+
+table1 = tibble(
+  country   = c("Afghanistan", "Afghanistan", "Brazil", "Brazil", "China", "China"),
+  year  = c(1999, 2000, 1999, 2000, 1999, 2000),
+  cases = c(745, 2666, 37737, 80488, 212258, 213766),
+  population = c(19987071, 20595360, 172006362, 174504898, 1272915272, 1280428583)
+)
+
+
+table2 = table1 %>% 
+  gather(cases, population, key = "type", value = "count")
+
+
+table3 = table1 %>%
+  mutate(cases = as.character(cases), 
+         population = as.character(cases)) %>%
+  mutate(rate = paste(cases, population, sep = "/")) %>%
+  select(country, year, rate)
+  
+
+table4a = table2 %>%
+  filter(type == "cases") %>%
+  select(-type) %>%
+  spread(key = year, value = count)
+
+table4b = table2 %>%
+  filter(type == "population") %>%
+  select(-type) %>%
+  spread(key = year, value = count)
+
+
+table4c = table2 %>%
+  spread(key = year, value = count)
+
+
+# Typical untidy data: 
+
+## 1. Variables are not saved in their own columns --for cases and populations
+table2 %>%
+  kbl(align = "c") %>%
+  kable_styling()
+
+## 2. Column name are actually a variable's value -- year as colume names
+table4c %>%
+  kbl() %>%
+  kable_styling()
+
+# Tidy data:
+table1 %>%
+  kbl() %>%
+  kable_styling()
+
+```
+
+Make untidy data tidy:
+
+1. There are two functions that help you make untidy data tidy. The general idea is that you want to shift the values either from being a value in a column to being a column name, or the other way round
+- pivot_longer() helps you to bring the information in the column names to being values in a single column 
+- pivot_wider() does the opposite
+
+```{r }
+
+# pivot_longer() example
+table4a <- table4a %>%
+  pivot_longer(cols = c(`1999`, `2000`), 
+               names_to = "year", 
+               values_to = "cases")
+table4b <- table4b %>%
+  pivot_longer(cols = 2:3, # you can also use column index instead of col name vectors:
+               names_to = "year", 
+               values_to = "cases")
+
+# pivot_wider() example
+table2 <- table2 %>%
+  pivot_wider(names_from = type, 
+              values_from = count)
+
+```
+
+### Summarising and Grouping data
+
+- The `summarise()` function can apply various functions to columns to create a summary statistics. Check the dplyr cheatsheet to find out more.
+- The `group_by()` function creates a grouped copy of a table, and you can apply various functions to each group and combine the result in a table.
+- These two functions are often used together for obtaining descriptive statistics and for plotting.
+
+```{r }
+
+# Example for summarise()
+gapminder %>%
+  filter(year == 2007) %>%
+  summarise(avg_life = mean(lifeExp))
+
+
+# Example for group_by() and summarise()
+gapminder %>%
+  filter(year == 2007) %>%
+  group_by(continent) %>%
+  summarise(avg_life = mean(lifeExp))
+
+
+# You can get many different summary statistics for each group using summarise()
+gapminder %>%
+  filter(year == 2007) %>%
+  group_by(continent) %>%
+  summarise(max_gdp = max(gdpPercap), 
+            min_gdp = min(gdpPercap), 
+            median_gdp = median(gdpPercap),
+            mean_gdp = mean(gdpPercap),
+            n_country = n())
+
+
+```
+
+### Making plots using `ggplot2`
+
+- Making plot is usually the very first thing we do to understand data. Ploting can reveal trends that it's hard to observe by just looking at the values in a table. 
+
+- You can plot in R using the built-in R ploting functions, but a more popular way is using `ggplot2`, a package that's already included when you load the `tidyverse` package.
+
+- Basic syntax for ggplot2: 
+
+```
+data %>%
+  ggplot() + 
+  geom_xxx(mapping = aes())
+
+```
+1. The mapping can either be within the`ggplot()` function, or within the specific `geom_xxx()` function. 
+
+2. The mapping within the `ggplot()` and `geom_xxx()` functions tell the plotting function which variables are used for which axis or grouping. In a simple one-variable case, you only need to put `aes(x = pop)`. In a two-variable scenario, you will need to put (for example) `aes(x = pop, y = lifeExp)`. You can skip the `x = ` and `y = `, and the function will assume the first variable is the `x` and the latter as the `y`. Note that `aes` in `aes()` stands for "aesthetic."
+
+3. What you put within the `ggplot()` will be inherited by the subsequent `geom_xxx()` that you `+` after the `ggplot()` line. Therefore, if you want each `geom_xxx()` plot different variables, make sure to specify your `aes()` mapping NOT in the `ggplot()` but in each `geom_xxx()`. We will demo this. 
+
+4. You can use other features to add variables to your plot. For example, you can color-code your points or bars by using `aes(x = pop, y = lifeExp, color = continent)`. There are different argument optinos for different  `geom_` graphs. Use the ggplot cheatsheet to explore them. 
+
+
+- Histograms: to check the distribution of one continuious variable
+```{r }
+
+# Histogram:
+# For example, if we want to know how the GPD looks like across countries for a specific year
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = gdpPercap)) +
+  geom_histogram()
+
+# You can adjust the binwidth for histogram
+# You can explore multiple widths to find out which best present your data
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = gdpPercap)) +
+  geom_histogram(binwidth = 5000)
+
+```
+
+- Bar Plots: to check the distribution of one discrete variable
+
+Need to talk about: stat = 
+
+```{r }
+
+# Bar plot:
+# For example, to check the number of countries in each continent
+gapminder %>%
+  group_by(continent) %>%
+  ggplot(aes(x = continent)) +
+  geom_bar()
+
+```
+
+- Scatter Plots: to check the joint distribution of two continuious variables
+
+```{r }
+
+# scatter plot: 
+
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point()
+
+
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point()
+
+```
+
+- Box Plots: either for the distribution of one continuious variable, or for discrete along the x axis, and continuous along the y axis
+
+A box plot visualises five summary statistics: the median, two hinges and two whiskers, and all "outlying" points individually.
+
+The lower and upper hinges correspond to the first and third quartiles (the 25th and 75th percentiles),
+
+The upper whisker extends from the hinge to the largest value no further than 1.5 x IQR from the hinge. The lower whisker extends from the hinge to the smallest value at most 1.5 * IQR of the hinge. 
+
+Data beyond the end of the whiskers are called "outlying" points and are plotted individually.
+
+You can customize these points in the aesthetic mapping for `geom_boxplot()`. Read its documentation for guidance by type `?geom_boxplot()` in the console. 
+
+
+```{r }
+
+# Box plot: 
+
+# Check the distribution of one continuious variable
+gapminder %>%
+  filter(continent == "Americas") %>%
+  ggplot(aes(x = gdpPercap)) +
+  geom_boxplot()
+  
+# Check the distribution of discrete variable along x axis and continuious variable along y axis
+gapminder %>%
+  ggplot(aes(x = continent, y = gdpPercap)) +
+  geom_boxplot()
+
+
+
+```
+
+- geom_line:
+
+```{r }
+
+# geom_line + geom_point are often used to plot change over time
+gapminder %>%
+  filter(country == "Sweden") %>% 
+  ggplot(aes(x = year, y = gdpPercap)) + 
+  geom_point() + 
+  geom_line()
+
+
+# You can use the color = asethetic mapping to plot trend by group
+# For example, if we want to compare GDP trend over years for BRIC countires:
+gapminder %>%
+  # you can use %in% to filter elements that belongs to a vector
+  filter(country %in% c("India", "Russia", "Brazil", "China")) %>% 
+  ggplot(aes(x = year, y = gdpPercap, color = country)) + 
+  geom_point() + 
+  geom_line()
+
+
+
+```
+
+### Geom_smooth:
+
+Geom_smooth will estimate the relationship between x and y axis variables based on the model you choose to use. It's useful as an exploratory tool. It also includes nonparametric methods that can be useful if you want to go beyond a linear assumption. 
+
+We usually plot the smoothing on top of a scatter plot, so that we can see how well the regression line fit the data. 
+
+```{r }
+
+# For example, if we want to explore the relationship between GDP and life expectancy
+
+# If we fit the data with linear models
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(shape = 1, alpha = 0.5) +
+  geom_smooth(method = "lm")
+  
+# If we fit the data with a nonlinear assumption, 
+# There are vaious smoothing method you can choose from. See documentation for details. 
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(shape = 1, alpha = 0.5) +
+  geom_smooth(method = "loess")
+
+```
+
+- Faceting: subplots based on one or more discrete variables
+
+Faceting is useful when you want to compare or display relationships by groups in seperate plots. 
+
+```{r }
+
+# For example, if we want to compare how the relationship between 
+# lifeExp and gdpPercap have changed from the 1950s to 2000s in five continents:
+gapminder %>%
+  # The %% operater calculates the remainder of a division, 
+  # here we use it to create a "decade" variable
+  mutate(decade = year - year %% 10) %>%
+  filter(decade == 1950 | decade == 2000) %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp, color = as.character(decade))) + 
+  geom_point(alpha = 0.5) + 
+  facet_wrap(vars(continent))
+
+# You can also use facet_grid and customize how your panels are displayed
+# For example, if you want to display the GDP trend for BRIC countries (except Russia b/c it's not in the dataset):
+
+# Arrange your plots as rows
+gapminder %>%
+  filter(country %in% c("India", "Russia", "Brazil", "China")) %>% 
+  ggplot(aes(x = year, y = gdpPercap)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_grid(rows = vars(country))
+
+# Arrange your plots as columns
+gapminder %>%
+  filter(country %in% c("India", "Russia", "Brazil", "China")) %>% 
+  ggplot(aes(x = year, y = gdpPercap)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_grid(cols = vars(country))
+
+```
+
+- You can put together graphs using `grid.arrange()` from the `gridExtra` package.
+
+```{r }
+
+plot1 <- gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(shape = 1, alpha = 0.5) +
+  geom_smooth(method = "lm")
+  
+plot2 <- gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(shape = 1, alpha = 0.5) +
+  geom_smooth(method = "loess")
+
+grid.arrange(plot1, plot2, ncol = 2)
+
+```
+
+- Manipulating plot layout: add titles, subtitles, adjust axis text, plot themes, etc.
+To clearly communicate your data, please always make sure:
+1. your axes are readable, including the tick labels
+2. your plot has a title or caption
+3. the size, shape, and color of your plot is easy to follow 
+
+You can add title and axes labels using `+ labs()` 
+You can manipulate the font size, angle, and position by using ` + theme(axist.text.x = ..., axist.text.y = ...)`
+Customize your axis breaks using `+ scale_x_continuous()` or `+ scale_x_discrete()`
+You can also turn your colorful plot to greyscales by using `scale_colour_grey()` for points, lines, etc
+and `scale_fill_grey()` for box plot, bar plot, violin plot, etc.
+You can also adjust the theme by `+ theme_xxx()` --see `ggplot2` cheatsheet
+There are a million things you can do to manipulate your plot. Google it or use the cheatsheet to discover more. 
+
+```{r }
+
+gapminder %>%
+  filter(country %in% c("India", "Russia", "Brazil", "China")) %>% 
+  ggplot(aes(x = year, y = gdpPercap, color = country)) + 
+  geom_point() + 
+  geom_line() + 
+  labs(title = "GDP per capita in Brail, China, and India (1952 to 2007)", 
+       x = NULL,
+       y = "GDP per capita",
+       color = "Country") +
+  theme_minimal() +
+  scale_color_grey() +
+  scale_x_continuous(breaks = unique(gapminder$year)) +
+  theme(axis.text.x = element_text(size = 8, angle = 40, vjust = 0.6))
+
+```
+
+- Saving plots in R: use `ggsave()` for quick saving
+
+```{r }
+
+# To save a plot, add ggsave(filename = , plot = ) to save
+# If you don't name the plot specifically, it automatically save the last plot you've run
+# For example, since we just ran the above plot, we can save it:
+#ggsave("graph/gdp_bric.png")
+
+# You can customize the specs of the image:
+#ggsave("graph/gdp_bric.png", height = 4, width = 6, units = c("in"), dpi = 160)
+```
+
+## Part 3: Taking a Random Sample from a Population
+
+## Setting a Random Seed
+
+```{r }
+
+
+```
+
+# Descriptive Statistics
+
+
+# Populations, Samples, and Sampling Distributions
+
