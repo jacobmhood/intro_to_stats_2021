@@ -1,5 +1,5 @@
 ---
-title: "Lab 1 Demo 1"
+title: "SOC-GA 2332 Intro to Stats Lab 1 Demo 1"
 author: "Di Zhou"
 date: "2/5/2021"
 output:
@@ -36,18 +36,18 @@ h3 { font-size: 20px; }
 
 1. After creating a `R Project` and a `.Rmd` file, you need to install and load necessary packages so that your script is replicatable. 
 
-2. You only need to install packages once. After they are install, you can simply load them to your environment in the future. 
+2. You only need to install packages once. After they are installed, you can simply load them to your environment in the future. 
 
-```{r setup}
+```{r setup, eval = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 # Install package
 # (after you install, you can delete the line below and keep only the 'library' line)
-# install.packages(c("tidyverse", "gridExtra", "kableExtra"))
-
+install.packages(c("tidyverse", "gridExtra", "kableExtra"))
+```
+```{r load library, message = FALSE}
 # Load package to environment
 library(tidyverse)
-
 ```
 
 ## Coding in R Markdown
@@ -59,15 +59,15 @@ library(tidyverse)
 3. You can run your code by line, or by chunk. The output (if any) will be displayed after the current coding chunk. 
 
 
-## Debug in R coding
+## Debugging in R coding
 
 If you come across an error message, debug your code by:
 
 1. Reading documentation of the function/package you use: Type the package or function name you use in the **Help** tab in the lower right panel.
 
-2. Google your error massage
+2. Google your error massage.
 
-3. Post your question on [stack overflow](https://stackoverflow.com/) 
+3. Post your question on [stack overflow](https://stackoverflow.com/). 
 
 For more information, you can read [this chapter](https://adv-r.hadley.nz/debugging.html) on debugging in R.
 
@@ -90,7 +90,7 @@ For more information, you can read [this chapter](https://adv-r.hadley.nz/debugg
 
 5. It's preferable to **leave spaces around your `<-` or `=`** so that your code is easy to read. 
 
-```{r variable types}
+```{r variable types, eval = FALSE}
 
 # logical
 TRUE
@@ -109,7 +109,7 @@ n1 = 1.1
 n2 = 2
 
 # try run:
-# c1 + c2 # this will throw an error message
+c1 + c2 # this will throw an error message
 n1 + n2
 
 # check variable type
@@ -135,21 +135,21 @@ is.integer(n1)
 
 1. Most common data types in R:  
 
-  + **Vectors**: A collection of elements of the same data type, e.g. logical vector, character vector, numeric vector
+  + **Vectors**: A collection of elements of the same data type, e.g. logical vector, character vector, numeric vector.
   + **Matrices**: A vector with two dimensions. Elements in a matrix must share the same variable type (numeric, character, etc.).
-  + **Arrays**: Arrays are similar to matrices but can have more than two dimensions
+  + **Arrays**: Arrays are similar to matrices but can have more than two dimensions.
   + **Data frames**: Similar to matrices but different columns can have different variables types (numeric, character, logical, etc.). There can also be columns that have *data structure* rather than *variables*, e.g. a column of lists, a column of data frames, a column of matrices, etc.  
-  + **Lists**: An ordered collection of objects within no constraint on their variable or data types. E.g. a list of character, a list of numeric, a list of vector, a list of list, a list of a mix of logical variables, character variables, and dataframes.
-  + **Factors**: A vector that is ordered. It can organize a categorical variable in a particular order for your desired ranking/ordering needs: for example, you can change a vector of educational levels `c("high school graduate", "4-year college", "some college", "below high school")` to have an internal ranking `c("below high school", "high school graduate", "some college", "4-year college", )` so that when you plot, these categories are ordered. 
+  + **Lists**: An ordered collection of objects with no constraint on their variable or data types, e.g. a list of character, a list of numeric, a list of vector, a list of list, a list of a mix of logical variables, character variables, and dataframes.
+  + **Factors**: A vector that is *ordered*. It can organize a categorical variable in a particular order for your desired ranking/ordering needs. For example, you can change a vector of educational levels `c("high school graduate", "4-year college", "some college", "below high school", "graduate or above")` to have an internal ranking `"below high school" < "high school graduate" < "some college" < "4-year college" < "graduate or above"` so that when you plot, these categories are ordered. 
   
   
 2. Similar to variable types, data types matter when you use different functions in R. It also matters in terms of indexing and managing data.
 
-3. Similar to variable, to create a data object, you give it a name first, then use either `<-` or `=` followed by the data object you want to assign. E.g. `vector1 = c(1, 2, 5.3, 6, -2, 4)`
+3. Similar to variable, to create a data object, you give it a name first, then use either `<-` or `=` followed by the data object you want to assign, e.g. `vector1 = c(1, 2, 5.3, 6, -2, 4)`.
 
-4. It's preferable to **leave space after each comma `,`** in your code to make it easy to read.
+4. It's preferable to **leave space after each comma `", "`** in your code to make it easy to read.
 
-```{r data types}
+```{r data types,  eval = FALSE}
 
 # --------- Vector --------- 
 v1 = c(1, 2, 5.3, 6, -2, 4) # numeric vector
@@ -218,6 +218,9 @@ l1[4][[1]]
 l2 = list(m2, l1)
 l2
 
+```
+
+```{r data types-factor,  eval = TRUE}
 
 # --------- Factor --------- 
 
@@ -273,7 +276,7 @@ your_function_name <- function(input){
 
 4. For example, write a function that add 1 to each value of an vector:
 
-```{r function}
+```{r function,  eval = FALSE}
 
 # function
 add_one <- function(vector){
@@ -288,9 +291,9 @@ add_one(v1)
 
 ## Typing equations in R Markdown
 
-1. For "displayed equations" (equations that will break your lines), use the double dollar sign `$$` to wrap your expression: $$\overline{y} = \displaystyle \frac{y_1 + y_2 + y_3 + ... + y_n}{n} = \displaystyle \frac{\sum_{i = 1}^{n} y_i}{n}$$ 
+1. For "displayed equations" (equations that will break your lines), use the double dollar sign `$$` to wrap your expression: `$$\overline{y} = \displaystyle \frac{y_1 + y_2 + y_3 + ... + y_n}{n} = \displaystyle \frac{\sum_{i = 1}^{n} y_i}{n}$$` gives: $$\overline{y} = \displaystyle \frac{y_1 + y_2 + y_3 + ... + y_n}{n} = \displaystyle \frac{\sum_{i = 1}^{n} y_i}{n}$$ 
 
-2. To type inline equations, use the dollar sign `$` to wrap your expression:  $\hat{\mu} = \overline{y} = \frac{\sum_{i = 1}^{n}y_i}{n}$. 
+2. To type inline equations, use the dollar sign `$` to wrap your expression: `$\hat{\mu} = \overline{y} = \frac{\sum_{i = 1}^{n}y_i}{n}$` gives: $\hat{\mu} = \overline{y} = \frac{\sum_{i = 1}^{n}y_i}{n}$. 
 
 3. **Do not leave a space between the `$$` (or `$`) and your mathematical notation!**
 
@@ -305,21 +308,21 @@ Now let's try knit this R Markdown to HTML and PDF
 
 1. Before you knit, always make sure you can run your code from beginning to end. You won't be able to knit if some codes throw error messages. 
 
-2. There are many options in R Markdown that helps you manipulate how you want your document be like. For example, you can hide the code chunk and only show the output by adding `echo = FALSE` in your code chunk options. You can also use `include = FALSE` to prevent the code AND its output to appear in your knitted document. You can also use `eval = FALSE` to prevent your code from running (but it will be displayed) in your knitted document.
+2. There are many options in R Markdown that helps you manipulate how you want to present your document. For example, you can hide the code chunk and only show the output by adding `echo = FALSE` in your code chunk options. You can also use `include = FALSE` to prevent the code AND its output to appear in your knitted document. You can also use `eval = FALSE` to prevent your code from running (but it will be displayed) in your knitted document.
 
-3. For detailed documentation, see [here](https://yihui.org/knitr/options/).
+3. For detailed documentation of knitting options, see [here](https://yihui.org/knitr/options/).
 
 ## Other advice
 
 1. Managing your working environment:
   + Keep an eye on objects in your environment. It's always easier to keep track of your work if you clear your environment every time you start a new task. In addition, by removing large data objects in your environment, R will run more smoothly.
-  + But make sure you save the important objects before you clear your environment. I always create a `temp_data` folder for temporary data, and use `save(object_name, file = "temp_data/object_name.RData")` to quickly save things I might need to use in the future.
-  + To clean the working environment, I often change the environment display from `list` to `Grid`, and select the objects I want to remove, then use the little broom logo in the Environment tab. You can also use `rm(list=ls())` to clear everything in your work space, but use this with caution!
+  + But make sure you save the important objects before you clear your environment. I always create a `temp_data` folder for temporary data, and use `save(object_name, file = "temp_data/object_name.RData")` to quickly save things I might need to use in the future by using `load("temp_data/object_name.RData")`.
+  + To clean the working environment, I often change the environment display from `List` to `Grid`, and select the objects I want to remove, then use the little broom logo in the Environment tab. You can also use `rm(list=ls())` to clear everything in your work space, but use this with caution!
   
 2. In-line comments and other coding style suggestions:
-  + Make sure you comment your code (start comments with the `#` sign) **as detailed as you can**. It will help your grader and your reader and your(future)self to understand what's going on in the code.
-  + In general, it's better to be generous in spacing. Add spaces between numbers, =, commas, etc. You can start a new line after `,` in your code, so it's always better to break a very long line of code to multiple lines.
-  + R language is case-sensitive. Make sure you are using the correct function name, for example, `as.Date()` instead of `as.date()`.
+  + Make sure you comment your code (start comments with the `#` sign) **as detailed as you can**. It will help your grader, your reader, and your(future)self to understand what's going on in the code.
+  + In general, it's better to be generous in spacing. Add spaces between numbers, =, commas, etc. You can start a new line after each comma (`,`) in your code, it's often possible to **break a very long line of code to multiple lines**.
+  + R language is **case-sensitive**. Make sure you are using the correct function name, for example, `as.Date()` instead of `as.date()`.
   + Unlike LaTeX, R Markdown doesn't have automatic spell check in the text editor chunks, but you can check that by clicking the "ABC" button to check your spellings.
 
 3. Recommended reading: [R for Data Science](https://r4ds.had.co.nz/index.html)
