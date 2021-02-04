@@ -3,12 +3,12 @@ title: "SOC-GA 2332 Intro to Stats Lab 1 Demo 1"
 author: "Di Zhou"
 date: "2/5/2021"
 output:
-  pdf_document: 
-    toc: true
   html_document:
     df_print: paged
     theme: paper
     highlight: textmate
+    toc: true
+  pdf_document: 
     toc: true
 ---
 
@@ -69,7 +69,7 @@ If you come across an error message, debug your code by:
 
 2. Google your error massage.
 
-3. Post your question on [stack overflow](https://stackoverflow.com/). 
+3. Post your question on [stack overflow](https://stackoverflow.com/). Make sure to provide a reproducible example for the bug you run into. Here's [a guide on how to make a minimal reproducible example](https://stackoverflow.com/questions/5963269/how-to-make-a-great-r-reproducible-example).
 
 For more information, you can read [this chapter](https://adv-r.hadley.nz/debugging.html) on debugging in R.
 
