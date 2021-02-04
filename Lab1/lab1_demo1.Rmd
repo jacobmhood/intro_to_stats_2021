@@ -32,6 +32,8 @@ h3 { font-size: 20px; }
 
 <br>
 
+---
+
 ## Installing and using packages (setting up your environment)  
 
 1. After creating a `R Project` and a `.Rmd` file, you need to install and load necessary packages so that your script is replicatable. 
