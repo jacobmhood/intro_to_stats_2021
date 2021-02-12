@@ -15,10 +15,11 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
   2. [Demo 2](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab1/lab1_demo2.html)
   3. [LaTeX Demo](https://www.overleaf.com/read/hzxjchrngdkv)
   
-### Lab 1 (2/12/2021)
+### Lab 2 (2/12/2021)
 + Download files in this [repository](https://github.com/di-zhou/intro_to_stats_2021/archive/main.zip)
 + View demo notes via these links:
   1. [LaTeX Demo](https://www.overleaf.com/read/hzxjchrngdkv)
-  2. Finishing up Lab 1[Demo 2](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab1/lab1_demo2.html)
+  2. Finishing up Lab 1 [Demo 2](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab1/lab1_demo2.html)
+  3. Lab 2 [Demo](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab2/lab2_demo.html)
   
   
