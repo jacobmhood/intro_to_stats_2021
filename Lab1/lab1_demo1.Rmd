@@ -45,11 +45,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Install package
 # (after you install, you can delete the line below and keep only the 'library' line)
-install.packages(c("tidyverse", "gridExtra", "kableExtra"))
+#install.packages(c("tidyverse", "gridExtra", "kableExtra"))
 ```
 ```{r load library, message = FALSE}
 # Load package to environment
 library(tidyverse)
+library(gridExtra)
+library(kableExtra)
+
 ```
 
 ## Coding in R Markdown

@@ -1,0 +1,284 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 2 Demo"
+author: "Di Zhou"
+date: "2/12/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+## Logistics & Announcement
+
+**Problem Set 1** is on NYU Classes. Due on Sat. Feb. 27th, 11:59 pm.
+
+## Load package to environment
+```{r setup, include = T, message = F, warning = F}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(gridExtra)
+library(kableExtra)
+
+```
+
+
+## Population, Sample, and Sampling Distribution
+
+
+### Population
+
+* Population is the total set of subject of interest in a study.
+
+* Given a population of size $N$, the three important **population parameters** are: 
+  + Population mean: $$\mu = \frac{1}{N}\sum_{i=1}^N y_i$$
+  + Population variance: $$\sigma^2 = \frac{1}{N}\sum_{i=1}^N(y_i-\mu)^2$$
+  + And population standard deviation: $$\sigma = \sqrt{\sigma^2}$$
+  
+* Varieties of a population's probability distributions:
+
+  + The population distribution is usually unknown. We make inference about its characteristics based on what we observe in the sample, as well as our knowledge/guesses about the data-generating process. For example, we may assume that the distribution of IQ or SAT score is approximately a bell-shaped normal distribution.  
+  
+  + So far we have only come across the **normal distribution** (also called the **Gaussian** distribution):
+$$N(\mu, \sigma^2)$$  
+
+    - The two key parameters for this distribution, as the notation suggests, are the population mean $\mu$, and population variance $\sigma^2$ (and also the population standard deviation, $\sigma$, which is given by variance). 
+    
+    - An useful fact to remember about the standard normal distribution is the percentages of values covered within 1, 2, and 3 standard deviation from the mean: 
+
+<center>
+![Standard Normal Distribution (Wikipedia)](graph/normal2.gif){width=80%}
+</center>  
+    Mean ± 1 SD contain 68.2% of all values.
+    Mean ± 2 SD contain 95.5% of all values.
+    Mean ± 3 SD contain 99.7% of all values.
+
+  + But you may have heard of other distributions, such as the Student t-distribution, chi-square distribution, poisson distribution, etc. For each kind of distribution, the population parameters that decide the shape of the distribution may differ. 
+  
+<center>  
+  ![Some Common Probability Distributions (bernard-mlab.com)](graph/common_distribution.png){width=60%}
+</center>  
+
+  + For today's demo, we will look at a **Bernoulli distribution** for a binary outcome variable that can take the value of either 0 or 1, with certainly probability $p$.
+
+
+* Simulate a population in R:  
+  + We can simulate many different distributions in R. [Here](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/Distributions.html) is a list of the functions R offers for simulating random numbers that follow different distributions.  
+  + For example, let's generate population that follows a Bernoulli distribution with a probability of 0.5. A Bernoulli distribution is the distribution of two possible outcomes with a defined probability of the two outcomes (such as having 50% probability of getting "head" or "tail" when you toss an unbiased coin). We will encounter this distribution when learning regressions for binary outcomes.
+
+```{r simulate bernoulli, message = F}
+# set seed to ensure your code is reproducible
+set.seed(11011)
+
+# generate a random number that follows a Bernoulli distribution with p = 0.5
+# then covert the vector to a data frame
+pop_binom <- rbinom(n = 100000, size = 1, 0.5) %>% as_tibble()
+
+# plot the population
+pop_binom %>%
+  ggplot(aes(value)) +
+  geom_histogram(color = "black", fill = "grey") +
+  labs(title = "Histogram of Simulated Population with Bernoulli Distribution",
+       subtitle = "N = 100000, p = 0.5",
+       x = "")
+
+```
+
+ + Now, let's assume that this (`pop_binom`) is the actual **population voting record for an election**, with 1 represents a vote for the Democrat, and 0 for Republican. 
+
+ + Imagine we are working for a polling company and want to predict the election result by conducting an exit poll, which is drawing a (ideally) random sample from the voter population.
+
+
+### Sample
+
+* Sample is the data we **actually observe**. When we say sample, we usually mean a "random sample." That is, the subjects chosen in the sample are randomly drawn from the population.
+
+* Sample statistics: 
+  + Sample mean: $$\overline{y} = \frac{1}{n}\sum_{i=1}^n y_i$$
+  + Standard error of the sample mean (which is the standard deviation of the mean in the **sampling distribution of the mean**): $$\hat{\sigma_{\overline{y}}} = \frac{s}{\sqrt{n}}$$
+  + Sample variance: $$s^2 = \frac{1}{n-1}\sum_{i=1}^n(y_i-\overline{y})^2$$
+  + Sample standard deviation: $$s = \sqrt{s^2}$$
+  
+* What are i.i.d. samples? 
+
+"i.i.d" stands for "independent, identically distributed," meaning these samples are drawn independently. That is, what you choose for your first random sample does not affect what you choose for the rest of the random samples. 
+
+* Law of Large Numbers:  
+  + This law stats that with a sufficiently large sample there will be a very high probability that the average of the observations will be close to the population mean.  
+  + Let's see how our sample mean change as we increase our sample size from 10 to 10,000:
+
+```{r LLN, message=F, warning=F}
+
+# First create four df of random samples
+set.seed(11011)
+
+sample10 <- pop_binom %>% 
+  sample_n(size = 10, replace = FALSE) %>%
+  mutate(sample_size = 10)
+
+sample100 <- pop_binom %>% 
+  sample_n(size = 100, replace = FALSE) %>%
+  mutate(sample_size = 100)
+
+sample1000 <- pop_binom %>% 
+  sample_n(size = 1000, replace = FALSE) %>%
+  mutate(sample_size = 1000)
+
+sample10000 <- pop_binom %>% 
+  sample_n(size = 10000, replace = FALSE) %>%
+  mutate(sample_size = 10000)
+
+# Combine df, recode variables
+sample_df <- rbind(sample10, sample100, sample1000, sample10000) 
+
+# Plot 
+sample_df %>%
+  mutate(value = ifelse(value == 1, yes = "Democrat", no = "Republican")) %>%
+  rename(candidate = value) %>%
+  ggplot(aes(x = candidate, fill = candidate)) +
+  geom_bar(stat = "count", width = 0.5) +
+  facet_wrap(~sample_size, scales = "free") +
+  labs(title = "Sample Distribution for Different Sample Size")
+
+# List sample size & sample mean
+sample_df %>%
+  group_by(sample_size) %>%
+  summarise(sample_mean = mean(value)) %>%
+  kbl(align = "c") %>%
+  kable_styling()
+
+```
+  
+  + As you can see, by the Law of Large Numbers, our sample mean gets closer to the population mean, which is 50% Democrat and 50% Republican.
+
+
+### Sampling Distribution of the Sample Mean
+
+* Definition: A sampling distribution describes the distribution of a statistic, such as a sample mean or variance. Because **a sample statistic is itself a random variable**, as we draw different samples from the population we will obtain a distribution of this sample statistic. 
+
+* While there are the sampling distribution of the sample mean and the sampling distribution of sample variance, we only cover the **sampling distribution of the sample mean**. This concept is important because it helps us understanding the principle behind hypothesis testing, which is at core of most quantitative social science research.
+
+* The **stand error** ($\sigma_\overline{y}$) of a sample's mean is defined as the **standard deviation** of the sampling distrubtion of the mean. (Note: The $\sigma$ without the subscript $_\overline{y}$ denotes the population standard deviation.)
+
+* The **Central Limit Theorem (IMPORTANT!)**: 
+As sample size gets larger, the sampling *distribution* of sample mean will increasingly approximate a normal *distribution*. This applies to population distribution of **any kind**. 
+
+<center>
+![CLT Applies to Samping Distributions from ANY Population (Agresti 5th ed. Figure 4.15)](graph/CLT.png){width=50%}
+</center>
+
+### Exercise 
+*How does the above figure illustrate the **Law of Large Numbers** and the **Central Limit Theorem**?* 
+
+
+* Simulate sampling distribution in R: 
+  + As mentioned in the instruction of Problem Set 1, in order to get the samping distribution of the sample mean, we need to repeat the action of "drawing a random sample" for many times.  
+  + When we need to complete the same operation many times, we can use a `for`-loop. In R, you can do this using a the `for`-loop syntax. 
+
+```
+for(i in 1:n){
+
+  code expression of the interative operation 
+
+}
+```
+  + The `i` in the loop is an number for indexing. Whether you use `i` or `j` or other names doesn't matter. The `1:n` indicate the number of iterations you need for the loop (You don't always start from `1`, it depends on your specific problem). Together, `for(i in 1:n){...}` means "for `i` that ranges from 1 to n, do the operation that is specified in the `{}`."  
+  
+  + For example, if we want to randomly sample 1000 rows from the entire voter population for 1000 times, and save the mean of each random sample:
+
+```{r for-loop, warning = F}
+set.seed(10010)
+
+# We create a "container" object to save the result
+# It can be a vector, a matrix, a list, etc. as long as it fits your purpose
+sample_mean <- vector(mode = "numeric", length = 1000)
+
+# For-loop
+for (i in 1:1000){
+  # Inside the for-loop, you first randomly sample 1000 rows from the pop
+  sample <- pop_binom %>% sample_n(size = 1000, replace = FALSE)
+  # Calculat the mean and save it as the i-th number in the vector
+  sample_mean[i] <- mean(sample$value)
+}
+
+# Plot
+sample_mean %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(binwidth = 0.01, fill = "grey", color = "black") +
+  geom_vline(aes(xintercept = mean(sample_mean)), color = "red", linetype = "dashed") +
+  scale_x_continuous(limits=c(0, 1)) +
+  labs(title = "Sampling Distribution of the Sample Mean",
+       subtitle = "Number of samples = 1000, Size of each sample = 1000")
+
+```
+
+ + Now, if we want to examine CLT by looking at sample sizes of 3, 5, 30, and 100, we need to vary the sample size in the above code. But instead of copy-pasting your code four times, you can modify the above code into a **function** so that you can change the critical parameters by changing the value of the function's argument. This simplies your code.
+
+ + For example, we will build a function called `plot_sampling_mean` that takes four arguments: (1) number of reptitions (how many random samples we want to draw from the population), (2) sample size (what we need to vary for visualizing CLT), (3) the population data frame, and (4) the histogram's binwidth (so that we can manipulate the layout more flexibly). This function takes these four parameters as input, and return a histogram illustraing the sampling distribution of the sample mean. 
+
+```{r CLT, warning = F, message = F}
+
+plot_sampling_mean <- function(reptition, sample_size, pop_df, hist_binwidth){
+  
+  sample_mean <- vector(mode = "numeric", length = reptition)
+  
+  for (i in 1:reptition){
+  sample <- pop_df %>% sample_n(size = sample_size, replace = FALSE)
+  sample_mean[i] <- mean(sample$value)
+  }
+
+  hist <- sample_mean %>% 
+    as_tibble() %>%
+    ggplot(aes(value)) +
+    geom_histogram(binwidth = hist_binwidth, fill = "grey", color = "black") +
+    geom_vline(aes(xintercept = mean(sample_mean)), color = "red", linetype = "dashed") +
+    geom_text(aes(mean(sample_mean) + 10*hist_binwidth, 
+                label = paste("mean =", round(mean(sample_mean), 4)),
+                y = -0.2),
+            colour = "red") +
+    scale_x_continuous(limits=c(0, 1)) +
+    labs(title = "Sampling Distribution of the Sample Mean",
+       subtitle = paste("Size of each sample =", sample_size, "Number of samples =", reptition))
+   
+  return(hist)
+  
+}
+
+# Plot (You can play with function parameter values to see how they change the output)
+set.seed(1008)
+p1 <- plot_sampling_mean(reptition = 1000, sample_size = 3, pop_binom, 0.01)
+p2 <- plot_sampling_mean(reptition = 1000, sample_size = 5, pop_binom, 0.01)
+p3 <- plot_sampling_mean(reptition = 1000, sample_size = 30, pop_binom, 0.01)
+p4 <- plot_sampling_mean(reptition = 1000, sample_size = 100, pop_binom, 0.01)
+
+grid.arrange(p1, p2, p3, p4, ncol = 2)
+
+```
+

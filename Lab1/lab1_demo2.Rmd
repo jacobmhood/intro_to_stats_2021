@@ -206,9 +206,10 @@ mutate(gapminder,
 For example, if you want to first arrange the GDP per Capita in descending order, and then keep the top 5 countries, you can pipe these two actions:
 
 ```{r piping-1}
-gapminder_2007 %>%
-  arrange(desc(gdpPercap)) %>%
+gapminder_2007 %>% 
+  arrange(desc(gdpPercap)) %>% 
   slice(1:5)
+
 ```
 
 You can also do the above use one single function, which can also be piped to your data object
@@ -347,7 +348,8 @@ gapminder %>%
 ```
 data %>%
   ggplot() + 
-  geom_xxx(mapping = aes()) + 
+  geom_bar(mapping = aes()) + 
+  geom_histogram(mapping = aes()) +
   ...
 
 ```
