@@ -25,6 +25,7 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
 ### Lab 3 (2/19/2021)
 + Download files in this [repository](https://github.com/di-zhou/intro_to_stats_2021/archive/main.zip)
 + View lab notes: [Lab 3](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab3/Lab3.html)
++ View lab exercise solution: [Lab 3 Solution](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab3/Lab3_exercise_solution.html)
   
   
   
