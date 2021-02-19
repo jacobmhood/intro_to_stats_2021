@@ -1,7 +1,7 @@
 ---
-title: "Lab3"
+title: "SOC-GA 2332 Intro to Stats Lab 3"
 author: "Di Zhou"
-date: "2/20/2021"
+date: "2/19/2021"
 output:
   html_document:
     df_print: paged
