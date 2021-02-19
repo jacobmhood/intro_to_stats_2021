@@ -1,0 +1,233 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 3 Exercise solution"
+author: "Di Zhou"
+date: "2/19/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: false
+---
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+```{r setup, include = T, message = F, warning = F}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load package
+library(tidyverse)
+
+# Import data
+weight_df <- read.csv("data/weight.csv")
+
+```
+
+### Part 1 Exercise  
+
+Create a sampling distribution of the sample mean  
+  (1) Create a virtual population that follows a normal distribution of mean = 0 and variance = 1, with 10,000 observations. *Hint*: use `rnorm()`.  
+  (2) Use this population and a `for`-loop, get a sampling distribution of the sample mean by sampling 100 observations from the population for 1,000 times.  
+  (3) Plot a histogram of your sampling distribution of the sample mean. You can add lines for mean and SD as demonstrated in the figure above.  
+
+*Note:* Use the `set.seed()` function every time you perform a random process. That is, add the `set.seed()` function before every part of your code that involves a random process and run the `set.seed()` function together with that code for every run.     
+    
+```{r part1-exercise}
+
+set.seed(202102)
+
+# generate population df
+pop_norm <- rnorm(n = 10000, mean = 0, sd = 1) %>% as_tibble()
+
+# create a "container" object to save the mean
+mean_vec <- vector(mode = "numeric", length = 1000)
+
+# repeatly sample from the pop df and save the mean 
+for (i in 1:1000){
+
+  sample <- pop_norm %>% sample_n(size = 100, replace = FALSE)
+
+  mean_vec[i] <- mean(sample$value)
+  
+}
+
+
+
+# Mean and SD of the sampling distribution
+mean = mean(mean_vec)
+sd_pos = mean + sd(mean_vec)
+sd_neg = mean - sd(mean_vec)
+
+
+# Plot
+mean_vec %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(binwidth = 0.01, fill = "grey", color = "black") +
+  geom_vline(aes(xintercept = sd_neg), color = "red") +
+  geom_vline(aes(xintercept = mean), color = "red", linetype = "dashed") +
+  geom_vline(aes(xintercept = sd_pos), color = "red") +
+  labs(title = "Sampling Distribution of the Sample Mean (1000 iterations of sample n = 100)",
+       subtitle = "Mean marked by the dashed line, 1 standard deviation around the mean marked by solid lines")
+
+
+```
+
+### Part 2.1 Exercise
+
+With $\mu_0 = 0$, $\overline y = 1.54$, sample $n = 27$, $s = 3.25$, derive:  
+  (1) The *t* test statistic  
+  (2) The critical value of *t* given $H_0$ is true  
+  (3) Your rejection region  
+  (4) P-value  
+  (5) Your conclusion of the significance test  
+  
+  
+```{r part2.1-exercise}  
+
+# First, calcuate standard error of the mean
+se = 3.25/sqrt(27)    # 0.6254628
+
+# Calculate t test statistics given null is true
+observed_t = (1.54 - 0)/se  # 2.462177
+
+# Critical value of t given null is true
+qt(p = 0.5*0.05, df = 26)   # -2.055529
+
+# Rejection region is: (-inf, -2.055529) U (2.055529, inf)
+
+# P-value
+2*(1 - pt(q = observed_t, df = 26))  # 0.02075478
+
+# Conclusion:
+# Observed t is in the rejection region, so we reject the null
+# Alternatively, our p-value is smaller than alpha level, so we reject the null
+
+# You can also try the example here: https://www.geogebra.org/m/b85v7zww
+
+```
+
+
+### Calculation and functions in R
+
+```{r calculation and functions}
+
+# generate a random number (n = 30)
+set.seed(1001)
+sample <- rnorm(n = 30, mean = 2, sd = 1)
+
+# hand code to get the sample mean 
+sum(sample)/length(sample)
+
+# should equal to:
+mean(sample)
+
+# create a function that calculate sample mean
+sample_mean <- function(x){
+  mean = sum(x)/length(x)
+  return(mean)
+}
+
+# try the function
+sample_mean(sample)
+
+# hand code to get the sample standard deviation
+sample_var <-  sum( ( sample - mean(sample) )^2 ) / (length(sample)-1) 
+sample_sd <- sqrt(sample_var)
+sample_sd
+
+# Use base r function
+sd(sample)
+
+# hand-code function
+sd_example <- function(x){
+  mean = sum(x)/length(x)
+  variance = sum((x-mean)^2)/(length(x)-1)
+  standarddeviation = sqrt(variance)
+  return (standarddeviation)
+}
+
+sd_example(sample)
+
+
+
+```   
+
+### Part 2.2 Exercise
+
+The institution that offers therapy programs to the anorexic patients claims that their treatment will lead to a weight increase of 4 lbs. Use the `weight_df` data and with $\alpha = 0.05$, perform both a two-tailed and a one-tailed test:
+  $$H_0: \mu_{\text{change}} = 4$$
+<p align="center">
+against
+</p>   
+  
+  $$H_{\text{a1}}: \mu_{\text{change}} \neq 4 \text{   and    } H_{\text{a2}}: \mu_{\text{change}} < 4 $$  
+Report your hypothesis testing result. *Hint:* Make sure you put correct arguments for your `t.test()` function! (Are you testing for "two.sided", "less", or "greater"? What's your `mu`?) 
+
+```{r part2.2-exercise}
+
+# two tailed t-test
+t.test(weight_df$change, mu = 4, alternative = "two.sided", conf.level = 0.95)
+# P-value is larger than 0.05, we do not reject the null
+
+# one tailed t-test
+t.test(weight_df$change, mu = 4, alternative = "less", conf.level = 0.95)
+# P-value is larger than 0.05, we do not reject the null
+
+```
+
+### Part 3 Exercise  
+
+Perform a two-sample two-tailed t-test for the difference between therapy b and c:
+
+$$H_0: \mu_b - \mu_c = 0$$ 
+<p align="center">
+against
+</p>  
+$$H_{a}:\mu_b - \mu_c \ne 0$$
+
+```{r part3-exercise}
+
+# Filter data for each therapy
+weight_b <- weight_df %>% filter(therapy == "b")
+weight_c <- weight_df %>% filter(therapy == "c")
+
+# two tailed two indep sample t-test
+t.test(
+  x = weight_b$change,          # mean value vector from the first sample
+  y = weight_c$change,          # mean value vector from the second sample
+  mu = 0,                       # mean difference given by your null hypothesis
+  alternative = "two.sided"     # direction of alternative hypothesis
+)
+
+# P-value is larger than 0.05, we do not reject the null
+
+```
+

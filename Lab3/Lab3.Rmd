@@ -330,7 +330,7 @@ weight_df %>%
 
 ```
 
-It looks like therapy f tends to result in a higher weight increase compared to other therapies. Let's use a two-sample t-test to see if the mean weight change in therapy f is statisitcally different from that in therapy c:
+It looks like therapy f tends to result in a higher weight increase compared to other therapies. Let's use a two-sample t-test to see if the mean weight change in therapy f is statistically different from that in therapy c:
 
 $$H_0: \mu_f - \mu_c = 0$$ 
 <p align="center">
@@ -359,7 +359,7 @@ t.test(
 
 In fact, our example in the one-sample t-test in Part 2 is a two dependent sample t-test. For two dependent sample t-test, you can always create a new variable equal to the difference between the two dependent samples, like what we did in Part 2; or you can use the `t.test()` function and set the argument `paired = TRUE`.
 
-For example, in the `weight_df` data, if we want to test weither the mean weight before the treatment is different from the mean weight after the treatment:
+For example, in the `weight_df` data, if we want to test whether the mean weight before the treatment is different from the mean weight after the treatment:
 $$H_0: \mu_{\text{before}} - \mu_{\text{after}}  = 0$$ 
 <p align="center">
 against
