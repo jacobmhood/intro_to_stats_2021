@@ -323,7 +323,7 @@ gapminder %>%
 
 
 # You can get many different summary statistics for each group using summarise()
-gapminder %>%
+summary1 <- gapminder %>%
   filter(year == 2007) %>%
   group_by(continent) %>%
   summarise(year = 2007,
@@ -333,6 +333,8 @@ gapminder %>%
             mean_gdpPercap = mean(gdpPercap),
             sd_gdpPercap = sd(gdpPercap))
 
+
+summary1
 ```
 
 ## Plot using `ggplot2`
@@ -445,9 +447,9 @@ gapminder %>%
 
 gapminder %>%
   filter(lifeExp <= 60) %>%
-  ggplot(aes(x = year, fill = continent)) +
-  geom_bar(position = "stack")
-
+  ggplot() +
+  geom_bar(aes(x = year, fill = continent), position = "fill")
+ 
 ```
 
 ### Scatter Plots
@@ -667,6 +669,13 @@ gapminder %>%
   scale_x_continuous(breaks = unique(gapminder$year)) +
   theme(axis.text.x = element_text(size = 8, angle = 40, vjust = 0.6))
 
+ggsave("graph/gdp_bric.png")
+```
+
+```{r}
+
+
+
 ```
 
 ### Saving plots in R
@@ -703,11 +712,40 @@ ggsave("graph/gdp_bric_2.png", height = 4, width = 6, units = c("in"), dpi = 160
 
 1. In the `gapminder` data, which are the top 5 countries in Europe in terms of their GDP per Capital in 2002? Use `dyplr` functions to create a table for your result.
 
+```{r q1}
+
+gapminder %>%
+  filter(continent == "Europe" & year == 2002) %>%
+  arrange(desc(gdpPercap)) %>%
+  slice(1:5)
+
+```
 2. Using the `gapminder` data, generate a table summarising the mean, median, and standard deviation of life expadency in Europe and Africa in 2002.
+
+```{r q2}
+
+gapminder %>%
+  filter(continent %in% c("Europe", "Africa") & year == 2002) %>%
+  group_by(continent) %>%
+  summarise(mean_life = mean(lifeExp),
+            median_life = median(lifeExp),
+            sd_life = sd(lifeExp))
+
+```
 
 3. Replicate this plot below using the `gapminder` data and `ggplot2`?
  ![](graph/facet_boxplot.png)
- 
+```{r q3}
+
+gapminder %>%
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  geom_point(alpha = 0.5, shape = 1) +
+  facet_wrap(vars(year))
+
+```
+
+
 
 
 
