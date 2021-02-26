@@ -1,0 +1,422 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 4"
+author: "Di Zhou"
+date: "2/26/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+## Logistics & Announcement
+
+- **Problem Set 1** is due on Sat. Feb. 27th, 11:59 pm.  
+    + Questions or comments about the assignment? 
+    + Drop by my office hour from 2:30 to 3:30 today if you have more questions. 
+    + Don't wait until last minute to knit your document. Try knitting your R Markdown file early in case there are errors you need to debug.
+    + Comment your code!!!
+- Questions about **Exam 1**? Solution is posted on NYU Classes (Resources > Exams > solution_exam1.pdf).
+
+---
+
+First, load packages to your environment (today we will use a new package `ipumsr`. Please install the package (`install.packages('ipumsr')`) before you run the following chunks) 
+
+```{r setup, include=TRUE, message=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(kableExtra) 
+library(ipumsr)
+
+```
+
+## Part 1: The OLS Estimator
+
+Regression is one of the most common tool social scientists use to understand the relationships between variables. 
+
+This week we started on the simplest regression that consists **one outcome (Y) and one predictor (X)** with the parameters $\beta_0$, $\beta_1$, and the error term$\epsilon$. 
+
+$$Y = \beta_0 + \beta_1X + \epsilon$$
+
+We also talked about a statistical method that estimates the value of $\beta_0$ and $\beta_1$ given observed values of $y_i$ and $x_i$. This method is called the **Ordinary Least Squares** (OLS) estimation.
+
+The OLS estimators of $\beta_0$ and $\beta_1$ ***minimize* the sum of squared errors (SSE)**. (That's why it has *Least Squares* in its name.) 
+
+$$SSE = \sum^{n}_{i=1}\epsilon^2 = \sum^{n}_{i=1}[y_i - (\hat\beta_0 + \hat\beta_1 x_i)]^2 $$
+
+Let's look at a toy example. Say we have five observations of the outcome variable, y, and the predictor variable, x.
+
+```{r ols example, fig.height = 3, fig.width = 3, fig.align = "center"}
+# Value of x and y are observed
+x <- c(-2, 0, 3, 6, 10) 
+y <- c(-1, 8, 15, 12, 28)
+
+# Create a dataframe of x and y
+ols_df <- tibble(
+  x = x,
+  y = y
+)
+
+# Check dataframe
+ols_df %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+# Scatter plot of x and y
+ols_df %>%
+  ggplot() +
+  geom_point(aes(x, y), shape = 1) +
+  labs(title = "Scatterplot of Example Data")
+```
+
+We can estimate an equation $Y = \hat{\beta_0} + \hat{\beta_1} X$ using the definitions and formulas learned in class.
+
+---
+
+### Part 1 Exercise: Hand-coding OLS estimators
+
+Create the toy example dataframe `ols_df` in your R environment using the code above. Then:  
+
+1. Hand-code the value of $\hat{\beta_0}$ and $\hat{\beta_1}$ using the formulas
+
+>$$\hat{\beta_1} = \frac{\sum^{n}_{i=1}(x_i - \overline x)(y_i - \overline y)}{\sum^{n}_{i=1}(x_i - \overline x)^2}$$
+$$\hat{\beta_0} = \overline y - \hat{\beta_1}\overline x$$
+
+```{r part1-q1}
+
+# Your code here
+
+```
+  
+2. Use the `cov()` and `var()` functions in R to verify your hand-coding result of $\hat\beta_1$, using the equation
+
+>$$\hat{\beta_1} = \frac{\sum^{n}_{i=1}(x_i - \overline x)(y_i - \overline y)}{\sum^{n}_{i=1}(x_i - \overline x)^2} = \frac{Cov(X, Y)}{Var(X)}$$
+
+```{r part1-q2}
+
+# Your code here
+
+```
+ 
+3. Use the `cor()` function in R to calculate the correlation $\rho$, and appropriate function to calculate $\sigma_X$ and $\sigma_Y$ (standard deviation of the variable). Verify your result of $\hat\beta_1$ in Q1 and Q2 using the equation
+
+>$$\hat{\beta_1} = \frac{\sum^{n}_{i=1}(x_i - \overline x)(y_i - \overline y)}{\sum^{n}_{i=1}(x_i - \overline x)^2} = \frac{Cov(X, Y)}{Var(X)} = \rho_{X, Y} \cdot \frac{\sigma_Y}{\sigma_X}$$
+ 
+```{r part1-q3}
+
+# Your code here
+
+```
+  
+4. Create a new dataframe based on `ols_df` that has a new variable called `fitted_y` that equals to your predicted value of y given your OLS regression equation. *Hint:* Use `mutate()` in `tidyverse` to create a new variable.
+  
+```{r part1-q4}
+
+# Your code here
+
+```
+
+5. Calculate your OLS regression's **SSE (sum of squared errors)**. *Hint:*You can either hand-code based on the formula, or start by creating a new variable that gives you $\epsilon_i^2$ and then work out the SSE. Given $Y = \beta_0 + \beta_1X + \epsilon$, we have $\epsilon_i = y_i - (\beta_0 + \beta_1x_i)$.
+
+> $$SSE = \sum^{n}_{i=1}\epsilon_i^2 = \sum^{n}_{i=1}[y_i - (\hat{\beta_0} + \hat{\beta_1} x_i)]^2 $$
+
+```{r part1-q5}
+
+# Your code here
+
+```
+6. Draw your OLS regression line on the scatter plot created earlier. *Hint:* You can add a line with customized intercept and slope value using the `geom_abline()` function:
+
+```
+your_plot +
+  geom_abline(intercept = your_intercept, slope = your_slope)
+
+```
+```{r part1-q6}
+
+# Your code here
+
+
+```
+
+---
+
+### Estimate OLS Regression Using R
+
+We can use the linear model function `lm()` to estimate regression models.
+
+```{r lm}
+
+# estimate a linear model
+ols_m1 <- lm(y ~ x, data = ols_df)
+
+# check model result
+ols_m1
+
+# for details, use the summary() function
+summary(ols_m1)
+
+# the SSE is not directly displayed, but we can calculate it by its definition
+sum(ols_m1$residuals^2)
+
+```
+
+## Part 2: Getting Started on the Replication Project
+
+Now let's move on to use real-world data for estimating regression models. Since we will need to use IPUMS for the final replication project, let's download data from IPUMS. 
+
+### IPUMS
+
+[IPUMS](https://ipums.org/) is a "data resource center" that stores various census and survey data. It harmonizes survey measures across the years and provide detailed documentations for researchers. 
+
+For the replication project, we will use **IPUMS USA** that stores the U.S. Census and American Community Survey data. 
+
+### Part 2 Exercise 1: Download Data from IPUMS
+
+> **Prerequisite (IMPORTANT!)**: Before starting this exercise, make sure you are working in a devoted lab4 folder that has a `.Rproj` file in place. If not, create a new folder called `lab4` in your desired directory, and create a new R project file in this folder. ( [See Page 9 of this PDF](https://github.com/di-zhou/intro_to_stats_2021/raw/main/Lab1/lab1_slides.pdf)) Then, copy the `Lab4.Rmd` file you downloaded from github to this folder, and open this `Lab4.Rmd` file when your current R Project environment is active. 
+
+1. Register an account for using IPUMS-USA [here](https://usa.ipums.org/usa/)
+2. Once your account is created, log in to IPUMS-USA and create a data extract request by selecting the **2010 ACS** sample and the **SEX**, **EDUC**, and **INCWAGE** variables. You can keep the preselected variables. Your "Data Cart" should be similar to this:  
+
+<p align="center">
+![](graph/datacart_demo.png){width=50%}
+</p>  
+
+3. To save time, create a small data extract with a customized sample size of **0.01%**. As shown in the following screenshot. Sumbit your data extract request. 
+
+<p align="center">
+![](graph/samplesize_demo.png){width=50%}
+</p> 
+
+4. While IPUMS is processing our data extract requestion, you can prepare the file needed for loading the IPUMS data to R. Open the "DDI" page in your browser, it should be a `.xml` page. Save this `.xml` file to your current lab folder, or you can save it in a sub-folder devoted to data files, such as a sub-folder called "data" within your current lab folder.
+
+<p align="center">
+![](graph/ddi_demo.png){width=60%}
+</p>  
+
+
+5. Once your data is ready on IPUMS, you will receive an email with a download link. (The wait time varies from a couple minutes to a couple days, depending on how large your files are and how busy the server is.) Follow the link in your email and download your data (the default format is `.dat.gz`). **Make sure to save it at the same directory with your `.xml` file!!**
+
+6. Unzip the `.gz` data file using your computer's unzip applications (for Mac users, if the default extractor doesn't work, try the [Unarchiver application](https://theunarchiver.com/)). Now you should have the `.dat` file and the `.xml` file in the same directory. 
+
+7. Load the data to your R environment, by using the code shown in the webpage when you click the "R" Command File link in your IPUMS data downloading page. 
+
+<p align="center">
+![](graph/rcommand_demo.png){width=60%}
+</p>
+
+<p align="center">
+![](graph/r_command_copy.png){width=60%}
+</p>
+
+
+
+
+```{r part2-exercise1-ipums}
+
+# Your code here
+
+```
+*Note:* If your data is not ready after 5 minutes, let me know and I will share my data files. 
+
+---
+
+### Read IPUMS Documentations
+
+Before working with the data, we should be clear about how the variables are coded. You can access the documentation of each variables through the `.xml` webpage you opened ealier.  
+
+<p align="center">
+![](graph/ddi_demo.png){width=60%}
+</p>  
+
+When you have that page open in your browswer, click "Variable Description" to access the codebook for each variables we just downloaded. 
+
+<p align="center">
+![](graph/codebook_demo1.png){width=60%}
+</p>  
+
+### Part 2 Exercise 2: Read Data Codebook
+
+Going through the variable description, and answer the following question:
+
+1. What does the variable "PERNUM" represents? How can you uniquely identify each person within the IPUMS with this variable?  
+[Your answer here]
+
+2. What does the variable "PERWT" represents? When should you consider using this variable?   
+[Your answer here]
+
+3. For the variable "SEX", what are the possible values it can take? What does each value represent? Try run `str(data$SEX)`, what do you see?   
+[Your answer here]
+
+4. What does the variable "EDUC" represents? How many values this variable can take? What is the value that represents N/A?   
+[Your answer here]
+
+5. For the variable "INCWAGE", what are the codes for N/A and missing data?   
+[Your answer here]
+
+---
+
+## Part 3: Analyzing IPUMS Data
+
+We will try fit an OLS regression on the relationship between **education and wage income**. However, before doing that, we need to make sure we know how the variables are distributed in the sample and remove N/A and missing values (we do not consider imputing missing values at this point).
+
+*Note:* Since we each extracted a 0.01% random sample, it is normal if your results are slightly different from this demo.  
+
+First, make sure your data is loaded in your environment. 
+```{r import IPUMS}
+# Load ipums data
+ddi <- read_ipums_ddi("data/usa_00009.xml")
+data <- read_ipums_micro(ddi)
+
+# View first 10 rows
+head(data, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+```
+
+Then, we will keep the following variables for subsquent data analysis: SAMPLE, SERIAL, PERNUM, PERWT, SEX, EDUC, INCWAGE
+
+```{r IPUMS select var}
+
+# Select variables
+data_clean <- data %>%
+  select(SAMPLE, SERIAL, PERNUM, PERWT, SEX, EDUC, INCWAGE)
+
+# View first 10 rows
+head(data_clean, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+
+```
+
+### Create unique ID for each observation
+
+Create an uniqie ID for each observation will help you easily index your data. For example, if you subset the data and do some transformation to it, with the unique ID variable, you can easily match this subset back to your full data. 
+
+The `unite()` function in `tidyverse` allows us to paste together multiple columns into one.
+
+```{r unique id}
+
+# Create a new variable called "unique_id"
+data_clean <- data_clean %>%
+  unite("unique_id",                # The name of the new column, as a string or symbol
+        SAMPLE, SERIAL, PERNUM,     # Columns to unite
+        sep = "",                   # Separator to use between values
+        remove = TRUE)              # Remove input columns from output data frame
+
+# Check data
+head(data_clean, 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+
+# Check how many unique values are there for the variable "unique_id"
+n_distinct(data_clean$unique_id) 
+# this should equal to: 
+nrow(data_clean)
+
+```
+
+### Remove missing value
+
+Since we are running regression for **education and wage income**, we need to remove observations that do not have any of the two values. You can either remove then by filtering out the values that represent N/A or missing based on the variable codebook, or you can recode these values to `NA` so that you keep all the observations. We will cover this latter method in the future. 
+
+```{r remove missing, fig.height = 3, fig.width = 3, fig.align = "center"}
+# Check number of observations for each value of EDUC (You can also use plotting)
+table(data_clean$EDUC)
+
+
+# Check coding scheme for EDUC in codebook
+# --> we need to remove value 0, which means N/A or no schooling
+
+# Check distribution of INCWAGE
+data_clean %>%
+  ggplot() +
+  geom_histogram(aes(INCWAGE), binwidth = 15000, color = "black", fill = "grey")
+
+# Check coding scheme for INCWAGE in codebook
+# --> we need to remove value 999998 (missing) and value 999999 (N/A) 
+max(data_clean$INCWAGE)
+
+# Remove missing value use filter()
+data_clean <- data_clean %>%
+  filter(EDUC != 0 & INCWAGE < 999998)
+# 4610 obs removed, 17322 obs left
+
+
+# Check distribution after removing missing vaues
+# EDUC
+table(data_clean$EDUC)
+
+# INCWAGE
+data_clean %>%
+  ggplot() +
+  geom_histogram(aes(INCWAGE), binwidth = 15000, color = "black", fill = "grey")
+
+```
+
+### Estimate Regression
+
+Now, let's try estimate a OLS regression model for wage income and education levels. Let's make an unrealistic assumption that we can treat the EDUC variable as a discrete numeric variable, that the value 1, 2, 3, ..., 11 correspond to the years of education one recieves. (Of course, if you read the codebook carefully, you know this is not what each value represents. We will learn how to correctly use categorical predictors in future lectures.) 
+
+--- 
+
+### Part 3 Exercise: Estimate OLS Model Using IPUMS Data
+  
+1. Clean your data using the code above (create `unique_id` and remove missing values for INCWAGE and EDUC)
+```{r part3-exercise-q1}
+
+# Your code here
+
+```
+
+2. Plot a scatter plot with EDUC on the x axis and INCWAGE on the y axis
+```{r part3-exercise-q2}
+
+# Your code here
+
+```
+
+3. Use `lm()` to fit a OLS regression model with INCWAGE as the dependent variable and EDUC as the independent variable. Report your $\hat{\beta_0}$, $\hat{\beta_1}$, and SSE.
+
+```{r part3-exercise-q3}
+
+# Your code here
+
+```
+
+4. Use `+ geom_smooth(aes(x = your_x, y = your_y), method = "lm")` to plot the fitted regression line on top of your scatter plot. 
+
+```{r part3-exercise-q4}
+
+# Your code here
+
+```
+
+---
