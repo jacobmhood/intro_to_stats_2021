@@ -1,0 +1,294 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 4 Exercise Solution"
+author: "Di Zhou"
+date: "2/26/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(kableExtra)
+library(ipumsr)
+
+```
+
+### Part 1 Exercise: Hand-coding OLS estimators
+
+Create the toy example dataframe `ols_df` in your R environment using the code above. Then:  
+
+```{r ols_df}
+
+# Value of x and y are observed
+x <- c(-2, 0, 3, 6, 10) 
+y <- c(-1, 8, 15, 12, 28)
+
+# Create a dataframe of x and y
+ols_df <- tibble(
+  x = x,
+  y = y
+)
+
+```
+
+1. Hand-code the value of $\hat{\beta_0}$ and $\hat{\beta_1}$ using the formulas
+
+>$$\hat{\beta_1} = \frac{\sum^{n}_{i=1}(x_i - \overline x)(y_i - \overline y)}{\sum^{n}_{i=1}(x_i - \overline x)^2}$$
+$$\hat{\beta_0} = \overline y - \hat{\beta_1}\overline x$$
+
+```{r part1-q1}
+
+# Calculate the mean of x and y
+x_mean = mean(ols_df$x)
+y_mean = mean(ols_df$y)
+
+# beta1 & beta0 according to the formula in Q1
+beta1 = sum((x - x_mean)*(y -y_mean))/sum((x-x_mean)^2)
+beta0 = y_mean - beta1*x_mean
+
+# check results
+beta0
+beta1
+
+```
+  
+2. Use the `cov()` and `var()` functions in R to verify your hand-coding result of $\hat\beta_1$, using the equation
+
+>$$\hat{\beta_1} = \frac{\sum^{n}_{i=1}(x_i - \overline x)(y_i - \overline y)}{\sum^{n}_{i=1}(x_i - \overline x)^2} = \frac{Cov(X, Y)}{Var(X)}$$
+
+```{r part1-q2}
+
+# This should equal to beta1 you got in Q1
+cov(ols_df$x, ols_df$y)/var(ols_df$x) 
+
+```
+ 
+3. Use the `cor()` function in R to calculate the correlation $\rho$, and appropriate function to calculate $\sigma_X$ and $\sigma_Y$ (standard deviation of the variable). Verify your result of $\hat\beta_1$ in Q1 and Q2 using the equation
+
+>$$\hat{\beta_1} = \frac{\sum^{n}_{i=1}(x_i - \overline x)(y_i - \overline y)}{\sum^{n}_{i=1}(x_i - \overline x)^2} = \frac{Cov(X, Y)}{Var(X)} = \rho_{X, Y} \cdot \frac{\sigma_Y}{\sigma_X}$$
+ 
+```{r part1-q3}
+
+# Calculate the correlation rho
+rho = cor(ols_df$x, ols_df$y)
+# Calculate sigma_x and sigma_y, which is the standard deviation of x and y
+sigma_x = sd(ols_df$x)
+sigma_y = sd(ols_df$y)
+
+# This should equal to beta1 you got in Q1 and Q2
+rho*sigma_y/sigma_x
+
+```
+  
+4. Create a new dataframe based on `ols_df` that has a new variable called `fitted_y` that equals to your predicted value of y given your OLS regression equation. *Hint:* Use `mutate()` in `tidyverse` to create a new variable.
+  
+```{r part1-q4}
+
+# Use mutate() to add the variable
+ols_df_fit <- ols_df %>%
+  mutate(fitted_y = beta0 + beta1*x)
+
+ols_df_fit
+```
+
+5. Calculate your OLS regression's **SSE (sum of squared errors)**. *Hint:*You can either hand-code based on the formula, or start by creating a new variable that gives you $\epsilon_i^2$ and then work out the SSE. Given $Y = \beta_0 + \beta_1X + \epsilon$, we have $\epsilon_i = y_i - (\beta_0 + \beta_1x_i)$.
+
+> $$SSE = \sum^{n}_{i=1}\epsilon_i^2 = \sum^{n}_{i=1}[y_i - (\hat\beta_0 + \hat\beta_1 x_i)]^2 $$
+
+```{r part1-q5}
+
+# Handcode the formula
+(ols_df$y - (beta0 + beta1*ols_df$x))^2 %>% sum()
+# #quivalently
+(ols_df$y - ols_df_fit$fitted_y)^2 %>% sum()
+
+
+# Use the dataframe
+
+# Create a variable equal to the squared error (y - fitted_y) of each row
+ols_df_fit %>% 
+  mutate(
+    error = y - fitted_y, # you don't need to create this, this is for reference
+    squared_error = (y - fitted_y)^2
+    ) 
+
+# Use the summarise() to calculate the sum of squared errors
+ols_df_fit %>% 
+  mutate(squared_error = (y - fitted_y)^2) %>%
+  summarise(sse = sum(squared_error))
+
+```
+
+6. Draw your OLS regression line on the scatter plot created earlier. *Hint:* You can add a line with customized intercept and slope value using the `geom_abline()` function:
+
+```
+your_plot +
+  geom_abline(intercept = your_intercept, slope = your_slope)
+
+```
+```{r part1-q6}
+
+ols_df %>%
+  ggplot() +
+  geom_point(aes(x, y), shape = 1) +
+  labs(title = "Scatterplot of Example Data with Fitted OLS Line") +
+  geom_abline(intercept = beta0, slope = beta1) # plug in your beta results
+
+```
+
+---
+
+### Part 2 Exercise 1: Download Data from IPUMS
+
+7. Load the data to your R environment, by using the code shown in the webpage when you click the "R" Command File link in your IPUMS data downloading page. 
+
+<p align="center">
+![](graph/rcommand_demo.png){width=60%}
+</p>
+
+<p align="center">
+![](graph/r_command_copy.png){width=60%}
+</p>
+
+```{r part2-exercise1-ipums}
+
+# Load ipums data
+ddi <- read_ipums_ddi("data/usa_00009.xml") # content inside the quote depends on your file name & path
+data <- read_ipums_micro(ddi)
+
+```
+
+---
+
+### Part 2 Exercise 2: Read Data Codebook
+
+Going through the variable description, and answer the following question:
+
+1. What does the variable "PERNUM" represents? How can you uniquely identify each person within the IPUMS with this variable?  
+PERNUM is "Person number in sample unit." We can identify each individuals within IPUMS when we combine PERNUM with SAMPLE and SERIAL.
+
+2. What does the variable "PERWT" represents? When should you consider using this variable?   
+PERWT is "Person weight". It is generally a good idea to use PERWT when conducting a person-level analysis of any IPUMS sample. 
+
+3. For the variable "SEX", what are the possible values it can take? What does each value represent? Try run `str(data$SEX)`, what do you see?   
+1 and 2  
+1 = Male, 2 = Female. 
+
+4. What does the variable "EDUC" represents? How many values this variable can take? What is the value that represents N/A?   
+EDUC is "Educational attainment [general version]". It can take values from 0 to 11. Value 0 represents N/A or no schooling. 
+
+5. For the variable "INCWAGE", what are the codes for N/A and missing data?   
+999999 = N/A  
+999998 = Missing
+
+---
+
+### Part 3 Exercise: Estimate OLS Model Using IPUMS Data
+  
+1. Clean your data using the code above (create `unique_id` and remove missing values for INCWAGE and EDUC)
+```{r part3-exercise-q1}
+
+# Select variables
+data_clean <- data %>%
+  select(SAMPLE, SERIAL, PERNUM, PERWT, SEX, EDUC, INCWAGE)
+
+
+# Create a new variable called "unique_id"
+data_clean <- data_clean %>%
+  unite("unique_id",                # The name of the new column, as a string or symbol
+        SAMPLE, SERIAL, PERNUM,     # Columns to unite
+        sep = "",                   # Separator to use between values
+        remove = TRUE)              # Remove input columns from output data frame
+
+# Remove missing value use filter()
+data_clean <- data_clean %>%
+  filter(EDUC != 0 & INCWAGE < 999998)
+# 4610 obs removed, 17322 obs left
+
+```
+
+2. Plot a scatter plot with EDUC on the x axis and INCWAGE on the y axis
+```{r part3-exercise-q2}
+
+data_clean %>%
+  ggplot() +
+  geom_point(aes(EDUC, INCWAGE)) +
+  labs(title = "Scatterplot of Education and Wage Income",
+       subtitle = "NA and missing values are removed, n = 17,322")
+
+```
+
+3. Use `lm()` to fit a OLS regression model with INCWAGE as the dependent variable and EDUC as the independent variable. Report your $\hat{\beta_0}$, $\hat{\beta_1}$, and SSE.
+
+```{r part3-exercise-q3}
+
+# fit a model using edu to predict wage
+ols_ipums <- lm(INCWAGE ~ EDUC, data = data_clean)
+summary(ols_ipums)
+
+# Beta0:
+ols_ipums$coefficients[1]
+
+# Beta1:
+ols_ipums$coefficients[2]
+
+# SSE
+sum(ols_ipums$residuals^2)
+
+# If you want to display the digit instead of the scientific notion
+# You can set this option
+options(scipen = 999)
+sum(ols_ipums$residuals^2)
+
+```
+
+4. Use `+ geom_smooth(aes(x = your_x, y = your_y), method = "lm")` to plot the fitted regression line on top of your scatter plot. 
+
+```{r part3-exercise-q4}
+
+data_clean %>%
+  ggplot() +
+  geom_point(aes(EDUC, INCWAGE)) +
+  geom_smooth(aes(EDUC, INCWAGE), method = "lm") +
+  labs(title = "Scatterplot of Education and Wage Income with Fitted OLS Regression")
+
+```
+
+---
