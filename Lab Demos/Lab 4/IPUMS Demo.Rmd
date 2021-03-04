@@ -1,0 +1,107 @@
+---
+title: "IPUMS Demo"
+author: "Jacob Hood"
+date: "2/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+library(ipumsr)
+library(tidyverse)
+library(kableExtra)
+
+ddi <- read_ipums_ddi("usa_00009.xml")
+data <- read_ipums_micro(ddi)
+summarise(data)
+str(data$SEX)
+
+head(data, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+
+data_clean <- data %>%
+  select(SAMPLE, SERIAL, PERNUM, PERWT, SEX, EDUC, INCWAGE)
+
+# View first 10 rows
+head(data_clean, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+
+# Create a new variable called "unique_id"
+data_clean <- data_clean %>%
+  unite("unique_id",                # The name of the new column, as a string or symbol
+        SAMPLE, SERIAL, PERNUM,     # Columns to unite
+        sep = "",                   # Separator to use between values
+        remove = TRUE)              # Remove input columns from output data frame
+
+# Check data
+head(data_clean, 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+
+# Check how many unique values are there for the variable "unique_id"
+n_distinct(data_clean$unique_id) 
+
+# this should equal to: 
+nrow(data_clean)
+
+# Check number of observations for each value of EDUC (You can also use plotting)
+table(data_clean$EDUC)
+
+# Check coding scheme for EDUC in codebook
+# --> we need to remove value 0, which means N/A or no schooling
+
+# Check distribution of INCWAGE
+data_clean %>%
+  ggplot() +
+  geom_histogram(aes(INCWAGE), binwidth = 15000, color = "black", fill = "grey")
+  
+# Check coding scheme for INCWAGE in codebook
+# --> we need to remove value 999998 (missing) and value 999999 (N/A) 
+max(data_clean$INCWAGE)
+
+# Remove missing value use filter()
+data_clean <- data_clean %>%
+  filter(EDUC != 0 & INCWAGE < 999998)
+# 4610 obs removed, 17322 obs left
+
+
+# Check distribution after removing missing vaues
+# EDUC
+table(data_clean$EDUC)
+## R Markdown
+
+# INCWAGE
+data_clean %>%
+  ggplot() +
+  geom_histogram(aes(INCWAGE), binwidth = 15000, color = "black", fill = "grey")
+  
+data_clean %>%
+  ggplot() +
+  geom_point(aes(EDUC, INCWAGE)) +
+  labs(title = "Scatterplot with EDUC on the x axis and INCWAGE on the y axis")
+
+ols_ipums <- lm(INCWAGE ~ EDUC, data = data_clean)
+summary(ols_ipums)
+
+data_clean %>%
+  ggplot() +
+  geom_point(aes(x = EDUC, y= INCWAGE)) +
+  geom_smooth(aes(x = EDUC, y = INCWAGE, method = "lm")) +
+  labs(title = "Scatterplot with EDUC on the x axis and INCWAGE on the y axis")
+
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

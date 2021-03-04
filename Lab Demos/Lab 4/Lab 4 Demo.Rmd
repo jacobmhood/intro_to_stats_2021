@@ -1,0 +1,89 @@
+---
+title: "Lab 4 Demo"
+author: "Jacob Hood"
+date: "2/26/2021"
+output: html_document
+---
+install.packages('ipumsr')
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(kableExtra) 
+library(ipumsr)
+
+# Value of x and y are observed
+x <- c(-2, 0, 3, 6, 10) 
+y <- c(-1, 8, 15, 12, 28)
+
+# Create a dataframe of x and y
+ols_df <- tibble(
+  x = x,
+  y = y
+)
+
+# Check dataframe
+ols_df %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+ols_df %>%
+  ggplot() +
+  geom_point(aes(x, y), shape = 1) +
+  labs(title = "Scatterplot of Example Data")
+
+B1
+sum((x - mean(x))* (y -mean(y))) / sum((x - mean(x))*2)
+
+newbetaone <- cov(x, y)/var(x)
+
+print(newbetaone)
+
+betazero <- mean(y) - newbetaone *(mean(x))
+
+print(betazero)
+cor(ols_df)
+sd(ols_df$y)/sd(ols_df$x) * cor(ols_df)
+
+ols_df_fit <- ols_df %>%
+  mutate(fitted_y = betazero +newbetaone*x)
+
+(ols_df$y - (betazero + newbetaone*ols_df$x))^2 %>% sum()
+(ols_df$y - ols_df_fit$fitted_y)^2 %>% sum()
+
+ols_df_fit %>%
+  mutate(squared_error = (y - fitted_y)^2) %>%
+  summarise(sse = sum(squared_error))
+
+ols_df %>%
+  ggplot() +
+ geom_point(aes(x, y), shape = 1) +
+  labs(title = "Scatterplot of Example Data with Fitted OLS Line") +
+  geom_abline(intercept = betazero, slope = newbetaone) # plug in your beta results
+
+ols_m1 <- lm(y ~ x, data = ols_df)
+
+# check model result
+ols_m1
+summary(ols_m1)
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
