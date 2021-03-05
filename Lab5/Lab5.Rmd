@@ -1,0 +1,492 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 5"
+author: "Di Zhou"
+date: "3/5/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+## Logistics & Announcement
+
+- **Problem Set 2** is on NYU Classes (Resources > Assignments > ps2). Due on Sat. Mar. 20th, 11:59 pm.
+- **Mini Survey**: The university will have Friday, Mar. 19th and Monday, Apr. 19th off instead of a regular spring break, which means that we won't have lab on Mar. 19th when we have a class on Monday, and we will have a lab on Apr. 23rd when we don't have a class on Monday. Would you prefer to have regular lab on Mar. 19th, and take Apr. 23rd off, or keep the university's schedule? 
+- No office hour on Friday, Mar. 19th from 2:30-3:30 due to schedule conflict. Please email me for appointments.
+- Any questions?
+
+---
+
+First, load packages to your environment. Today we will use several new packages. Please install them before you run the following chunks.
+
+
+```{r setup, include=T}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tidyverse, foreign, stargazer, ggcorrplot, kableExtra)
+
+```
+
+## Data Simulation
+
+Data simulation is the opposite of data analysis. You create a data set through simulation and then "understand" it using the analytically tools you learned. 
+
+### Advantages for doing data simulation  
+  
+  1. *The truth is known*: We know the values of simulated parameters, and we can therefore compare them with the model estimates. This gives us a better understanding of how well the model performs.  
+  
+  2. *Understanding parameters through tuning*: Sometimes the effect of one or more parameters is unclear. Being able to tune the parameters and observe how they affect the resultant data helps us better understand the parameters.   
+  3. *Sampling error*: As we have practiced in PS1, by simulating a virtual population, we can directly observe how the sampling procedure affects the variabilities of the sample statistics. (When sample size n gets larger, our sampling distribution of the sample mean will have a smaller sd, which leads to smaller standard error for our sample mean statistic.)  
+  
+  4. *Understanding models*: Finally, data simulation provides proof that you understand a model: If you can simulate data under a certain model, then it is likely that you really understand that model. 
+
+
+### Simulation from a stochastic process
+
+For a social system, we always take into account the randomness in social life when we simulate data. In other words, the data is generated from a **stochastic process** in which the state of the system cannot be precisely predicted given its current state and even with a full knowledge of all the factors affecting that process.  
+
+In concrete, it means that we always include an error/residual term when simulating a social process. This error/residual term conveys the unpredictability and randomness of social lives. 
+
+### Simulate a bivariant relationship
+  
+  For example, let's simulate a data in which the *years of education* affect one's *income rank* according to the following equation: 
+$$\text{Income_Rank} = 10 + 6 \cdot \text{Edu_Year } + \epsilon$$  
+  
+  We will first simulate *years of education* -the independent variable (IV), then *income rank* -the dependent variable (DV) according to the above equation.  
+  
+  We simulate years of education using `rpois()`, a function that generates a random Poisson distribution with a specified parameter $\lambda$. You can learn more about the distribution [here](https://en.wikipedia.org/wiki/Poisson_distribution).  
+  
+```{r part1-simulateIV, fig.align = "center"}
+# Simulate IV (edu level)
+set.seed(1234)
+edu <- rpois(300, lambda = 6) #rpois: Random Poisson Distribution with parameter lamda 
+
+# Plot histogram of IV
+edu %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(color = "black", fill = "grey", binwidth = 1) +
+  labs(x = "Years of Edu")
+
+# Summary statistics
+summary(edu)
+
+```
+  
+  When simulating earning, since we are simulating a stochastic process, we always add an error term, noted as $\epsilon$ in the above equation. Note that normally this error term is modeled using `rnorm()` assuming **the error term is normally distributed with a mean of 0 and a sd that is a constant value**, so that the errors vary following the same random pattern across all values of the IV. But we might need to change this when we want to simulate data that **violate the homoskedasticity assumption**, which means the error term is not purely random but dependent on the value of the IV. 
+
+```{r part1-simulateDV, fig.align = "center"}
+
+# Simulate DV 
+set.seed(1234)
+earn <- 10 + 6*edu + rnorm(300, 0, 10) # add a random error using rnorm() 
+
+# Plot histogram of DV
+earn %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(color = "black", fill = "grey", binwidth = 5) +
+  labs(x = "Income Rank")
+
+# Summary statistics
+summary(earn)
+
+
+# Combine dataframe
+df <- tibble(x_edu = edu, 
+             y_earn = earn)
+
+# Scatter plot with a fitted lm line
+
+df %>%
+  ggplot(aes(x = x_edu, y = y_earn)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship Between Years of Education and Income Rank",
+       subtitle = "(using simulated data)",
+       x = "Years of Edu",
+       y = "Income Rank")
+
+```
+
+### Fit OLS to simulated data
+  
+  We can fit a regression model to the simulated data, and compare the result with the "true" relationship. As you can see our modeling result is quite close to the "true" parameter values. 
+
+```{r part1-fit-ols}
+
+# Run a model
+m_simu <- lm(y_earn ~ x_edu, data = df)
+
+summary(m_simu)
+
+```
+  
+### `stargazer` for regression tables  
+  
+  In displaying regression tables, a commonly used package is `stargazer`, its main function `stargazer()` can format modeling results to neat regression tables. You can set the output type `type = "latex` and copy the output to Overleaf or other LaTeX editors, the code will automatically render to a cleanly formatted regression table.
+  
+```{r stargazer}
+# Use stargazer to display regression tables
+# For quick view in R:
+stargazer(m_simu, type = "text")
+# for PDF: 
+# stargazer(m_simu, type = "latex")
+
+```
+
+  A nice feature of `stargazer` is that it allows you to customize what statistics to add or omit in your table. For example, if we want to omit Residual Std. Error and the F Statistic:
+
+```{r stargazer2}
+
+stargazer(m_simu, type="text", omit.stat=c("ser", "f"))
+
+```
+---
+
+### Part 1 Exercise:
+
+1. Simulate the data with the same relationship as specified above, only **changing the residual term from having a sd = 10 to sd = 50**. Follow the steps demonstrated above, create a dataframe and fit an OLS model to your simulated data. Create a scatterplot of your data and post the plot to Slack. *Note:* Remember to `set.seed()`! 
+
+```{r }
+
+# Your code here
+
+```
+2. Then, using the formula we have learned in the lecture, hand-code the following statistics and post your answer to Slack:  
+  (a) The value of TSS
+  (b) $R^2$
+  (c) Verify that $R^2$ = $\rho^2$
+  (d) $se_{\beta_1}$
+  (e) Construct the 95% confidence interval for $\beta_1$ (You can use the $\beta_1$ value reported in your OLS modeling result)
+
+> The **sum of square error (SSE)** for Y is the sum of square errors for the fitted OLS model: $SSE = \sum\epsilon^2 = \sum(y - \hat y)^2$  
+  The **total sum of sqaures (TSS)** for Y is the sum of square errors for the baseline OLS model (the "null model") that predict the value of Y without any X (the mean of Y, $\overline Y$, is used in the null model): $TSS = \sum(y - \overline y)^2$  
+  **R-squared** (coefficient of determination) is the proportional reduction in squared error when fitted with the OLS model in comparison with the null model: $R^2 = \frac{TSS - SSE}{TSS}$  
+  The **mean square error (MSE)**: $MSE = \frac{SSE}{n-2}$  
+  The **standard error of $\beta_1$ in bivariant OLS** regression: $se_{\beta_1} = \sqrt{\frac{MSE}{\sum{(x -\overline x)^2}}}$
+
+```{r } 
+
+# Your code here
+
+```
+3. Compare the scatterplot, the estimated $\beta_0$ and $\beta_1$, the $R^2$, and the $se_{\beta_1}$ in the demo OLS model output and your own simulated data model output, what do you observe? Why?  
+
+
+---
+
+## Part 2: Multivariant Regression Using R
+
+
+### Prepare data for running models: 
+
+Before running models, you should make sure that **you understand all the variables you are using**. In particular, you should read the documentations carefully to understand how the values are coded for each variable, particularly missing values. This also means that you should know the sampling procedure of your data. 
+
+**Always keep a copy of your raw data!** If you start a data cleaning process, it is usually a good idea to save your raw data in a safe place so that you can always re-import it when needed.
+
+### Import and browse the data (and read documentations)
+
+```{r part2-import}
+
+# Import
+earnings_df <- read.csv("data/lab5_earnings.csv", stringsAsFactors = F)
+
+# Display
+head(earnings_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+```
+
+
+### Recode missing values and categorical variables
+
+Before modeling, it is usually the case that some variables need to be recoded to fit our modeling purpose. For example, we may want the "sex" variable to be a 0/1 dummy instead of a character variable with the value "male"/"female". Also, we may want to replace the special values designated for missing/NA values to be an actual `NA`, so that R recognizes the value as NA and can omits them when modeling.  
+
+Normally, when NA and missing values in the data are not actual `NA`, you need to either manually remove those observations (like we did using `filter()` last week), or recode the special values to `NA`, usually using the `ifelse()` function.
+
+For example, for the `age` variable in `earnings_df`, "9999" is used for missing data. We want to recode so that `NA` replaces all "9999" values:
+
+```{r part2-recode}
+
+# Recode age 
+earnings_df <- earnings_df %>%
+  mutate(
+    age_recode = ifelse(age == 9999,     # if `age` equals 9999,
+                    NA,                  # then let `age_recode` equals NA,
+                    age)                 # else let `age_recode` equals `age` (the original age value)
+    )
+
+```
+
+In addition, we want to recode the `sex` and `race` variable to 0/1 dummies. For `sex`, we will create a dummy `female` that equals to 1 when the respondent is female, and 0 for male.
+
+```{r part2-recodesex}
+
+# Recode character variable "sex" to 0/1 dummy "female"
+earnings_df <- earnings_df %>%
+  mutate(
+    female = ifelse(sex == "female",    # If sex equals to "female"
+                    1,                  # then female (the variable) equals to 1
+                    0)                  # else female (the variable) equals to 0
+    )  
+
+# Display
+head(earnings_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+```
+
+### Plot data before analysis
+
+In addition, **PLOT**! Always do some visualization of your raw data to understand how each variable is distributed. Based on the histograms or bar plots, you should evaluate if the variable needs to be transformed so that the data conform more closely to the restrictive assumptions of a linear least-squares regression.  
+  
+  Based on the scatterplots of the DV and IVs, you can evaluate if a linear model is misrepresenting the relationship in the data (think of the Simpson's paradox). 
+
+```{r part2-plot, fig.align = "center"}
+
+# Check distribution of key DV: earnings
+earnings_df %>% 
+  ggplot() +
+  geom_histogram(aes(earn), 
+                 color = "black", fill = "grey", 
+                 binwidth = 10)
+
+# Scatterplot of earnings and education, grouped by gender
+earnings_df %>% 
+  ggplot() +
+  geom_point(aes(x = edu, y = earn, color = sex), shape = 1)
+
+```
+
+---
+
+### Part 2 Exercise 1
+
+1. Recode using `ifelse()`: Now, let's create two 1/0 dummies for race. Create a variable `black` that equals to 1 when `race` is "black", and a variable `other` that equals to 1 when `race` is "other". Post your code on Slack.
+
+```{r }
+
+# Your code here
+
+```
+
+2. Reproduce this scatterplot:
+
+![](graph/scatterplot_race.png){width=40%}
+
+
+```{r }
+
+# Your code here
+
+```
+---
+
+### Correlation Matrix 
+
+It helpful to get an understanding of how variables are related to each other. This is useful in identifying multicollinearity in the data. However, since correlation only works with numeric data, you need to remove non-numeric and irrelevant variables before you calculate the correlation matrix using `cor()`.
+
+```{r corr, fig.align = "center"}
+
+# Remove non-numeric variables
+earnings_df <- earnings_df %>%
+  select(-unique_id, -sex, -race, -age)
+
+
+# If you didn't finished above exercise, run: 
+load("data/earnings_df.RData")
+
+
+# Correlation Matrix
+## Set use = "complete.obs" to ignore observations with NAs
+M <- cor(earnings_df, use = "complete.obs")
+
+# Save the matrix to a dataframe, then use `ggcorrplot` to visualize 
+# (there are other packages for this task)
+ggcorrplot(as.data.frame(M), 
+           hc.order = TRUE, 
+           type = "lower", 
+           lab = TRUE)
+
+```
+  
+### Estimate regression model
+
+We use `lm(y ~ x_1 + x_2 + ... + x_n, data = your_dataframe)` to estimate multivariate regression. To model interaction effects, you can add `x1*x2` to your IV list in the code. Note the default method to handle NA values in `lm()` is to omit all observations that contains NA values. 
+
+---
+
+### Part 2 Exercise 2
+
+Now, estimate the following models and display your model results in a single table using `stargazer(m_1, m_2, ..., m_n, type="text")`. Post a screenshot of your table on Slack.
+
+(1) Model 1: earn ~ age (baseline)
+(2) Model 2: earn ~ age + edu 
+(3) Model 3: earn ~ age + edu + female
+(4) Model 4: earn ~ age + edu + female + race
+(5) Model 5: earn ~ age + edu + female + race + edu*female
+
+```{r }
+
+# Your code here
+
+```
+
+---
+
+## Part 3: Interpreting Regression Coefficients
+
+### Main Effect 
+
+When we work with *main effect* (the variable is not in any interaction terms), the coefficient is usually straightforward. For example, in Model 5, the coefficient for `age` means that controlling for other variables, the estimated mean of earning increases by 0.156 for every one-unit increase in age.  
+  
+  The coefficient for the dummy variable `other` means that controlling for other variables, the estimated mean of earning decreases by 0.946 for someone whose race is "other" in comparison to someone whose race is "white".  
+
+### Dummies 
+
+  For categorical variables, we either use the categorical variable directly, or convert them to 0/1 dummies. Note that for a categorical variable that have $n$ categories, the regression model will only have $n-1$ dummies or categorical variable predictors, because the $n^{th}$ dummy is redundant given that if an observation does not belong to any of the $n-1$ category, then it must be in the $n^{th}$ category. We call the left-out category the **reference category**. 
+
+However, whichever approach you use for your model, the interpretation of your categorical predictors' coefficients follow the logic of a 0/1 dummy. 
+
+In the case of the dummies representing "race" in the `earnings_df`, we have:
+
+Category | $Dummy_1 (black)$| $Dummy_2 (other)$   
+---------|------------|-----------
+White    | 0          |    0 
+Black    | 1          |    0
+Other    | 0          |    1
+  
+  
+  We will cover dummy variables in future lectures, too. So don't worry too much if you don't fully get the idea.
+
+
+### Interaction Effect  
+
+Interaction effects can be tricky to interpret. The safest way is to write down your models in equations and take values into the equations to figure out the difference. 
+
+For example, for Model 5, our regression equation is:
+
+$$\hat{Earnings} = 16.974 + 0.156\cdot\text{age } + 6.083\cdot\text{edu } -1.571\cdot\text{female } - 2.385\cdot\text{black } - 0.946\cdot\text{other } - \\3.128\cdot\text{edu }\cdot\text{female } + \epsilon$$
+
+Note that for the effect of `edu` and `female`, it is no longer indicated by the coefficients of their individual terms. **Whenever you try to intepret the coefficient for variables that are included in an interaction term, you need to take into account the coefficient of the interaction term**. 
+
+For example, let's examine the effect of `edu`. Holding all other variables constant, for **one unit increase in `edu`**, we have:
+
+$$\Delta\hat{Earnings} = 6.083 \cdot 1- 1.571\cdot\text{female } - 3.128\cdot 1\cdot\text{female } \\ = 6.083 - 4.699\cdot\text{female}$$
+This means that **the effect of education is dependent on gender**.  
+  
+  For female respondents, one unit increase in education will increase the estimated mean earnings by $6.083 - 4.699 = 1.384$. In contrast, for male respondents, one unit increase in education will increase the estimated mean earnings by 6.083. (But note in Model 5 the coefficient for female is not statistically significant, so we cannot reject the hypothesis that $\beta_{female}$ is different from zero.)
+
+For the effect of `sex`, holding all other variables constant, for the two possible values for `female`, we have: 
+ 
+$$\Delta\hat{Earnings} = -1.571\cdot \text{female} -3.128\cdot\text{edu }\cdot\text{female} \\ = (-1.571 - 3.128\cdot\text{edu})\text{ female}$$
+
+This means that **the effect of gender on earning is dependent on one's education level**. For the reference category of `sex` -the male, the effect of being a male on earning is 0 (the baseline). In comparison, for female, any value of `edu` that is larger than 0 will result in a negative effect on one's earning.  
+  
+  For example, for a female with 12 years of education, holding all other variables constant, her earning will be 39.107 less than a male with 12 years of education ($-1.571 - 3.128\cdot12 = -39.107$). 
+
+---
+
+### Part 3 Exercise 
+
+  1. In Model 5, holding other variables constant, what will be the predicted difference in estimated mean earnings for a white man and a white women?  
+  
+  2. Holding other variables constant, what will be the predicted difference in estimated mean earnings for a white women and a black women?  
+  
+  3. Holding other variables constant, what will be the predicted difference in estimated mean earnings for a white man and a black women?
+
+---
+
+## Part 4: Plot Effect for Regression Models
+  
+  We can visualize the predicted effect of key predictors using the `predict()` function in base R.
+
+```{r plot effect}
+
+
+# If you didn't get m5 correctly, run:
+load("data/m5_fordemo.RData")
+
+
+# first, we create a dataframe with all predictor variables
+# with only the key IV varies
+pred_edu <- tibble(edu = rep(0:15, 2)) %>%         #first, create a df with values of your key IV
+  mutate(female = c(rep(0, 16), rep(1, 16)),       #b/c we are looking at interaction effects, 
+                                                   #give gender two values, otherwise fix it at mean
+         age_recode =  mean(earnings_df$age_recode, na.rm = T),   # fix other variabes at mean
+         black = mean(earnings_df$black, na.rm = T),
+         other = mean(earnings_df$other, na.rm = T))
+
+# use `predict` to predict the Y
+predicted_earning <- predict(m5,                      # the model you are using
+                             pred_edu,                # the df you use for predicting
+                             interval = "confidence", # set CI
+                             level = 0.95)
+
+# bind the columns
+pred_edu_result <- cbind(pred_edu, predicted_earning)
+
+# check df
+head(pred_edu_result, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+ 
+# Plot
+pred_edu_result %>% 
+  mutate(gender = ifelse(female == 0, "Male", "Female")) %>%       # Covert dummy to character variable
+  ggplot(aes(x = edu, y = fit)) +
+  geom_line(aes(linetype = gender)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr, fill = gender), alpha = 0.3) +   # add 95% CI
+  theme_classic() +
+  labs(x = "Years of Education",
+       y = "Predicted Earnings") +
+  ggtitle("Predicted Earnings by Education and Gender",
+          subtitle = "(Modeled with interaction between education and gender)")
+
+
+```
+
+---
+
+### Part 4 Exercise
+
+Plot the effect of `age` on `earn` according to Model 5. Post your plot on Slack.
+
+```{r }
+
+# Your code here
+
+```
+
