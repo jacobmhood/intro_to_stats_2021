@@ -30,4 +30,5 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
 ### Lab 4 OLS Regression, Using IPUMS Data (2/26/2021)
 + Download files in this [repository](https://github.com/di-zhou/intro_to_stats_2021/archive/main.zip)
 + View lab notes: [Lab 4](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab4/Lab4.html)
++ View lab exercise solution: [Lab 4 Solution](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab4/Lab4_exercise_solution.html)
   
