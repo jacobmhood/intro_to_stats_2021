@@ -1,0 +1,308 @@
+---
+title: "Lab 5 Demo"
+author: "Jacob Hood"
+date: "3/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pacman)
+p_load(tidyverse, foreign, stargazer, ggcorrplot, kableExtra)
+```
+
+``` {r}
+# Simulate IV (edu level)
+set.seed(1234)
+edu <- rpois(300, lambda = 6) #rpois: Random Poisson Distribution with parameter lamda 
+
+# Plot histogram of IV
+edu %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(color = "black", fill = "grey", binwidth = 1) +
+  labs(x = "Years of Edu")
+```
+
+```{r}
+summary(edu)
+```
+
+```{r}
+# Simulate DV 
+set.seed(1234)
+earn <- 10 + 6*edu + rnorm(300, 0, 10) # add a random error using rnorm() 
+
+# Plot histogram of DV
+earn %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(color = "black", fill = "grey", binwidth = 5) +
+  labs(x = "Income Rank")
+```
+
+```{r}
+summary(earn)
+```
+```{r}
+# Combine dataframe
+df <- tibble(x_edu = edu, 
+             y_earn = earn)
+```
+
+
+```{r}
+# Scatter plot with a fitted lm line
+
+df %>%
+  ggplot(aes(x = x_edu, y = y_earn)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship Between Years of Education and Income Rank",
+       subtitle = "(using simulated data)",
+       x = "Years of Edu",
+       y = "Income Rank")
+```
+
+```{r}
+# Run a model
+m_simu <- lm(y_earn ~ x_edu, data = df)
+
+summary(m_simu)
+```
+```{r}
+# Use stargazer to display regression tables
+# For quick view in R:
+stargazer(m_simu, type = "text")
+```
+```{r}
+# for PDF: 
+stargazer(m_simu, type = "latex")
+```
+
+```{r}
+stargazer(m_simu, type="text", omit.stat=c("ser", "f"))
+```
+
+```{r}
+# Simulate IV (edu level)
+set.seed(1234)
+newedu <- rpois(300, lambda = 6) #rpois: Random Poisson Distribution with parameter lamda 
+
+# Plot histogram of IV
+newedu %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(color = "black", fill = "grey", binwidth = 1) +
+  labs(x = "Years of Edu")
+```
+```{r}
+# Simulate DV 
+set.seed(1234)
+newearn <- 10 + 6*edu + rnorm(300, 0, 50) # add a random error using rnorm() 
+
+# Plot histogram of DV
+newearn %>% 
+  as_tibble() %>%
+  ggplot(aes(value)) +
+  geom_histogram(color = "black", fill = "grey", binwidth = 5) +
+  labs(x = "Income Rank")
+```
+```{r}
+newdf <- tibble(newx_edu = newedu,
+                newy_earn = newearn)
+
+newdf %>%
+    ggplot (aes(x = newx_edu, y = newy_earn)) +
+    geom_point(shape = 1, alpha = 0.7) +
+    geom_smooth(method = "lm") +
+    labs(title = "Relationship Between Years of Education and Income Rank",
+       subtitle = "(using simulated data)",
+       x = "Years of Edu",
+       y = "Income Rank")
+```
+```{r}
+newm_simu <- lm(newy_earn ~ newx_edu, data = newdf)
+```
+
+```{r}
+summary(newm_simu)
+```
+```{r}
+stargazer(newm_simu, type = "text")
+```
+
+```{r}
+newdf <- newdf %>%
+  mutate(x_mean = mean(newdf$newx_edu),
+        y_mean = mean(newdf$newy_earn),
+        y_fitted = 10.440 + 6.036*newx_edu)
+
+#TSS
+TSS <- (newdf$newy_earn - newdf$y_mean)^2 %>% sum()
+TSS
+
+# R-squared
+SSE <- (newdf$newy_earn - newdf$y_fitted)^2 %>% sum()
+R_sq <- (TSS - SSE)/TSS
+R_sq
+
+# Rho
+rho = cor(newdf$newy_earn, newdf$newx_edu)
+rho^2 # is equal to R_sq
+# se_beta1
+MSE <- SSE/(nrow(newdf) - 2)
+denomi <- (newdf$newx_edu - newdf$x_mean)^2 %>% sum() 
+
+#Or the denominator is (n-1)sd_x^2: (nrow(df_exercise) - 1)*sd(df_exercise$x_edu)^2
+se_beta1 <- sqrt(MSE/denomi)
+se_beta1
+
+# CI of se_beta1: 
+upper <- 10.440 + 1.96*1.196623 
+print(upper)
+lower <- 10.440 - (1.96*1.196623)
+print(lower)
+```
+
+```{r}
+# Import
+earnings_df <- read.csv("data/lab5_earnings.csv", stringsAsFactors = F)
+
+# Display
+head(earnings_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+```
+```{r}
+# Recode age 
+earnings_df <- earnings_df %>%
+  mutate(
+    age_recode = ifelse(age == 9999,     # if `age` equals 9999,
+                    NA,                  # then let `age_recode` equals NA,
+                    age)                 # else let `age_recode` equals `age` (the original age value)
+    )
+```
+
+```{r}
+# Recode character variable "sex" to 0/1 dummy "female"
+earnings_df <- earnings_df %>%
+  mutate(
+    female = ifelse(sex == "female",    # If sex equals to "female"
+                    1,                  # then female (the variable) equals to 1
+                    0)                  # else female (the variable) equals to 0
+    )  
+
+# Display
+head(earnings_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+```
+```{r}
+# Check distribution of key DV: earnings
+earnings_df %>% 
+  ggplot() +
+  geom_histogram(aes(earn), 
+                 color = "black", fill = "grey", 
+                 binwidth = 10)
+```
+```{r}
+# Scatterplot of earnings and education, grouped by gender
+earnings_df %>% 
+  ggplot() +
+  geom_point(aes(x = edu, y = earn, color = sex), shape = 1)
+```
+
+```{r}
+earnings_df <- earnings_df %>%
+  mutate(
+    black = ifelse(race == "black",
+                    1,                
+                    0)
+  ) %>%
+  mutate(
+    other = ifelse(race == "other",
+                   1,
+                   0)
+  )
+```
+
+```{r}
+earnings_df %>% 
+  ggplot(aes(x = edu, y = earn, color = race)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  geom_smooth(method = "lm", se = F)
+```
+```{r}
+# Remove non-numeric variables
+earnings_df <- earnings_df %>%
+  select(-unique_id, -sex, -race, -age)
+
+
+# If you didn't finished above exercise, run: 
+load("data/earnings_df.RData")
+
+
+# Correlation Matrix
+## Set use = "complete.obs" to ignore observations with NAs
+M <- cor(earnings_df, use = "complete.obs")
+
+# Save the matrix to a dataframe, then use `ggcorrplot` to visualize 
+# (there are other packages for this task)
+ggcorrplot(as.data.frame(M), 
+           hc.order = TRUE, 
+           type = "lower", 
+           lab = TRUE)
+```
+```{r}
+# Model 1
+m_1 <- lm(earn ~ age_recode, data = earnings_df)
+# Model 2
+m_2<- lm(earn ~ age_recode + edu, data = earnings_df)
+# Model 3
+m_3 <- lm(earn ~ age_recode + edu + female, data = earnings_df)
+# Model 4
+m_4 <- lm(earn ~ age_recode + edu + female + black + other, data = earnings_df)
+# Model 5
+m_5 <- lm(earn ~ age_recode + edu + female + black + other+ edu*female , data = earnings_df)
+
+stargazer(m_1, m_2, m_3, m_4, m_5, type = "text",omit.stat=c("ser", "f"))
+```
+```{r}
+Earnings^=+6.083⋅edu −1.571⋅female −2.385⋅black −0.946⋅other −3.128⋅edu ⋅female +ϵ
+```
+
+```{r}
+# Difference b/tw white man and white woman
+ΔEarnings^=−1.571⋅−3.128⋅edu
+
+# Difference b/tw white and black woman
+-2.385
+
+#Difference b/tw white man abd black woman 
+-3.956 - 3.128 * edu 
+```
+
+```{r}
+# first, we create a dataframe with all predictor variables
+# with only the key IV varies
+pred_edu <- tibble(edu = rep(0:15, 2)) %>%         #first, create a df with values of your key IV
+  mutate(female = c(rep(0, 16), rep(1, 16)),       #b/c we are looking at interaction effects, 
+                                                   #give gender two values, otherwise fix it at mean
+         age_recode =  mean(earnings_df$age_recode, na.rm = T),   # fix other variabes at mean
+         black = mean(earnings_df$black, na.rm = T),
+         other = mean(earnings_df$other, na.rm = T))
+
+# use `predict` to predict the Y
+predicted_earning <- predict(m5,                      # the model you are using
+                             pred_edu,                # the df you use for predicting
+                             interval = "confidence", # set CI
+                             level = 0.95)
+
+# bind the columns
+pred_edu_result <- cbind(pred_edu, predicted_earning)
+
+# check df
+head(pred_edu_result, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+```
+
+
+
+
+
