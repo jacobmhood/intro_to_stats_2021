@@ -146,7 +146,7 @@ Answer: The demo OLS model gives a much closer regression estimation than the mo
 ```{r part2-exercise-recode}
 
 # Import
-earnings_df <- read.csv("lab5_earnings.csv", stringsAsFactors = F)
+earnings_df <- read.csv("data/lab5_earnings.csv", stringsAsFactors = F)
 
 # Recode age & sex
 earnings_df <- earnings_df %>%
@@ -161,13 +161,13 @@ earnings_df <- earnings_df %>%
 # Display
 head(earnings_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
 
-# save(earnings_df, file = "earnings_df.RData") #save for demo purpose
+# save(earnings_df, file = "data/earnings_df.RData") #save for demo purpose
 
 ```
 
 2. Reproduce this scatterplot:
 
-![](scatterplot_race.png){width=40%}
+![](graph/scatterplot_race.png){width=40%}
 
 
 ```{r part2-exercise-plot}
@@ -178,7 +178,13 @@ earnings_df %>%
   geom_point(shape = 1, alpha = 0.7) +
   geom_smooth(method = "lm", se = F)
 
-#ggsave("scatterplot_race.png", height = 5, width = 7)
+
+earnings_df %>% 
+  ggplot() +
+  geom_point(aes(x = edu, y = earn, color = race), shape = 1, alpha = 0.7) +
+  geom_smooth(aes(x = edu, y = earn, color = race), method = "lm", se = F)
+
+#ggsave("graph/scatterplot_race.png", height = 5, width = 7)
 
 ```
 ---
@@ -212,7 +218,7 @@ m4 <- lm(earn ~ age_recode + edu + female + black + other,
 m5 <- lm(earn ~ age_recode + edu + female + black + other + edu*female,
          data = earnings_df)
 
-# save(m5, file = "m5_fordemo.RData") #save for demo purpose
+# save(m5, file = "data/m5_fordemo.RData") #save for demo purpose
 
 stargazer(m1, m2, m3, m4, m5, type="text", omit.stat=c("ser", "f"))
 
