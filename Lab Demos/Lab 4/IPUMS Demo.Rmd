@@ -7,11 +7,12 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 library(ipumsr)
 library(tidyverse)
 library(kableExtra)
+```
 
+```{r}
 ddi <- read_ipums_ddi("usa_00009.xml")
 data <- read_ipums_micro(ddi)
 summarise(data)
@@ -19,12 +20,20 @@ str(data$SEX)
 
 head(data, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
 
+```
+
+
+
+```{r}
 data_clean <- data %>%
   select(SAMPLE, SERIAL, PERNUM, PERWT, SEX, EDUC, INCWAGE)
 
 # View first 10 rows
 head(data_clean, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
 
+```
+
+```{r}
 # Create a new variable called "unique_id"
 data_clean <- data_clean %>%
   unite("unique_id",                # The name of the new column, as a string or symbol
@@ -65,18 +74,24 @@ data_clean <- data_clean %>%
 # Check distribution after removing missing vaues
 # EDUC
 table(data_clean$EDUC)
-## R Markdown
+```
 
+```{r}
 # INCWAGE
 data_clean %>%
   ggplot() +
   geom_histogram(aes(INCWAGE), binwidth = 15000, color = "black", fill = "grey")
-  
+```
+
+
+```{r}
 data_clean %>%
   ggplot() +
   geom_point(aes(EDUC, INCWAGE)) +
   labs(title = "Scatterplot with EDUC on the x axis and INCWAGE on the y axis")
+```
 
+```{r}
 ols_ipums <- lm(INCWAGE ~ EDUC, data = data_clean)
 summary(ols_ipums)
 
@@ -85,23 +100,7 @@ data_clean %>%
   geom_point(aes(x = EDUC, y= INCWAGE)) +
   geom_smooth(aes(x = EDUC, y = INCWAGE, method = "lm")) +
   labs(title = "Scatterplot with EDUC on the x axis and INCWAGE on the y axis")
-
-
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

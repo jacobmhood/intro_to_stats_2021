@@ -290,7 +290,7 @@ pred_edu <- tibble(edu = rep(0:15, 2)) %>%         #first, create a df with valu
          other = mean(earnings_df$other, na.rm = T))
 
 # use `predict` to predict the Y
-predicted_earning <- predict(m5,                      # the model you are using
+predicted_earning <- predict(m_5,                      # the model you are using
                              pred_edu,                # the df you use for predicting
                              interval = "confidence", # set CI
                              level = 0.95)
@@ -300,6 +300,50 @@ pred_edu_result <- cbind(pred_edu, predicted_earning)
 
 # check df
 head(pred_edu_result, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+```
+```{r}
+# Plot
+pred_edu_result %>% 
+  mutate(gender = ifelse(female == 0, "Male", "Female")) %>%       # Covert dummy to character variable
+  ggplot(aes(x = edu, y = fit)) +
+  geom_line(aes(linetype = gender)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr, fill = gender), alpha = 0.3) +   # add 95% CI
+  theme_classic() +
+  labs(x = "Years of Education",
+       y = "Predicted Earnings") +
+  ggtitle("Predicted Earnings by Education and Gender",
+          subtitle = "(Modeled with interaction between education and gender)")
+```
+```{r}
+# first, we create a dataframe with all predictor variables
+# with only the key IV varies
+pred_age <- tibble(age_recode = seq(20, 65, 3)) %>%         
+  mutate(edu = mean(earnings_df$edu, na.rm = T),
+         female = mean(earnings_df$female, na.rm = T),       
+         black = mean(earnings_df$black, na.rm = T),
+         other = mean(earnings_df$other, na.rm = T))
+
+# use `predict` to predict the Y
+predicted_earning_byage <- predict(m_5,                      # the model you are using
+                             pred_age,                # the df you use for predicting
+                             interval = "confidence", # set CI
+                             level = 0.95)
+
+# bind the columns
+pred_age_result <- cbind(pred_age, predicted_earning_byage)
+
+# check df
+head(pred_age_result, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+```
+```{r}
+# Plot
+pred_age_result %>% 
+  ggplot(aes(x = age_recode, y = fit)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.3) +   # add 95% CI
+  labs(x = "Age",
+       y = "Predicted Earnings") +
+  ggtitle("Predicted Earnings by Age")
 ```
 
 
