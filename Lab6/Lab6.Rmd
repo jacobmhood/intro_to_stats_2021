@@ -272,6 +272,35 @@ Plot the effect of `age` on `earn` according to Model 5. Post your plot on Slack
 
 # Your code here
 
+# first, we create a dataframe with all predictor variables
+# with only the key IV varies
+pred_age <- tibble(age_recode = seq(20, 65, 3)) %>%         
+  mutate(edu = mean(earnings_df$edu, na.rm = T),
+         female = mean(earnings_df$female, na.rm = T),       
+         black = mean(earnings_df$black, na.rm = T),
+         other = mean(earnings_df$other, na.rm = T))
+
+# use `predict` to predict the Y
+predicted_earning_byage <- predict(m5,                      # the model you are using
+                             pred_age,                # the df you use for predicting
+                             interval = "confidence", # set CI
+                             level = 0.95)
+
+# bind the columns
+pred_age_result <- cbind(pred_age, predicted_earning_byage)
+
+# check df
+head(pred_age_result, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+ 
+# Plot
+pred_age_result %>% 
+  ggplot(aes(x = age_recode, y = fit)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.3) +   # add 95% CI
+  labs(x = "Age",
+       y = "Predicted Earnings") +
+  ggtitle("Predicted Earnings by Age")
+
 ```
 
 ---
