@@ -1,0 +1,513 @@
+occ_2digit,occ1990,occ1990_labels
+1,3,Legislators
+1,4,"Chief executives and general administrators, public administration"
+1,5,"Administrators and officials, public administration"
+1,6,"Administrators, protective services"
+1,7,Financial managers
+1,8,Personnel and labor relations managers
+1,9,Purchasing managers
+1,13,"Managers, marketing, advertising, and public relations"
+1,14,"Administrators, education and related fields"
+1,15,"Managers, medicine and health"
+1,16,Postmasters and mail superintendents
+1,17,"Managers, food serving and lodging establishments"
+1,18,"Managers, properties and real estate"
+1,19,Funeral directors
+1,21,"Managers, service organizations, n.e.c."
+1,22,"Managers and administrators, n.e.c."
+2,23,Accountants and auditors
+2,24,Underwriters
+2,25,Other financial officers
+2,26,Management analysts
+2,27,"Personnel, training, and labor relations specialists"
+2,28,"Purchasing agents and buyers, farm products"
+2,29,"Buyers, wholesale and retail trade, except farm products"
+2,33,"Purchasing agents and buyers, n.e.c."
+2,34,Business and promotion agents
+2,35,Construction inspectors
+2,36,"Inspectors and compliance officers, except construction"
+2,37,"Management related occupations, n.e.c."
+3,43,Architects
+4,44,Aerospace
+4,45,Metallurgical and materials
+4,46,Mining
+4,47,Petroleum
+4,48,Chemical
+4,49,Nuclear
+4,53,Civil
+4,54,Agricultural
+4,55,Electrical and electronic
+4,56,Industrial
+4,57,Mechanical
+4,58,Marine and naval architects
+4,59,"Engineers, n.e.c."
+4,63,Surveyors and mapping scientists
+5,64,Computer systems analysts and scientists
+5,65,Operations and systems researchers and analysts
+5,66,Actuaries
+5,67,Statisticians
+5,68,"Mathematical scientists, n.e.c."
+6,69,Physicists and astronomers
+6,73,"Chemists, except biochemists"
+6,74,Atmospheric and space scientists
+6,75,Geologists and geodesists
+6,76,"Physical scientists, n.e.c."
+6,77,Agricultural and food scientists
+6,78,Biological and life scientists
+6,79,Forestry and conservation scientists
+6,83,Medical scientists
+7,84,Physicians
+7,85,Dentists
+7,86,Veterinarians
+7,87,Optometrists
+7,88,Podiatrists
+7,89,"Health diagnosing practitioners, n.e.c."
+8,95,Registered nurses
+8,96,Pharmacists
+8,97,Dietitians
+9,98,Respiratory therapists
+9,99,Occupational therapists
+9,103,Physical therapists
+9,104,Speech therapists
+9,105,"Therapists, n.e.c."
+9,106,Physicians' assistants
+10,113,"Earth, environmental, and marine science teachers"
+10,114,Biological science teachers
+10,115,Chemistry teachers
+10,116,Physics teachers
+10,117,"Natural science teachers, n.e.c."
+10,118,Psychology teachers
+10,119,Economics teachers
+10,123,History teachers
+10,124,Political science teachers
+10,125,Sociology teachers
+10,126,"Social science teachers, n.e.c."
+10,127,Engineering teachers
+10,128,Mathematical science teachers
+10,129,Computer science teachers
+10,133,Medical science teachers
+10,134,Health specialties teachers
+10,135,"Business, commerce, and marketing teachers"
+10,136,Agriculture and forestry teachers
+10,137,"Art, drama, and music teachers"
+10,138,Physical education teachers
+10,139,Education teachers
+10,143,English teachers
+10,144,Foreign language teachers
+10,145,Law teachers
+10,146,Social work teachers
+10,147,Theology teachers
+10,148,Trade and industrial teachers
+10,149,Home economics teachers
+10,153,"Teachers, postsecondary, n.e.c."
+10,154,"Postsecondary teachers, subject n.s."
+11,155,"Teachers, prekindergarten and kindergarten"
+11,156,"Teachers, elementary school"
+11,157,"Teachers, secondary school"
+11,158,"Teachers, special education"
+11,159,"Teachers, n.e.c."
+11,163,"Counselors, educational and vocational"
+12,164,Librarians
+12,165,Archivists and curators
+13,166,Economists
+13,167,Psychologists
+13,168,Sociologists
+13,169,"Social scientists, n.e.c."
+13,173,Urban planners
+14,174,Social workers
+14,175,Recreation workers
+14,176,Clergy
+14,177,"Religious workers, n.e.c."
+15,178,Lawyers
+15,179,Judges
+16,183,Authors
+16,184,Technical writers
+16,185,Designers
+16,186,Musicians and composers
+16,187,Actors and directors
+16,188,"Painters, sculptors, craft-artists, and artist printmakers"
+16,189,Photographers
+16,193,Dancers
+16,194,"Artists, performers, and related workers, n.e.c."
+16,195,Editors and reporters
+16,197,Public relations specialists
+16,198,Announcers
+16,199,Athletes
+17,203,Clinical laboratory technologists and technicians
+17,204,Dental hygienists
+17,205,Health record technologists and technicians
+17,206,Radiologic technicians
+17,207,Licensed practical nurses
+17,208,"Health technologists and technicians, n.e.c."
+18,213,Electrical and electronic technicians
+18,214,Industrial engineering technicians
+18,215,Mechanical engineering technicians
+18,216,"Engineering technicians, n.e.c."
+18,217,Drafting occupations
+18,218,Surveying and mapping technicians
+19,223,Biological technicians
+19,224,Chemical technicians
+19,225,Science technicians n.e.c.
+20,226,Airplane pilots and navigators
+20,227,Air traffic controllers
+20,228,Broadcast equipment operators
+20,229,Computer programmers
+20,233,"Tool programmers, numerical control"
+20,234,Legal assistants
+20,235,"Technician, n.e.c."
+21,243,"Supervisors and proprietors, sales occupations"
+22,253,Insurance sales occupations
+22,254,Real estate sales occupations
+22,255,Securities and financial services sales occupations
+22,256,Advertising and related sales occupations
+22,257,"Sales occupations, other business services"
+23,258,Sales engineers
+23,259,"Sales representatives, mining, manufacturing, and wholesale"
+24,263,"Sales workers, motor vehicles and boats"
+24,264,"Sales workers, apparel"
+24,265,"Sales workers, shoes"
+24,266,"Sales workers, furniture and home furnishings"
+24,267,"Sales workers, radio, TV, hi-fi, and appliances"
+24,268,"Sales workers, hardware and building supplies"
+24,269,"Sales workers, parts"
+24,274,"Sales workers, other commodities"
+24,275,Sales counter clerks
+24,276,Cashiers
+24,277,Street and door-to-door sales workers
+24,278,News vendors
+25,283,"Demonstrators, promoters and models, sales"
+25,284,Auctioneers
+25,285,"Sales support occupations, n.e.c."
+25,290,Sales workers -- allocated
+26,303,"Supervisors, general office"
+26,304,"Supervisors, computer equipment operators"
+26,305,"Supervisors, financial records processing"
+26,306,Chief communications operators
+26,307,"Supervisors; distribution, scheduling, and adjusting clerks"
+27,308,Computer operators
+27,309,Peripheral equipment operators
+28,313,Secretaries
+28,314,Stenographers
+28,315,Typists
+29,316,Interviewers
+30,317,Hotel clerks
+30,318,Transportation ticket and reservation agents
+30,319,Receptionists
+30,323,"Information clerks, n.e.c."
+31,325,Classified-ad clerks
+31,326,Correspondence clerks
+31,327,Order clerks
+31,328,"Personnel clerks, except payroll and timekeeping"
+31,329,Library clerks
+31,335,File clerks
+31,336,Records clerks
+32,337,"Bookkeepers, accounting, and auditing clerks"
+32,338,Payroll and timekeeping clerks
+32,339,Billing clerks
+32,343,Cost and rate clerks
+32,344,"Billing, posting, and calculating machine operators"
+33,345,Duplicating machine operators
+33,346,Mail preparing and paper handling machine operators
+33,347,"Office machine operators, n.e.c."
+34,348,Telephone operators
+34,349,Other telecom operators
+34,353,"Communications equipment operators, n.e.c."
+35,354,Postal clerks except mail carriers
+35,355,"Mail carriers, postal service"
+35,356,"Mail clerks, except postal service"
+35,357,Messengers
+36,359,Dispatchers
+36,363,Production coordinators
+36,364,"Traffic, shipping, and receiving clerks"
+36,365,Stock and inventory clerks
+36,366,Meter readers
+36,368,"Weighers, measurers, checkers, and samplers"
+36,373,Expediters
+36,374,"Material recording, scheduling, and distributing clerks, n.e.c."
+37,375,"Insurance adjusters, examiners, and investigators"
+37,376,"Investigators and adjusters, except insurance"
+37,377,"Eligibility clerks, social welfare"
+37,378,Bill and account collectors
+38,379,General office clerks
+38,383,Bank tellers
+38,384,Proofreaders
+38,385,Data-entry keyers
+38,386,Statistical clerks
+38,387,Teachers' aides
+38,389,"Administrative support occupations, n.e.c."
+38,390,"Professional, technical, and kindred workers -- allocated"
+38,391,Clerical and kindred workers -- allocated
+39,403,Launderers and ironers
+39,404,"Cooks, private household"
+39,405,Housekeepers and butlers
+39,406,"Child care workers, private household"
+39,407,Private household cleaners and servants
+39,408,Private household workers -- allocated
+40,413,"Supervisors, firefighting and fire prevention occupations"
+40,414,"Supervisors, police and detectives"
+40,415,"Supervisors, guards"
+41,416,Fire inspection and fire prevention occupations
+41,417,Firefighting occupations
+42,418,"Police and detectives, public service"
+42,423,"Sheriffs, bailiffs, and other law enforcement officers"
+42,424,Correctional institution officers
+43,425,Crossing guards
+43,426,"Guards and police, except public service"
+43,427,"Protective service occupations, n.e.c."
+44,433,"Supervisors, food preparation and service occupations"
+44,434,Bartenders
+44,435,Waiters and waitresses
+44,436,Cooks
+44,438,"Food counter, fountain and related occupations"
+44,439,"Kitchen workers, food preparation"
+44,443,Waiters'/waitresses' assistants
+44,444,Miscellaneous food preparation occupations
+45,445,Dental assistants
+45,446,"Health aides, except nursing"
+45,447,"Nursing aides, orderlies, and attendants"
+46,448,"Supervisors, cleaning and building service workers"
+46,449,Maids and housemen
+46,453,Janitors and cleaners
+46,454,Elevator operators
+46,455,Pest control occupations
+47,456,"Supervisors, personal service occupations"
+47,457,Barbers
+47,458,Hairdressers and cosmetologists
+47,459,"Attendants, amusement and recreation facilities"
+47,461,Guides
+47,462,Ushers
+47,463,Public transportation attendants
+47,464,Baggage porters and bellhops
+47,465,Welfare service aides
+47,466,Family child care providers
+47,467,Early childhood teachers' assistants
+47,468,"Child care workers, n.e.c."
+47,469,"Personal service occupations, n.e.c."
+48,473,"Farmers, except horticultural"
+48,474,Horticultural specialty farmers
+48,475,"Managers, farms, except horticultural"
+48,476,"Managers, horticultural specialty farms"
+49,477,"Supervisors, farm workers"
+49,479,Farm workers
+49,480,Farm laborers and farm foremen -- allocated
+49,483,Marine life cultivation workers
+49,484,Nursery workers
+50,485,"Supervisors, related agricultural occupations"
+50,486,"Groundskeepers and gardeners, except farm"
+50,487,"Animal caretakers, except farm"
+50,488,"Graders and sorters, agricultural products"
+50,489,"Inspectors, agricultural products"
+51,494,"Supervisors, forestry, and logging workers"
+51,495,Forestry workers except logging
+51,496,Timber cutting and logging occupations
+52,497,"Captains and other officers, fishing vessels"
+52,498,Fishers
+52,499,Hunters and trappers
+53,503,"Supervisors, mechanics and repairers"
+54,505,Automobile mechanics
+54,506,Automobile mechanic apprentices
+54,507,"Bus, truck, and stationary engine mechanics"
+54,508,Aircraft engine mechanics
+54,509,Small engine repairers
+54,514,Automobile body and related repairers
+54,515,"Aircraft mechanics, except engine"
+54,516,Heavy equipment mechanics
+54,517,Farm equipment mechanics
+54,518,Industrial machinery repairers
+54,519,Machinery maintenance occupations
+55,523,"Electronic repairers, communications and industrial equipment"
+55,525,Data processing equipment repairers
+55,526,Household appliance and power tool repairers
+55,527,Telephone line installers and repairers
+55,529,Telephone installers and repairers
+55,533,Misc. electrical and electronic equipment repairers
+55,534,"Heating, air conditioning, and refrigeration mechanics"
+56,535,"Camera, watch, and musical instrument repairers"
+56,536,Locksmiths and safe repairers
+56,538,Office machine repairers
+56,539,Mechanical controls and valve repairers
+56,543,Elevator installers and repairers
+56,544,Millwrights
+56,547,"Mechanics and repairers, n.e.c."
+56,549,"Mechanics and repairers, n.s."
+57,553,"Supervisors, brickmasons, stonemasons, and tile setters"
+57,554,"Supervisors, carpenters and related workers"
+57,555,"Supervisors, electricians and power transmission installers"
+57,556,"Supervisors, painters, paperhangers, and plasterers"
+57,557,"Supervisors, plumbers, pipefitters, and steamfitters"
+57,558,"Supervisors, construction, n.e.c."
+58,563,Brickmasons and stonemasons
+58,564,Brickmason and stonemason apprentices
+58,565,"Tile setters, hard and soft"
+58,566,Carpet installers
+58,567,Carpenters
+58,569,Carpenter apprentices
+58,573,Drywall installers
+58,575,Electricians
+58,576,Electrician apprentices
+58,577,Electrical power installers and repairers
+58,579,"Painters, construction and maintenance"
+58,583,Paperhangers
+58,584,Plasterers
+58,585,"Plumbers, pipefitters, and steamfitters"
+58,587,"Plumber, pipe fitter, and steamfitter apprentices"
+58,588,Concrete and terrazzo finishers
+58,589,Glaziers
+58,593,Insulation workers
+58,594,"Paving, surfacing, and tamping equipment operators"
+58,595,Roofers
+58,596,Sheetmetal duct installers
+58,597,Structural metal workers
+58,598,"Drillers, earth"
+58,599,"Construction trades, n.e.c."
+59,613,"Supervisors, extractive occupations"
+59,614,"Drillers, oil well"
+59,615,Explosives workers
+59,616,Mining machine operators
+59,617,"Mining occupations, n.e.c."
+60,628,"Supervisors, production occupations"
+61,634,Tool and die makers
+61,635,Tool and die maker apprentices
+61,636,"Precision assemblers, metal"
+61,637,Machinists
+61,639,Machinist apprentices
+61,643,Boilermakers
+61,644,"Precision grinders, filers, and tool sharpeners"
+61,645,"Patternmakers and model makers, metal"
+61,646,Lay-out workers
+61,647,Precious stones and metals workers (jewelers)
+61,649,"Engravers, metal"
+61,653,Sheet metal workers
+61,654,Sheet metal worker apprentices
+61,655,Miscellaneous precision metal workers
+62,656,"Patternmakers and model makers, wood"
+62,657,Cabinet makers and bench carpenters
+62,658,Furniture and wood finishers
+62,659,Miscellaneous precision woodworkers
+63,666,Dressmakers
+63,667,Tailors
+63,668,Upholsterers
+63,669,Shoe repairers
+63,674,Miscellaneous precision apparel and fabric workers
+64,675,"Hand molders and shapers, except jewelers"
+64,676,"Patternmakers, lay-out workers, and cutters"
+64,677,Optical goods workers
+64,678,Dental laboratory and medical appliance technicians
+64,679,Bookbinders
+64,683,Electrical and electronic equipment assemblers
+64,684,"Miscellaneous precision workers, n.e.c."
+65,686,Butchers and meat cutters
+65,687,Bakers
+65,688,Food batchmakers
+66,689,"Inspectors, testers, and graders"
+66,693,Adjusters and calibrators
+67,694,Water and sewage treatment plant operators
+67,695,Power plant operators
+67,696,Stationary engineers
+67,699,Miscellaneous plant and system operators
+68,703,Lathe and turning machine set-up operators
+68,704,Lathe and turning machine operators
+68,705,Milling and planing machine operators
+68,706,Punching and stamping press machine operators
+68,707,Rolling machine operators
+68,708,Drilling and boring machine operators
+68,709,"Grinding, abrading, buffing, and polishing machine operators"
+68,713,Forging machine operators
+68,714,Numerical control machine operators
+68,715,"Miscellaneous metal, plastic, stone, and glass working machine operators"
+68,717,"Fabricating machine operators, n.e.c."
+69,719,Molding and casting machine operators
+69,723,Metal plating machine operators
+69,724,Heat treating equipment operators
+69,725,Miscellaneous metal and plastic processing machine operators
+70,726,"Wood lathe, routing, and planing machine operators"
+70,727,Sawing machine operators
+70,728,Shaping and joining machine operators
+70,729,Nailing and tacking machine operators
+70,733,Miscellaneous woodworking machine operators
+71,734,Printing press operators
+71,735,Photoengravers and lithographers
+71,736,Typesetters and compositors
+71,737,Miscellaneous printing machine operators
+72,738,Winding and twisting machine operators
+72,739,"Knitting, looping, taping, and weaving machine operators"
+72,743,Textile cutting machine operators
+72,744,Textile sewing machine operators
+72,745,Shoe machine operators
+72,747,Pressing machine operators
+72,748,Laundering and dry cleaning machine operators
+72,749,Miscellaneous textile machine operators
+73,753,Cementing and gluing machine operators
+73,754,Packaging and filling machine operators
+73,755,Extruding and forming machine operators
+73,756,Mixing and blending machine operators
+73,757,"Separating, filtering, and clarifying machine operators"
+73,758,Compressing and compacting machine operators
+73,759,Painting and paint spraying machine operators
+73,763,"Roasting and baking machine operators, food"
+73,764,"Washing, cleaning, and pickling machine operators"
+73,765,Folding machine operators
+73,766,"Furnace, kiln, and oven operators, except food"
+73,768,Crushing and grinding machine operators
+73,769,Slicing and cutting machine operators
+73,773,Motion picture projectionists
+73,774,Photographic process machine operators
+73,777,"Miscellaneous machine operators, n.e.c."
+73,779,"Machine operators, n.s."
+74,783,Welders and cutters
+74,784,Solderers and brazers
+74,785,Assemblers
+74,786,Hand cutting and trimming occupations
+74,787,"Hand molding, casting, and forming occupations"
+74,789,"Hand painting, coating, and decorating occupations"
+74,793,Hand engraving and printing occupations
+74,795,Miscellaneous hand working occupations
+75,796,"Production inspectors, checkers, and examiners"
+75,797,Production testers
+75,798,Production samplers and weighers
+75,799,"Graders and sorters, except agricultural"
+76,803,"Supervisors, motor vehicle operators"
+76,804,Truck drivers
+76,806,Driver-sales workers
+76,808,Bus drivers
+76,809,Taxicab drivers and chauffeurs
+76,813,Parking lot attendants
+76,814,"Motor transportation occupations, n.e.c."
+76,815,Transport equipment operatives -- allocated
+77,823,Railroad conductors and yardmasters
+77,824,Locomotive operating occupations
+77,825,"Railroad brake, signal, and switch operators"
+77,826,"Rail vehicle operators, n.e.c."
+78,828,"Ship captains and mates, except fishing boats"
+78,829,Sailors and deckhands
+78,833,Marine engineers
+78,834,"Bridge, lock, and lighthouse tenders"
+79,843,"Supervisors, material moving equipment operators"
+79,844,Operating engineers
+79,845,Longshore equipment operators
+79,848,Hoist and winch operators
+79,849,Crane and tower operators
+79,853,Excavating and loading machine operators
+79,855,"Grader, dozer, and scraper operators"
+79,856,Industrial truck and tractor equipment operators
+79,859,Miscellaneous material moving equipment operators
+79,864,"Supervisors, handlers, equipment cleaners, and laborers, n.e.c."
+79,865,"Helpers, mechanics and repairers"
+80,866,"Helpers, construction trades"
+80,867,"Helpers, surveyor"
+80,868,"Helpers, extractive occupations"
+80,869,Construction laborers
+80,874,Production helpers
+81,875,Garbage collectors
+81,876,Stevedores
+81,877,Stock handlers and baggers
+81,878,Machine feeders and offbearers
+81,883,"Freight, stock, and material handlers, n.e.c."
+81,885,Garage and service station related occupations
+81,887,Vehicle washers and equipment cleaners
+81,888,Hand packers and packagers
+81,889,"Laborers, except construction"
+81,890,"Laborers, except farm -- allocated"
+82,903,Commissioned Officers and Warrant Officers
+82,904,Non-commissioned Officers and Other Enlisted Personnel
+82,905,"Military occupation, rank not specified"
