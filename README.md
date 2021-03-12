@@ -37,7 +37,7 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
 + Lab zip folder will be shared via Slack before lab
 + View lab exercise solution: [Lab 5 Solution](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab5/Lab5_solution.html)
 
-### Lab6 Plot Regression Models, F-test, Github (3/12/2021)
+### Lab 6 Plot Regression Models, F-test, Github (3/12/2021)
 + View lab notes: [Lab 6](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab6/Lab6.html)
 + Lab zip folder will be shared via Slack before lab
 
