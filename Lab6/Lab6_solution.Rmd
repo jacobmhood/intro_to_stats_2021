@@ -1,0 +1,157 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 6 Solution"
+author: "Di Zhou"
+date: "3/12/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+```{r setup, include=F}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tidyverse, stargazer, kableExtra, coefplot)
+
+```
+
+
+```{r import and run model, include=F}
+
+# Load cleaned and recoded df
+load("data/earnings_df.RData")
+
+# Estimate Nested Models
+m1 <- lm(earn ~ age_recode, 
+         data = earnings_df)
+
+m2 <- lm(earn ~ age_recode + edu,
+         data = earnings_df)
+
+m3 <- lm(earn ~ age_recode + edu + female,
+         data = earnings_df)
+
+m4 <- lm(earn ~ age_recode + edu + female + black + other,
+         data = earnings_df)
+
+m5 <- lm(earn ~ age_recode + edu + female + black + other + edu*female,
+         data = earnings_df)
+
+```
+### Part 3 Exercise
+
+Plot the effect of `age` on `earn` according to Model 5. Post your plot on Slack.
+
+```{r exercise-ploteffect }
+
+# first, we create a dataframe with all predictor variables
+# with only the key IV varies
+pred_age <- tibble(age_recode = seq(20, 65, 3)) %>%         
+  mutate(edu = mean(earnings_df$edu, na.rm = T),
+         female = mean(earnings_df$female, na.rm = T),       
+         black = mean(earnings_df$black, na.rm = T),
+         other = mean(earnings_df$other, na.rm = T))
+
+# use `predict` to predict the Y
+predicted_earning_byage <- predict(m5,                      # the model you are using
+                             pred_age,                # the df you use for predicting
+                             interval = "confidence", # set CI
+                             level = 0.95)
+
+# bind the columns
+pred_age_result <- cbind(pred_age, predicted_earning_byage)
+
+# check df
+head(pred_age_result, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+ 
+# Plot
+pred_age_result %>% 
+  ggplot(aes(x = age_recode, y = fit)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.3) +   # add 95% CI
+  labs(x = "Age",
+       y = "Predicted Earnings") +
+  ggtitle("Predicted Earnings by Age")
+
+```
+
+---
+
+### Part 4 Exercise
+
+1. (You can use pencil and paper) Show that 
+$$\frac{(SSE_\text{restricted} - SSE_\text{full})/df_1}{SSE_\text{full}/df_2} = \frac{(R^2_\text{full} - R^2_\text{restricted})/df_1}{(1 - R^2_\text{full})/df_2}$$
+
+  Answer: Since the $df1$ and $df2$ part of the two equations are the same, we only need to show that $$\frac{SSE_\text{restricted} - SSE_\text{full}}{SSE_\text{full}} = \frac{R^2_\text{full} - R^2_\text{restricted}}{1 - R^2_\text{full}}$$
+  Given that $R^2 = \frac{TSS - SSE}{TSS} = 1 - \frac{SSE}{TSS}$, the right-hand side of the above equation can be written as:
+  
+  $$\frac{R^2_\text{full} - R^2_\text{restricted}}{1 - R^2_\text{full}} $$ 
+  $$ = \frac{(1 - \frac{SSE_\text{full}}{TSS}) - (1 - \frac{SSE_\text{restricted}}{TSS})}{1 - (1 - \frac{SSE_\text{full}}{TSS})}$$
+  $$ =  \frac{\frac{SSE_\text{restricted}}{TSS} - \frac{SSE_\text{full}}{TSS}}{\frac{SSE_\text{full}}{TSS}}$$
+  $$= \frac{SSE_\text{restricted} - SSE_\text{full}}{SSE_\text{full}}$$
+
+2. Create a new variable `age_sq` in `earnings_df` that is the square term of `age_recode`. Estimate Model 6: earn ~ age + edu + female + race + edu*female + age_square  
+
+  Then, perform a F-test between `m5` and `m6`. What is your null and alternative hypothesis? What's your decision of the F-test?
+
+```{r f-test}
+
+# create age_recode square term
+earnings_df <- earnings_df %>%
+  mutate(age_sq = age_recode^2)
+
+# estimate model
+m6 <- lm(earn ~ age_recode + edu + female + black + other + edu*female + age_sq,
+         data = earnings_df)
+
+# check model
+stargazer(m5, m6, type="text", omit.stat=c("ser", "f"))
+
+# F test
+anova(m5, m6)
+
+
+```
+  
+  $H_0$: the coefficient of the additional term equals zero, or $\beta_\text{age_sq} = 0$.  
+  
+  $H_a$: the coefficient of the additional term is different from zero, , or $\beta_\text{age_sq} \neq 0$.  
+  
+  Since the P-value is larger than 0.05, we cannot reject the null that $\beta_\text{age_sq} = 0$. This means the new IV added in `m6` does not increase the predictive power. Thus `m5` is preferred in comparison to `m6`.
+  
+
