@@ -24,15 +24,50 @@ p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects, psych, ggcorr
 
 #### 1. Read the paper closely and respond to the following questions:  
   (a) What are the authors’ research questions?  
-    - RQ: To what extent has the decrease in the racial pay gap over time been influenced by the different economic sources and trajectories of men and women?
+  
+    - RQ: To what extent has the decrease in the racial pay gap over time been
+    influenced by the different economic sources and trajectories of men and women?
+    
   (b) What is the gap in the literature that the authors aim to fill? How does their analysis advance the literature?
-    - The authors are focused on the intersection of race and gender in producing wage gaps, and their proposal of a new theoretical framework aims to establish reasonable expectations for wage disparities between different races/genders. Importantly, the authors try to create a framework that can account for changes in the racial pay gap over time. 
+  
+    - The authors are focused on the intersection of race and gender in producing
+    wage gaps, and their proposal of a new theoretical framework aims to establish
+    reasonable expectations for wage disparities between different races/genders.
+    Importantly, the authors try to create a framework that can account for
+    changes in the racial pay gap over time. 
+    
   (c) What is the population that they are making inferences about? Be specific and make sure to identify the geographical region that they are focusing on, the time period, demographic characteristics, and so on.  
-  (d) Do they have data on all individuals in the population? If they don’t, how do they solve this?  
-  (e) Did the authors collect the data themselves? If they did, describe their sampling procedure. If they didn’t, identify and describe the data source and discuss the sampling procedure that was used to collect this data.  
+  
+  - The population is all black and white workers in the United States for every
+  ten years from 1970 to 2010, ages 25 to 59.
+  
+  (d) Do they have data on all individuals in the population? If they don’t, how do they solve this?
+  
+  - No they do not have data on all individuals in the population. They have to use sample data collected by surveys. Specifically they use a 5% census sample for 1980 and 2000, a 1% census sample for 1970 and 1990, and American Commnunity Survey data for 2010. 
+  
+  (e) Did the authors collect the data themselves? If they did, describe their sampling procedure. If they didn’t, identify and describe the data source and discuss the sampling procedure that was used to collect this data. 
+  - The authors used secondary data obtained from IPUMS.They use different sources to compile their data set: 1% and 5% US census samples as well as data from the ACS. 
     
 #### 2. As you read the text, make a list of all variables or characteristics of the population that the authors mention throughout the paper (e.g., gender, age, wages, occupation, ...). Submit a list with all the variables and characteristics that you have identified in the text.  
 *Note:* Make sure to read footnotes and table notes; they contain important information to understand who is in the sample. 
+
+- gender
+- race 
+- earnings
+- level of education
+- potential work experience and it squared (age - yrs of schooling -6)^6
+- weekly working hours
+- weekly working hours logged
+- weekly wage
+- wekly wage logged
+- marital status
+- nativity status
+- number of children
+- presemce of a child under 5 (=1)
+- sector, working in public service (=1)
+- region
+- metropolitan area (=1)
+- Occupation
 
 #### 3. Based on your answers to prior questions, select the samples and variables that you think you will need to replicate the paper in your IPUMS account. Submit a screenshot of the page where you can see the samples and variables that you have selected.
 *Note:* you can obtain this from your "Data Cart”.  
@@ -46,7 +81,7 @@ p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects, psych, ggcorr
 Import the dataset `sat_math.dta` to your R environment and examine the effect of IQ and other variables on SAT math score. *Hint:* use `read.dta()`
 ```{r}
 # loading data into environment
-sat_df <- read.dta("sat_math.dta") 
+sat_data <- read.dta("sat_math.dta") 
 ```
 
 Variable Name|  Variable Detail
@@ -63,16 +98,16 @@ Variable Name|  Variable Detail
   (a) Create a table that reports descriptive statistics (you should at least report the means) of all the variables grouped by gender
 ```{r}
 # Grouping data by gender and producing descriptive statistics
-sat_df <- sat_df %>% group_by(female)
+sat_data <- sat_data %>% group_by(female)
 
-describe(sat_df)
+describe(sat_data)
 ```
   
   (b) Create a correlation matrix and display it.
 ```{r}
 
 ## Set use = "complete.obs" to ignore observations with NAs
-M <- cor(sat_df, use = "complete.obs")
+M <- cor(sat_data, use = "complete.obs")
 
 # Save the matrix to a dataframe, then use `ggcorrplot` to visualize 
 
@@ -83,53 +118,53 @@ ggcorrplot(as.data.frame(M),
 ```
 
 #### 2. Create scatter plots:  
-  - Besides the key dependent variable (DV) `sat_math`, choose one numeric independent variable (IV) that seems to have a meaningful relation to the DV based on the correlation matrix you created, and then create the following plots. *Note:* Make sure to add appropriate titles, axis labels, and plot legend for each plot. 
+  - Besides the key dependent variable (DV) `sat_math`, choose one numeric independent variable (IV) that seems to have a meaningful relation to the DV based on the correlation matrix you created, and then create the following plots:
   (a) A scatter plot of the DV and IV  
   (b) A scatter plot of the DV and IV with a fitted linear regression line  
-  (c) A scatter plot of the DV and IV, and each observation is color coded by gender (make sure to coerce your gender variable to a character or factor using `as.character()` or `as.factor()`, or recode your gender variable to a character variable with values "Male" and "Female" using `mutate()` and `ifelse()`.)  
+  (c) A scatter plot of the DV and IV, and each observation is color coded by gender  
   (d) On top of plot (c), fit a linear regression line for each gender group, the lines should also be color coded  
   
 ```{r part2-2}
 #   (a) A scatter plot of the DV and IV  
-sat_df %>%
+sat_data %>%
   ggplot(aes(x = feduy, y = sat_math)) +
   geom_point(shape = 1, alpha = 0.7) +
   labs(title = "Relationship Between Father's
        Years of Education and SAT Math Score",
        x = "Father's Years of Edu",
-       y = "SAT Math")
+       y = "SAT Math Score")
 
 #  (b) A scatter plot of the DV and IV with a fitted linear regression line  
-sat_df %>%
+sat_data %>%
   ggplot(aes(x = feduy, y = sat_math)) +
   geom_point(shape = 1, alpha = 0.7) +
   geom_smooth(method = "lm", se = F) +
   labs(title = "Relationship Between Father's 
        Years of Education and SAT Math Score",
        x = "Father's Years of Edu",
-       y = "SAT Math")
+       y = "SAT Math Score")
 
 # (c) A scatter plot of the DV and IV, and each observation is color coded by gender       
 # Create new variable 'gender'
-sat_df <- sat_df %>%
+sat_data <- sat_data %>%
   mutate(gender = ifelse(female == 1, "female", "male"))
 
-sat_df %>% as_tibble() %>% ggplot(aes(x = feduy, y = sat_math, color = gender)) +
+sat_data %>% as_tibble() %>% ggplot(aes(x = feduy, y = sat_math, color = gender)) +
   geom_point(shape = 1) +
   labs(title = "Relationship Between Father's 
        Years of Education and SAT Math Score",
        x = "Father's Years of Edu",
-       y = "SAT Math")
+       y = "SAT Math Score")
 
 # (d) On top of plot (c), fit a linear regression line for each gender group, the lines should also be color coded
-sat_df %>% as_tibble() %>%
+sat_data %>% as_tibble() %>%
   ggplot(aes(x = feduy, y = sat_math, color = gender)) +
   geom_point(shape = 1) +
   geom_smooth(method = "lm", se = F) +
   labs(title = "Relationship Between Father's 
        Years of Education and SAT Math Score",
        x = "Father's Years of Edu",
-       y = "SAT Math")
+       y = "SAT Math Score")
 ```
 
   
@@ -151,11 +186,12 @@ sat_df %>% as_tibble() %>%
   (e) Model 5: Model 4 + An Interaction Between IQ and the Female Dummy
 ```{r part2-4}
 # Creating the five models
-m1 <- lm(sat_math ~ IQ, data = sat_df)
-m2 <- lm(sat_math ~IQ + female + black + other, data = sat_df)
-m3 <- lm(sat_math ~IQ + female + black + other + feduy + meduy, data = sat_df)
-m4 <- lm(sat_math ~IQ + female + black + other + feduy + meduy + hours, data = sat_df)
-m5 <- lm(sat_math ~IQ + female + black + other + feduy + meduy + hours + IQ*female, data = sat_df)
+
+m1 <- lm(sat_math ~ IQ, data = sat_data)
+m2 <- lm(sat_math ~IQ + female + black + other, data = sat_data)
+m3 <- lm(sat_math ~IQ + female + black + other + feduy + meduy, data = sat_data)
+m4 <- lm(sat_math ~IQ + female + black + other + feduy + meduy + hours, data = sat_data)
+m5 <- lm(sat_math ~IQ + female + black + other + feduy + meduy + hours + IQ*female, data = sat_data)
 
 stargazer(m1, m2, m3, m4, m5, type = "text")
 
