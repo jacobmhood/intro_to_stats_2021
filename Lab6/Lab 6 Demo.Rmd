@@ -345,7 +345,7 @@ m6 <- lm(earn ~ age_recode + edu + female + black + other + edu*female + age_sq,
 # Null hypothesis: H0 = m5 - m6 = 0
 # Alternative hypothesis: Ha = m5 - m6 =/=0
 
-anova(m5, m6) # The additional predictors don't really add anything, p> 0.05
+anova(m5, m6) # The additional predictors don't really add anything, p > 0.05
 ```
 
 ---
