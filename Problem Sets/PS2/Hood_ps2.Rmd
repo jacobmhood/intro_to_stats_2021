@@ -1,7 +1,7 @@
 ---
 title: "Problem Set 2"
 author: "Jacob Hood"
-date: 'Mar. 20th, 2021'
+date: 'March 20th, 2021'
 output:
   html_document:
     df_print: paged
@@ -51,29 +51,29 @@ p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects, psych, ggcorr
 #### 2. As you read the text, make a list of all variables or characteristics of the population that the authors mention throughout the paper (e.g., gender, age, wages, occupation, ...). Submit a list with all the variables and characteristics that you have identified in the text.  
 *Note:* Make sure to read footnotes and table notes; they contain important information to understand who is in the sample. 
 
-- gender
+- gender (sex)
 - race 
+- age
 - earnings
 - level of education
 - potential work experience and it squared (age - yrs of schooling -6)^6
 - weekly working hours
 - weekly working hours logged
 - weekly wage
-- wekly wage logged
+- weekly wage logged
 - marital status
 - nativity status
 - number of children
-- presemce of a child under 5 (=1)
+- presence of a child under 5 (=1)
 - sector, working in public service (=1)
 - region
 - metropolitan area (=1)
-- Occupation
+- occupation (1990 codes)
 
 #### 3. Based on your answers to prior questions, select the samples and variables that you think you will need to replicate the paper in your IPUMS account. Submit a screenshot of the page where you can see the samples and variables that you have selected.
 *Note:* you can obtain this from your "Data Cart”.  
-  
-    
-  
+
+![](data cart screenshot.png){width=60%}
 
 
 # Part 2: Regression 
@@ -98,9 +98,8 @@ Variable Name|  Variable Detail
   (a) Create a table that reports descriptive statistics (you should at least report the means) of all the variables grouped by gender
 ```{r}
 # Grouping data by gender and producing descriptive statistics
-sat_data <- sat_data %>% group_by(female)
+sat_data %>% group_by(female) %>% summarise(mean_satmath = mean(sat_math), mean_meduy = mean(meduy), mean_feduy = mean(feduy), mean_hours = mean(hours), mean_IQ = mean(IQ))
 
-describe(sat_data)
 ```
   
   (b) Create a correlation matrix and display it.
@@ -127,21 +126,19 @@ ggcorrplot(as.data.frame(M),
 ```{r part2-2}
 #   (a) A scatter plot of the DV and IV  
 sat_data %>%
-  ggplot(aes(x = feduy, y = sat_math)) +
+  ggplot(aes(x = hours, y = sat_math)) +
   geom_point(shape = 1, alpha = 0.7) +
-  labs(title = "Relationship Between Father's
-       Years of Education and SAT Math Score",
-       x = "Father's Years of Edu",
+  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
+       x = "Average Weekly Study Hours",
        y = "SAT Math Score")
 
 #  (b) A scatter plot of the DV and IV with a fitted linear regression line  
 sat_data %>%
-  ggplot(aes(x = feduy, y = sat_math)) +
+  ggplot(aes(x = hours, y = sat_math)) +
   geom_point(shape = 1, alpha = 0.7) +
   geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between Father's 
-       Years of Education and SAT Math Score",
-       x = "Father's Years of Edu",
+  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
+       x = "Average Weekly Study Hours",
        y = "SAT Math Score")
 
 # (c) A scatter plot of the DV and IV, and each observation is color coded by gender       
@@ -149,36 +146,39 @@ sat_data %>%
 sat_data <- sat_data %>%
   mutate(gender = ifelse(female == 1, "female", "male"))
 
-sat_data %>% as_tibble() %>% ggplot(aes(x = feduy, y = sat_math, color = gender)) +
+sat_data %>% as_tibble() %>% ggplot(aes(x = hours, y = sat_math, color = gender)) +
   geom_point(shape = 1) +
-  labs(title = "Relationship Between Father's 
-       Years of Education and SAT Math Score",
-       x = "Father's Years of Edu",
-       y = "SAT Math Score")
+  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
+       x = "Average Weekly Study Hours",
+       y = "SAT Math Score",
+       subtitle = "Grouped by gender")
 
 # (d) On top of plot (c), fit a linear regression line for each gender group, the lines should also be color coded
 sat_data %>% as_tibble() %>%
-  ggplot(aes(x = feduy, y = sat_math, color = gender)) +
+  ggplot(aes(x = hours, y = sat_math, color = gender)) +
   geom_point(shape = 1) +
   geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between Father's 
-       Years of Education and SAT Math Score",
-       x = "Father's Years of Edu",
-       y = "SAT Math Score")
+  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
+       x = "Average Weekly Study Hours",
+       y = "SAT Math Score",
+       subtitle = "Grouped by gender")
 ```
 
   
 #### 3. Additional exploratory data analysis:  
-  (a) What are your preliminary findings/reflections on the data based on the descriptive statistics, the correlation matrix, and the scatter plots?  
+  (a) What are your preliminary findings/reflections on the data based on the descriptive statistics, the correlation matrix, and the scatter plots?
+    - Based on the descriptive statistics, we know that all together students spend an average of 39 hours studying per week and that males and females spend roughly the same amount of time studying each week On average females score 47 points higher than males.In terms of IQ, males on average scored 2 points higher. We also know the data is somewhat skewed to the right (median < mean), which means that less people are making higher SAT math scores than if the data were normally distributed. Based on the correlation plot, IQ has the strongest positive correlation with SAT math scores (0.65). Parents' years of schooling is also strongly correlated with higher SAT math scores, more so than with the other explanatory variables. For my variable of interest (hours) there appears to be a very minor negative relationship between average hours studied per week and SAT math scores (-0.03). This weak relationship is confirmed through the scatterplots, especially those with regression lines which show that while females tend to score higher, average weekly hours studied is not strongly correlated with SAT math 
+    
   (b) What other exploratory data analysis will be useful for you to better understand the data before modeling? Please implement some additional exploratory data analysis and discuss your preliminary findings.
-
+ - Other exploratory data anlyses before modeling include plotting the relationship between SAT math scores and our other predictor variables to visually understand their relationships.The data can also be grouped by race in order to look at racial differences in
+ SAT math scores at different levels of predictors. 
 ```{r part2-3}
 
 
 ```
 
 #### 4. Nested models:  
-  - Build five nested models that use `sat_math` as the DV and report regression results in a table using `stargazer()` from the `stargazer` package.*Note:* You can set `type = "text"` in `stargazer()` when viewing the table in R, but before knitting to PDF you should set `type = "latex"`  
+  - Build five nested models that use `sat_math` as the DV and report regression results in a table using `stargazer()` from the `stargazer` package. 
   (a) Model 1: Baseline (only add "IQ" as the independent variable)  
   (b) Model 2: Model 1 + Demographic Characteristics  
   (c) Model 3: Model 2 + Parental Education  
@@ -216,6 +216,7 @@ stargazer(m1, m2, m3, m4, m5, type = "text")
 #### 7. Create a coefficient plot for Model 5 with appropriate title and labels.  
 ```{r part2-7}
 
+coefplot(m5, intercept = F, innerCI = 1.96, outerCI = 1.96, color = "black", title = "Coefficient Plot of Model 5")
 
 ```
 
