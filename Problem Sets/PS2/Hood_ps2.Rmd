@@ -396,8 +396,7 @@ se <- sqrt(MSE/denomi)
 
 upperbound <- 4.211 + (1.96*se)
 lowerbound <- 4.211 - (1.96*se)
-CI <- c(lowerbound,upperbound)
-print(CI)
+CI <- c(lowerbound,upperbound) %>% print()
 ```
 
 #### 6. Interpret regression coefficients:  
