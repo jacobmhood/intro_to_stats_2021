@@ -13,7 +13,7 @@ output:
 Load multiple packages to your environment using the following code (you can add more packages to the current list as per your need):
 
 ```{r setup}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, results = "asis")
 
 library(pacman)
 p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects)
@@ -378,7 +378,7 @@ stargazer(m1, m2, m3, m4, m5, type = "text")
 #### 5. For the result of Model 1:  
   (a) What are the hypotheses that you are testing in this model with your t-values in the `(Intercept)` and `IQ` row of the modeling results?  
   
-  ** Our null hypothesis is, holding all other variables constant, $\beta_{\text{IQ}}$ = 0. Our alternative hypothesis is $\beta_{\text{IQ}}$ != 0. Our prediction equation is Y = 4.211X + 315.605.**
+  **Our null hypothesis is, holding all other variables constant, $\beta_{\text{IQ}}$ = 0. Our alternative hypothesis is $\beta_{\text{IQ}}$ != 0. Our prediction equation is Y = 4.211X + 315.605.**
   
   (b) Create a 95% confidence interval for the parameter $\beta_{\text{IQ}}$ based on Model 1 result.
 
@@ -401,9 +401,20 @@ CI <- c(lowerbound,upperbound) %>% print()
 
 #### 6. Interpret regression coefficients:  
   (a) How does the coefficient of "IQ" change across models? What could be the possible reason(s) for such changes?  
-  (b) Interpret the coefficient of "black" in Model 4.  
+  
+  **The coefficient of IQ changes from 4.211, to 4.356, to 3.487, to 3.484, and finally to 2.893. The increase from m1 to m2 suggests that adding these minority demographic predictors (female/black/other) increases the partial effects of IQ by itself on SAT math score.The decreases of the coefficient from m2 to m5 suggests the partial effects of the IQ by itself on SAT math scores lessens in intensity when other significant predictors are added to the model, such as parent's years of education, hour spent studying, and interaction between gender and IQ.**
+  
+  (b) Interpret the coefficient of "black" in Model 4.
+  
+  **The coefficient of -14.519 for "black" in model 4 means that black people (the comprarison group) on average score 14.519 points lower than white peoplev (the comparison group), holding all else constant.**
+  
   (c) Interpret the coefficient of "meduy" in Model 4.  
-  (d) Interpret the coefficient of the interaction effect between IQ and the Female Dummy in Model 5.  
+  
+  **The coeffiecent of 6.434. for "meduy" in model 4 means that for each additional year of a person's mother's education, their SAT math score increases 6.434, holding all else constant.**
+  
+  (d) Interpret the coefficient of the interaction effect between IQ and the Female Dummy in Model 5.
+  
+  **The coefficient of 1.232 for the interaction term in model 5 means that the effect of IQ on SAT math scores is greater for females, with a 1.232 point difference.** 
   
 #### 7. Create a coefficient plot for Model 5 with appropriate title and labels.  
 ```{r part2-7}
