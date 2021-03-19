@@ -2,22 +2,21 @@
 title: "Problem Set 2"
 author: "Jacob Hood"
 date: 'March 20th, 2021'
+always_allow_html: true
 output:
+  pdf_document:
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 # Prerequisite
 
-Load multiple packages to your environment using the following code (you can add more packages to the current list as per your need):
+Load multiple packages to your environment using the following code:
 
 ```{r setup}
 knitr::opts_chunk$set(echo = TRUE, results = "asis")
-
 library(pacman)
-p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects)
-
+p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects, kableExtra, scales)
 ```
 
 # Part 1: The Replication Project 
@@ -30,35 +29,30 @@ p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects)
     
   (b) What is the gap in the literature that the authors aim to fill? How does their analysis advance the literature?
 
-**The authors are focused on the intersection of race and gender in producing wage gaps, and their proposal of a new theoretical framework aims to establish reasonable expectations for wage disparities between different races/genders.Importantly, the authors try to create a framework that can account for changes in the racial pay gap over time.**
+**The available literature on racial disparities in earnings largely only focuses on men, obscuring the interaction between race and gender and the complex patterns they produce. The authors are focused on addressing this gap through a longitudinal study of gender differences in racial earnings disparities from 1970 to 2010.They propose a new theoretical framework to establish reasonable expectations for wage disparities between different races/genders. Importantly, the authors try to create a framework that can account for decreases/change in the racial pay gap over time.**
     
   (c) What is the population that they are making inferences about? Be specific and make sure to identify the geographical region that they are focusing on, the time period, demographic characteristics, and so on.
   
-  **The population is all black and white workers in the United States for every
-  ten years from 1970 to 2010, ages 25 to 59.**
+**The population is all black and white workers (excluding Hispanic/other races) in the United States for every ten years from 1970 to 2010, ages 25 to 59.**
   
   (d) Do they have data on all individuals in the population? If they don’t, how do they solve this?
   
-**No they do not have data on all individuals in the population. They have to use sample data collected by surveys. Specifically they use a 5% census sample for 1980 and 2000, a 1% census sample for 1970 and 1990, and American Commnunity Survey data for 2010.**
+**No they do not have data on all individuals in the population. They have to use sample data collected by national surveys. Specifically they use a 5% census sample for 1980 and 2000, a 1% census sample for 1970 and 1990, and American Community Survey data for 2010.**
   
   (e) Did the authors collect the data themselves? If they did, describe their sampling procedure. If they didn’t, identify and describe the data source and discuss the sampling procedure that was used to collect this data. 
 
-**The authors used secondary data obtained from IPUMS.They use different sources to compile their data set: 1% and 5% US census samples as well as data from the ACS.**
+**No they did not. The authors used secondary data obtained through IPUMS.They use different sources to compile their data set: 1% and 5% random US census samples as well as data from the ACS.**
     
 #### 2. As you read the text, make a list of all variables or characteristics of the population that the authors mention throughout the paper (e.g., gender, age, wages, occupation, ...). Submit a list with all the variables and characteristics that you have identified in the text.  
-*Note:* Make sure to read footnotes and table notes; they contain important information to understand who is in the sample. 
 
 **
 - gender (sex)  
-- race  
-- age  
-- earnings  
+- race  (excluding all but blacks and whites)
+- age  (25-59)
 - level of education  
 - potential work experience and it squared (age - yrs of schooling -6)^6  
-- weekly working hours  
-- weekly working hours logged  
-- weekly wage  
-- weekly wage logged  
+- weekly working hours  (and weekly working hours logged)  
+- weekly wage (and weekly wage logged)  
 - marital status  
 - nativity status  
 - number of children  
@@ -70,7 +64,6 @@ p_load(tidyverse, foreign, corrplot, stargazer, coefplot, effects)
 **
 
 #### 3. Based on your answers to prior questions, select the samples and variables that you think you will need to replicate the paper in your IPUMS account. Submit a screenshot of the page where you can see the samples and variables that you have selected.
-*Note:* you can obtain this from your "Data Cart”.  
 
 ![](data cart screenshot.png){width=60%}
 
@@ -94,21 +87,22 @@ Variable Name|  Variable Detail
  `IQ`      | IQ Score (0 to 100)          
 
 #### 1. Report descriptive statistics:  
+
   (a) Create a table that reports descriptive statistics (you should at least report the means) of all the variables grouped by gender
+  
 ```{r}
-# Grouping data by gender and producing descriptive statistics
+# Grouping data by gender (in this case, before recoding, grouping by female so male=0 and female=1) and producing descriptive statistics
 sat_data %>% group_by(female) %>% summarise(mean_satmath = mean(sat_math), mean_meduy = mean(meduy), mean_feduy = mean(feduy), mean_hours = mean(hours), mean_IQ = mean(IQ))
 
 ```
   
-  (b) Create a correlation matrix and display it.
+  (b) Create a correlation matrix and display it
+  
 ```{r}
-
 ## Set use = "complete.obs" to ignore observations with NAs
 M <- cor(sat_data, use = "complete.obs")
 
 # Save the matrix to a dataframe, then use `corrplot` to visualize 
-
 corrplot(M,
          method = "shade",
          cl.lim = c(-1,1),
@@ -130,21 +124,21 @@ corrplot(M,
   (d) On top of plot (c), fit a linear regression line for each gender group, the lines should also be color coded  
   
 ```{r part2-2}
-#   (a) A scatter plot of the DV and IV  
+#   (a) A scatter plot of the DV and IV, IQ   
 sat_data %>%
-  ggplot(aes(x = hours, y = sat_math)) +
+  ggplot(aes(x = IQ, y = sat_math)) +
   geom_point(shape = 1, alpha = 0.7) +
-  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
-       x = "Average Weekly Study Hours",
+  labs(title = "Relationship Between IQ and SAT Math Score",
+       x = "IQ",
        y = "SAT Math Score")
 
 #  (b) A scatter plot of the DV and IV with a fitted linear regression line  
 sat_data %>%
-  ggplot(aes(x = hours, y = sat_math)) +
+  ggplot(aes(x = IQ, y = sat_math)) +
   geom_point(shape = 1, alpha = 0.7) +
   geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
-       x = "Average Weekly Study Hours",
+  labs(title = "Relationship Between IQ and SAT Math Score",
+       x = "IQ",
        y = "SAT Math Score")
 
 # (c) A scatter plot of the DV and IV, and each observation is color coded by gender       
@@ -152,20 +146,20 @@ sat_data %>%
 sat_data <- sat_data %>%
   mutate(gender = ifelse(female == 1, "female", "male"))
 
-sat_data %>% as_tibble() %>% ggplot(aes(x = hours, y = sat_math, color = gender)) +
+sat_data %>% as_tibble() %>% ggplot(aes(x = IQ, y = sat_math, color = gender)) +
   geom_point(shape = 1) +
-  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
-       x = "Average Weekly Study Hours",
+  labs(title = "Relationship Between IQ and SAT Math Score",
+       x = "IQ",
        y = "SAT Math Score",
        subtitle = "Grouped by gender")
 
 # (d) On top of plot (c), fit a linear regression line for each gender group, the lines should also be color coded
 sat_data %>% as_tibble() %>%
-  ggplot(aes(x = hours, y = sat_math, color = gender)) +
+  ggplot(aes(x = IQ, y = sat_math, color = gender)) +
   geom_point(shape = 1) +
   geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
-       x = "Average Weekly Study Hours",
+  labs(title = "Relationship Between IQ and SAT Math Score",
+       x = "IQ",
        y = "SAT Math Score",
        subtitle = "Grouped by gender")
 ```
@@ -174,11 +168,12 @@ sat_data %>% as_tibble() %>%
 #### 3. Additional exploratory data analysis:  
   (a) What are your preliminary findings/reflections on the data based on the descriptive statistics, the correlation matrix, and the scatter plots?
 
-**Based on the descriptive statistics, we know that all together students spend an average of 39 hours studying per week and that males and females spend roughly the same amount of time studying each week On average females score 47 points higher than males.In terms of IQ, males on average scored 2 points higher. We also know the data is somewhat skewed to the right (median < mean), which means that less people are making higher SAT math scores than if the data were normally distributed. Based on the correlation plot, IQ has the strongest positive correlation with SAT math scores (0.65). Parents' years of schooling is also strongly correlated with higher SAT math scores, more so than with the other explanatory variables. For my variable of interest (hours) there appears to be a very minor negative relationship between average hours studied per week and SAT math scores (-0.03). This weak relationship is confirmed through the scatterplots, especially those with regression lines which show that while females tend to score higher, average weekly hours studied is not strongly correlated with SAT math** 
+**Based on the descriptive statistics, we know that all together students spend an average of 39 hours studying per week and that males and females spend roughly the same amount of time studying each week. On average females score 47 points higher than males.In terms of IQ, males on average scored 2 points higher. We also know the data is somewhat skewed to the right (median < mean), which means that less people are making higher SAT math scores than if the data were normally distributed. Based on the correlation plot, IQ has the strongest positive correlation with SAT math scores (0.65). Parents' years of schooling is also strongly correlated with higher SAT math scores, more so than with the other explanatory variables. For number of hours studied per week, there is a very minor negative relationship between average hours studied per week and SAT math scores (-0.03). This weak relationship is confirmed through the scatterplots, especially those with regression lines which show that while females tend to score higher, average weekly hours studied is not strongly correlated with SAT math** 
     
   (b) What other exploratory data analysis will be useful for you to better understand the data before modeling? Please implement some additional exploratory data analysis and discuss your preliminary findings
   
 **First we can create histograms of each variable to understand their distributions. Other exploratory data analyses before modeling include plotting the relationship between SAT math scores and our other predictor variables to visually understand their relationships.The data can also be grouped by race in order to look at racial differences in SAT math scores at different levels of predictors.**
+
 ```{r}
 # Creating histograms of variables
 
@@ -203,20 +198,18 @@ sat_data %>% as_tibble() %>%
 sat_data %>% as_tibble() %>%
   ggplot(aes(x = sat_data$hours)) +
   geom_histogram(binwidth = 1, fill = "grey", color = "black")
-
 ```
 
 ```{r part2-3}
 # Creating scatterplots with other predictors 
 
-# Looking at IQ, still grouped by gender
-
+# Looking at hours, still grouped by gender
 sat_data %>% as_tibble() %>%
-  ggplot(aes(x = IQ, y = sat_math, color = gender)) +
+  ggplot(aes(x = hours, y = sat_math, color = gender)) +
   geom_point(shape = 1) +
   geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between IQ and SAT Math Score",
-       x = "IQ",
+  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
+       x = "Average Weekly Study Hours",
        y = "SAT Math Score",
        subtitle = "Grouped by gender")
 
@@ -243,75 +236,16 @@ sat_data %>% as_tibble() %>%
 
 ```{r}
 # Grouping data by race and running similar analyses (descriptive stats, scatterplots)
-
 sat_data %>% group_by(black, other) %>% summarise(mean_satmath = mean(sat_math), mean_meduy = mean(meduy), mean_feduy = mean(feduy), mean_hours = mean(hours), mean_IQ = mean(IQ))
 ```
 
-
-```{r}
-# Creating new variable "race" breaking the sample into black and non-black groups
-
-sat_data <- sat_data %>% mutate(race = ifelse(black > 0, "black", "non-black"))
-                              
-```
-
-
-```{r}
-
-# Plot of hours and SAT math score with regression lines 
-
-sat_data %>% as_tibble() %>%
-  ggplot(aes(x = hours, y = sat_math, color = race)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between Average Weekly Study Hours and SAT Math Score",
-       x = "Average Weekly Study Hours",
-       y = "SAT Math Score",
-       subtitle = "Grouped by race")
-
-# Looking at IQ, still grouped by race
-
-sat_data %>% as_tibble() %>%
-  ggplot(aes(x = IQ, y = sat_math, color = race)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between IQ and SAT Math Score",
-       x = "IQ",
-       y = "SAT Math Score",
-       subtitle = "Grouped by race")
-
-# Looking at father's years of education, still grouped by race
-sat_data %>% as_tibble() %>%
-  ggplot(aes(x = feduy, y = sat_math, color = race)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between Father's Years of Education and SAT Math Score",
-       x = "Father's Years of Education",
-       y = "SAT Math Score",
-       subtitle = "Grouped by race")
-
-# Looking at mother's years of education, still grouped by race
-sat_data %>% as_tibble() %>%
-  ggplot(aes(x = meduy, y = sat_math, color = race)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", se = F) +
-  labs(title = "Relationship Between Mother's Years of Education and SAT Math Score",
-       x = "Mother's Years of Education",
-       y = "SAT Math Score",
-       subtitle = "Grouped by race")
-```
 ```{r}
 # Running similar comparisons grouped non-white vs white
-
 sat_data <- sat_data %>% mutate(race = ifelse(black | other > 0, "non-white", "white"))
 
-```
-
-```{r}
 # Creating more plots comparing non-whites vs. whites
 
-# Plot of hours and SAT math score with regression lines 
-
+# Looking at hours studied, grouped by race 
 sat_data %>% as_tibble() %>%
   ggplot(aes(x = hours, y = sat_math, color = race)) +
   geom_point(shape = 1) +
@@ -322,7 +256,6 @@ sat_data %>% as_tibble() %>%
        subtitle = "Grouped by race")
 
 # Looking at IQ, still grouped by race
-
 sat_data %>% as_tibble() %>%
   ggplot(aes(x = IQ, y = sat_math, color = race)) +
   geom_point(shape = 1) +
@@ -352,7 +285,6 @@ sat_data %>% as_tibble() %>%
        y = "SAT Math Score",
        subtitle = "Grouped by race")
 ```
-
 
 #### 4. Nested models:  
   - Build five nested models that use `sat_math` as the DV and report regression results in a table using `stargazer()` from the `stargazer` package. 
@@ -361,39 +293,40 @@ sat_data %>% as_tibble() %>%
   (c) Model 3: Model 2 + Parental Education  
   (d) Model 4: Model 3 + Weekly Study Hours  
   (e) Model 5: Model 4 + An Interaction Between IQ and the Female Dummy
+  
 ```{r part2-4}
 # Creating the five models
-
 m1 <- lm(sat_math ~ IQ, data = sat_data)
 m2 <- lm(sat_math ~IQ + female + black + other, data = sat_data)
 m3 <- lm(sat_math ~IQ + female + black + other + feduy + meduy, data = sat_data)
 m4 <- lm(sat_math ~IQ + female + black + other + feduy + meduy + hours, data = sat_data)
 m5 <- lm(sat_math ~IQ + female + black + other + feduy + meduy + hours + IQ*female, data = sat_data)
 
-stargazer(m1, m2, m3, m4, m5, type = "text")
-
+stargazer(m1, m2, m3, m4, m5, type = "latex", omit.stat=c("f", "ser"))
 ```
-  
   
 #### 5. For the result of Model 1:  
   (a) What are the hypotheses that you are testing in this model with your t-values in the `(Intercept)` and `IQ` row of the modeling results?  
   
-  **Our null hypothesis is, holding all other variables constant, $\beta_{\text{IQ}}$ = 0. Our alternative hypothesis is $\beta_{\text{IQ}}$ != 0. Our prediction equation is Y = 4.211X + 315.605.**
+  **Our null hypothesis is, holding all other variables constant, $\beta_{\text{IQ}}$ = 0. Our alternative hypothesis is $\beta_{\text{IQ}}$ != 0. Our prediction equation is Y&#770 = 4.211X + 315.605.**
   
   (b) Create a 95% confidence interval for the parameter $\beta_{\text{IQ}}$ based on Model 1 result.
 
 ```{r part2-5}
 # starting with mean squared error
-SSE <- ((sat_data$sat_math) - (315.605 + 4.211*sat_data$IQ))^2 %>% sum()
+sat_data <- sat_data %>%
+  mutate(IQmean <- mean(sat_data$IQ),
+sat_math_mean <- mean(sat_data$sat_math),
+y_fitted = 315.605 + 4.211*IQ)
+
+SSE <- (sat_data$sat_math - sat_data$y_fitted)^2 %>% sum()
 MSE <- SSE/(nrow(sat_data)-2)
-IQmean <- mean(sat_data$IQ)
-denomi <- (sat_data$IQ - IQmean)^2 %>% sum() 
+denomi <- (sat_data$IQ - sat_data$IQmean)^2 %>% sum() 
 
 # calculating standard error 
 se <- sqrt(MSE/denomi)
 
 #Creating confidence interval
-
 upperbound <- 4.211 + (1.96*se)
 lowerbound <- 4.211 - (1.96*se)
 CI <- c(lowerbound,upperbound) %>% print()
@@ -416,20 +349,51 @@ CI <- c(lowerbound,upperbound) %>% print()
   
   **The coefficient of 1.232 for the interaction term in model 5 means that the effect of IQ on SAT math scores is greater for females, with a 1.232 point difference.** 
   
-#### 7. Create a coefficient plot for Model 5 with appropriate title and labels.  
-```{r part2-7}
+#### 7. Create a coefficient plot for Model 5 with appropriate title and labels.
 
-coefplot(m5, intercept = F, innerCI = 1.96, outerCI = 1.96, color = "black", title = "Coefficient Plot of Model 5")
-
+```{r, fig.align='left'}
+coefplot(m5, 
+         innerCI = 1.96,
+         outerCI = 1.96,
+         intercept = F)
 ```
 
-#### 8. On the basis of Model 5, by holding other variables at their means, create a figure demonstrating the predicted SAT math score by gender and IQ levels (with confidence interval).  
-```{r part2-8}
+#### 8. On the basis of Model 5, by holding other variables at their means, create a figure demonstrating the predicted SAT math score by gender and IQ levels (with confidence interval)
 
-
+```{r}
+pred_IV <- tibble(IQ = rep(14:89, 2)) %>%         #create df with key IV
+  mutate(female = c(rep(0, 76), rep(1, 76)),   # fix other variables at mean
+         hours = mean(sat_data$hours, na.rm = T),
+         meduy = mean(sat_data$meduy, na.rm = T),
+         feduy = mean(sat_data$feduy, na.rm = T),
+         black = mean(sat_data$black, na.rm = T),
+         other = mean(sat_data$other, na.rm = T))
 ```
-  
-  
+
+```{r}
+# use `predict` to predict the Y
+predicted_math <- predict(m5,    # the model you are using
+                             pred_IV,  # the df you use for predicting
+                             interval = "confidence", # set CI
+                             level = 0.95)
+
+# bind the columns
+pred_result <- cbind(pred_IV, predicted_math)
+```
+
+```{r}
+# Plot
+pred_result %>% 
+  mutate(gender = ifelse(female == 0, "Male", "Female")) %>%       # Covert dummy to character variable
+  ggplot(aes(x = IQ, y = fit)) +
+  geom_line(aes(linetype = gender)) +                              # group linetype by gender
+  geom_ribbon(aes(ymin = lwr, ymax = upr, fill = gender), alpha = 0.3) +   # add 95% CI
+  theme_classic() +
+  labs(x = "IQ",
+       y = "Predicted SAT Math Score") +
+  ggtitle("Predicted SAT Math Score by IQ and Gender",
+          subtitle = "(Modeled with interaction between IQ and gender)")
+```
   
 # Part 3 (Bonus) Data Simulation 
 
@@ -443,10 +407,40 @@ Simulation is a fun and effective way to learn about statistical inference. You 
   
 ![](simulation_demo2.png){width=40%}
 
-
 *Note:* Your output does not need to replicate the exact layout of the example graphs. You will get extra credit as long as you generate a similar graph that illustrates the relationship (either a positive or negative interaction, or the Simpson's Paradox) clearly. Remember to use `set.seed()` for any random process.
 
-```{r part3}
+```{r}
+# This simulation shows the effects of education level and "self control" (measured from 0-5) on GRE scores (130-340). The simulation shows that, for people with more education, the effects of self control are more significant for their GRE scores. 
 
+n <- 1000
 
+# Simulating IV variables, education and self control, and DV variable GRE Score
+set.seed(1234)
+education <- rbinom(n, 2, 0.5)
+self_control <- rnorm(n)
+GRE <- 30 + 2*education + 6*self_control + (2*education)*(6*self_control) + rnorm(n, 0, 10)
+
+# labeling three different edu values
+education = factor(education, labels = c("Low", "Medium", "High"))
+
+# rescaling variables
+GRE = rescale(GRE, to = c(130, 340))
+self_control = rescale(self_control, to = c(0, 5))
+
+# creating data frame with variables
+data <- data.frame(
+  education,
+  GRE,
+  self_control
+)
+
+# Creating the scatterplot
+data %>% ggplot(aes(self_control, GRE)) +
+  geom_point(aes(col = education), alpha = 0.7) +
+  geom_smooth(aes(col = education), method = 'lm') +
+  labs(title = "Simulation of Interaction between  
+       Education and Self Control on GRE Score", x = "Self Control", y = "GRE Score") +
+  theme(legend.background = element_rect(fill = "transparent"),
+        legend.justification = c(0, 1),
+        legend.position = c(0, 1))
 ```
