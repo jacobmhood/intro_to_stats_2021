@@ -42,3 +42,7 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
 + Lab zip folder will be shared via Slack before lab
 + View lab exercise solution: [Lab 6 Solution](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab6/Lab6_solution.html)
 
+### Lab 7 Standardized Regression, ANOVA, Heteroskedasticity, Dummy Interactions (3/18/2021)
++ View lab notes: [Lab 7](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab7/Lab7.html)
++ Lab zip folder will be shared via Slack before lab
+
