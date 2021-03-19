@@ -363,6 +363,20 @@ $$\frac{(SSE_\text{restricted} - SSE_\text{full})/df_1}{SSE_\text{full}/df_2} = 
 
 # Your code here
 
+# create age_recode square term
+earnings_df <- earnings_df %>%
+  mutate(age_sq = age_recode^2)
+
+# estimate model
+m6 <- lm(earn ~ age_recode + edu + female + black + other + edu*female + age_sq,
+         data = earnings_df)
+
+# check model
+stargazer(m5, m6, type="text", omit.stat=c("ser", "f"))
+
+# F test
+anova(m5, m6)
+
 ```
 
 ---

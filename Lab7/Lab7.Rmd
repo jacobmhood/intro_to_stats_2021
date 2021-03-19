@@ -1,0 +1,421 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 7"
+author: "Di Zhou"
+date: "3/19/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+## Logistics & Announcement
+
+- **Problem Set 2** is due on Sat. Mar. 20th, 11:59 pm
+- **No office hour today**
+- For Exam 3: Make sure that you review **(1) interactions with dummy variables, (2) different types of multivariant relationships**  
+
+
+## Part 1: Standardized Regression Coefficients
+
+First, load packages to your environment. We are using several new packages today. Make sure to install them before running the code.
+
+```{r setup, include=T}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tidyverse, stargazer, kableExtra, gridExtra, QuantPsyc, coefplot, sandwich, lmtest)
+
+```
+
+Import `earnings_df` data (the one we used for lab 6) and estimate models:
+
+```{r import and model}
+
+# Load cleaned and recoded df
+load("data/earnings_df.RData")
+
+# Examine data
+head(earnings_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+# Estimate Nested Models
+m1 <- lm(earn ~ age_recode, 
+         data = earnings_df)
+
+m2 <- lm(earn ~ age_recode + edu,
+         data = earnings_df)
+
+m3 <- lm(earn ~ age_recode + edu + female,
+         data = earnings_df)
+
+m4 <- lm(earn ~ age_recode + edu + female + black + other,
+         data = earnings_df)
+
+m5 <- lm(earn ~ age_recode + edu + female + black + other + edu*female,
+         data = earnings_df)
+
+# Examine models
+stargazer(m1, m2, m3, m4, m5, type="text", omit.stat=c("ser", "f"))
+
+```
+
+### Standardized Regression Coefficients
+
+Why sometimes people report standardized regression coefficients? As we covered in the lecture, the size of a regression coefficient depends on **the scale at which the independent and dependent variables are measured**. 
+
+For example, assume that in a regression model the coefficient of population on the national GDP is 0.0001. This means that 1 additional person will lead to 0.0001 increase in the GDP. However, this value does not necessarily imply that the effect of population is less pronounced than other predictors whose coefficients have a larger value. Because the value of the coefficient depends on the measurement unit of the IV. If we now change population to **population in million**, the new coefficient of population will become $0.0001 \cdot 10^6 = 100$. Although the value of the coefficient gets much larger, this increase is caused by a change in the measurement unit, not the actual effect of population. 
+
+Therefore, it is problematic to use the raw value of the regression coefficient as indicators of relative effect size if the predictors in the model have different measurement units. In such scenarios, standardized regression coefficients can help compare the relative effect size of the predictors even if they are measured in different units. 
+
+Standardized coefficients convert both your dependent variable and independent variables to **z-scores**. That is, each of your original (numeric) variables are converted to have a mean of 0 and a standard deviation of 1. Thus, **standardized coefficients tell us the change in $Y$, in $Y$'s standard deviation units, for a one-standard-deviation increase in $X_i$, while holding other $X$s constant**.  
+
+There are two methods of getting standardized regression coefficients in R.
+
+### Method 1: Use `lm.beta()` from the `QuantPsyc` package
+
+You can get standardized regression coefficients by using the `lm.beta()` function in the `QuantPsyc` package. For example, if we want to get the standardized coefficients for Model 2 (`earn ~ age_recode + edu`):
+
+```{r }
+# Original model
+m2
+
+# Standardized coefficients
+std_m2 <- lm.beta(m2)
+std_m2
+
+```
+
+  
+  But this method will only report the point estimates instead of a comprehensive modeling result. To obtain that, we need to convert all numeric variables to z-scores and estimate regression models based on the transformed data.
+
+### Method 2: Create Z-scores for All Numeric Variables
+
+For each numeric variables, we create the "standardized variables" by calculating their z-scores: 
+
+$$z = \frac{(x - \overline x)}{s_x}$$
+  
+  For example, we can use `mutate_at()` to covert numeric variables to z-scores in `earnings_df` using the above formula:
+  
+```{r }
+
+# A function that convert a numeric vector to a z-score vector
+get_zscore <- function(x){
+  (x - mean(x, na.rm = T))/sd(x, na.rm = T)
+  }
+
+# Create a df with numeric variables converted to z-score
+earnings_df_std <- earnings_df %>%
+  mutate_at(c("edu", "age_recode", "earn"), get_zscore)
+
+# Examine data
+head(earnings_df_std, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+# Estimate model
+m2_std_zscore <-  lm(earn ~ age_recode + edu, data = earnings_df_std)
+
+# Compare results
+stargazer(m2, m2_std_zscore, type = "text")
+
+```
+
+### Part 1 Exercise
+
+Given that **standardized coefficients tell us the change in $Y$, in $Y$'s standard deviation units, for a one-standard-deviation increase in $X_i$, while holding other $X$s constant**, interpret the standardized coefficients of `age_recode` and `edu` in the above modeling result.
+
+
+## Part 2: ANOVA
+
+The Analysis of Variance (ANOVA) provides a F test to determine whether the means of an outcome variable are different across groups.
+
+$$F = \frac{\text{between-group variance}}{\text{within-group variance}}$$
+
+For example, if we want to conduct an analysis of variance for **the mean earnings for groups defined by race and gender** (white male, white female, black male, black female), we can first create a new variable `group` that indicate which group the observation belongs to, then use `aov()` for ANOVA to determine whether the mean earnings are different across groups.
+
+```{r }
+
+# Create a group variable, here we only look at white and black, so delete those with other races
+earnings_df_grp <- earnings_df %>%
+  filter(other == 0) %>% 
+  mutate(group = ifelse(female == 0 & black == 0, 
+                        "white_male", 
+                        ifelse(female == 1 & black == 0, 
+                               "white_female", 
+                               ifelse(female == 0 & black == 1, 
+                                      "black_male", 
+                                      "black_female"
+                                      )
+                               )
+                        )
+         )
+  
+# Examine data
+head(earnings_df_grp, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+# Visualize earnings by group using boxplot
+earnings_df_grp %>%
+  ggplot() +
+  geom_boxplot(aes(x = group, y = earn, color = group))
+
+# Visualize earnings by group using density curve
+earnings_df_grp %>%
+  ggplot() +
+  geom_density(aes(earn, color = group))
+
+
+# Fit an ANOVA model
+anova_test <- aov(earn ~ group, data = earnings_df_grp)
+
+# Summary of the model result
+summary(anova_test)
+
+```
+
+---
+
+### Part 2 Exercise
+
+1. What is the null and the alternative hypothesis for the above ANOVA test?
+
+2. What is your decision given the ANOVA result? 
+
+
+---
+
+## Part 3: Heteroskedasticity
+
+Heteroskedasticity occurs when the **variance of the error term changes across different values of the explanatory variables**. This violates the basic assumption of OLS, in which the variance of the error term should be constant across different values of the explanatory variables. 
+
+
+### Simulate data with homoskedasticity and heteroskedasticity
+
+We can simulate a data set that is heteroskedastic by making the variance of the error term *a function of the explanatory variable*. Using the bivariant relationship we simulated in Lab 5 between education and earning:
+
+```{r }
+
+# Simulate IV (edu level)
+set.seed(1234)
+edu <- rpois(1000, lambda = 6)  
+
+# Simulate error term with a constant sd
+set.seed(1234)
+error <- rnorm(1000, 0, 20)     
+
+# Calculate DV
+earn <- 10 + 10*edu + error    
+
+# Put variables into a dataframe
+homo_df <- tibble(earn = earn, edu = edu)
+
+# Plot Y against X
+homo_df %>%
+  ggplot(aes(x = edu, y = earn)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  labs(title = "Scatterplot of Simulated Data with Homoskedasticity")
+
+
+##-----------------------------------------------
+
+# Simulate error term with a sd that is dependent on the value of IV
+set.seed(1234)
+error_hetero <- rnorm(1000, 0, 15*edu)
+
+# Calculate DV 
+earn_hetero <- 10 + 10*edu + error_hetero 
+
+# Put variables into a dataframe
+hetero_df <- tibble(earn = earn_hetero, edu = edu)
+
+# Plot Y against X
+hetero_df %>%
+  ggplot(aes(x = edu, y = earn)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  labs(title = "Scatterplot of Simulated Data with Heteroskedasticity")
+
+
+##-----------------------------------------------
+
+# Fit model:
+m_homo <- lm(earn ~ edu, homo_df)
+m_hetero <- lm(earn_hetero ~ edu, hetero_df)
+
+stargazer(m_homo, m_hetero, type = "text")
+
+
+```
+
+### Diagnosing heteroskedasticity by plotting
+
+One way to diagnose heteroskedasticity is to plot Y against X or plot the regression residuals $(y - \hat y)$ against X. For example, we can plot Y against X in our simulated datasets with the fitted OLS line displayed. 
+
+```{r }
+
+# Plot Y against X
+homo_df %>%
+  ggplot(aes(x = edu, y = earn)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  geom_abline(intercept = m_homo$coefficients[1], slope = m_homo$coefficients[2]) +
+  labs(title = "Fitted OLS with Observed Data (Homoskedasticity)")
+
+
+# Plot Y against X
+hetero_df %>%
+  ggplot(aes(x = edu, y = earn)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  geom_abline(intercept = m_hetero$coefficients[1], slope = m_hetero$coefficients[2]) +
+  labs(title = "Fitted OLS with Observed Data (Heteroskedasticity)")
+
+```
+
+Another way to check the distribution of the model residuals is to simply apply the `plot()` function to the model object.  
+
+For the homoskedasticity data, we have:
+
+```{r}
+
+# set graphical parameters
+par(mfrow = c(2,2)) # plot 2 X 2 matrix, by row
+
+# plot diagnostics plots
+plot(m_homo, pch = 19, cex = .5)
+
+```
+  
+  
+  For the heteroskedasticity data, we have:
+  
+```{r }
+# set graphical parameters
+par(mfrow = c(2,2)) # plot 2 X 2 matrix, by row
+
+# plot diagnostics plots
+plot(m_hetero, pch = 19, cex = .5)
+
+```
+
+- The upper-left is the **Residuals vs Fitted** plot. It plots fitted Y against residuals. It is used to check the **linear relationship** assumptions. The red line (the LOWESS line) should be a horizontal line at residuals == 0. Deviation from this pattern raises flag to your linearity assumption. In our case, since both the homoskedastic and the heteroskedastic datasets have a true linear relationship between X and Y, the LOWESS lines are both approximately a horizontal line at residuals == 0.
+
+- The upper-right is the **Normal Q-Q** plot. It plots the quantiles of the standardized residuals against the theoretical quantiles of a Normal distribution. It is used to examine **whether the residuals are normally distributed**. If the distribution of the residuals were close to a Normal distribution, the points should align along the dashed diagonal line. Deviation from this pattern suggests violations to the Normality assumption we make about the error term. In our case, the Q-Q plot of the heteroskedastic dataset shows deviation from the dashed line, suggesting the residuals are not normally distributed.
+
+- The lower-left is the **Scale-Location** plot. It plots the "square-root of the absolute value of standardized residuals" against fitted values of Y. It is used to check **the homogeneity of variance of the residuals**. Horizontal line with equally spread points is a good indication of homoscedasticity. In our case, the contrast between the homoskedastic and the heteroskedastic datasets are apparent. In the heteroskedastic data, the residuals tend to increase in their absolute values with larger fitted values. The upward LOWESS line suggests a heteroscedasticity problem in the data.
+
+- Lastly, the lower-right is the **Residuals vs Leverage** plot. It plots standardized residuals against "Leverage", which can be understood as how influential a specific observation is on the fitted values. This plot is used to identify influential cases. It points out extreme values that might influence the regression results when included or excluded from the analysis. To learn more about the concept of leverage, see Fox 11.2 (p.244-246). 
+
+Note that all of the above diagnostic plots are only suggestive and not hard evidence of model misspecification.
+
+
+### How does heteroskedasticity affect regression results? 
+
+1. Heteroskedasticity does NOT cause bias or inconsistency in the OLS estimators of the $\beta$'s.
+2. Heteroskedasticity does NOT affect $R^2$.
+3. Heteroskedasticity will affect our estimated standard errors of $\beta$ coefficients.
+
+### Robust Standard Errors
+
+We can use the packages `sandwich` and `lmtest` to get robust standard errors when we suspect the data suffers from heteroskedasticity. 
+
+```{r }
+
+summary(m_homo)
+coeftest(m_homo, vcov = sandwich)
+
+summary(m_hetero)
+coeftest(m_hetero, vcov = sandwich)
+
+```
+
+---
+
+### Part 3 Exercise
+
+Why heteroskedasticity does NOT affect $R^2$?
+
+---
+
+
+## Part 4: Interactions with Two Dummy Variables
+
+We have practiced interpreting the interaction of one dummy variable and one numeric variable in Lab 5. Make sure to review that part, too. Today, we will practice interpreting interactions of two dummy variables.  
+
+Given the following modeling result, please answer the questions in Part 3 Exercise.
+
+![](graph/dummy_reg_table.png){width=40%}
+
+---
+
+### Part 4 Exercise 
+
+  1. What will be the predicted difference in estimated mean earnings for a white person with a college degree and a black person with a college degree? Whose earnings will be higher?
+  
+  2. What will be the predicted difference in estimated mean earnings for a white person with a college degree and a black person without a college degree? Whose earnings will be higher?
+  
+  3. What will be the predicted difference in estimated mean earnings for a white person without a college degree and a black person without a college degree? Whose earnings will be higher?
+  
+  4. What will be the predicted difference in estimated mean earnings for a white person without a college degree and a black person with a college degree? Whose earnings will be higher?
+  
+  5. What will be the predicted difference in estimated mean earnings for a white person with a college degree and a white person without a college degree? Whose earnings will be higher?
+    
+  6. What will be the predicted difference in estimated mean earnings for a black person with a college degree and a black person without a college degree? Whose earnings will be higher?
+  
+  7. How to interpret the interaction coefficient? 
+  
+---
+
+
+## Part 5: Github: Getting Started  
+  
+  We will pick up where we left last week about using Github. Finish the exercise to make sure that you know how to create a repo, and how to keep track of your coding files using Github. Instead of using lab6 files for this test repo, you can use lab7 by creating a repo called "lab7_test" (or any name you prefer).
+
+---
+
+### Part 5 Exercise
+
+1. Sign up [Github](https://github.com/) (your nyu email can give you "pro" Github account).  
+
+2. Download [Github Desktop](https://desktop.github.com/) and sign in with your Github account.
+
+3. In your Github account, create a repository named "lab6_git_demo". You can either choose it to be "private" or "public".  
+
+3. Sync this repo to your local folder using Github Desktop (I recommend you create a designated "git_repos" folder and sync it there).  
+
+4. Copy all lab6 related files to your repo folder. Then, commit and push the changes to your Github repo. 
+
+5. Check your "lab6_git_demo" repo page on Github, does it have all files updated?  
+
+6. Delete some code of your choice in your lab6 coding file, then commit and push the change to your Github repo. 
+
+7. Check your "lab6_git_demo" repo page on Github, click your commit ID, what do you see? 
+  
+---
