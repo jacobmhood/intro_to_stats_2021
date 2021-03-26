@@ -180,10 +180,10 @@ counterfactual_control <- unemploy_df %>% filter(sch_high_q_counterf == 1)
 mean(observed_treated$unemp) - mean(observed_control$unemp)
 
 # Treatment effect on the treated
-mean(observed_treated$unemp) - mean(counterfactual_control$unemp_counterf)
+mean(observed_treated$unemp) - mean(counterfactual_treated$unemp_counterf)
 
 # Selection bias
-mean(counterfactual_control$unemp_counterf) - mean(observed_control$unemp)
+mean(counterfactual_treated$unemp_counterf) - mean(observed_control$unemp)
 
 ```
   

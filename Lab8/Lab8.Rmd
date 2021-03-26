@@ -163,9 +163,15 @@ $$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D = 1] - E[Y^C|D = 0]$$
 As covered in the lecture, we can decompose the naive estimator to:
 
 $$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D=1] - E[Y^C|D=1] + E[Y^C|D=1] - E[Y^C|D=0]$$
-where $E[Y^T|D=1] - E[Y^C|D=1]$ is the **treatment effect on the treated** and $E[Y^C|D=1] - E[Y^C|D=0]$ is the **selectio bias** (you can think of as the effect of the treatment on the observed control group -units failed to be selected to receive the treatment).
+where $E[Y^T|D=1] - E[Y^C|D=1]$ is the **treatment effect on the treated** and $E[Y^C|D=1] - E[Y^C|D=0]$ is the **selectio bias** (you can think of as the baseline difference of $Y$ if both the treatment and the control group are not treated).
 
 Although in the real world, we cannot observe the counterfactuals, we can simulate data that suffers from the selection bias problem and calculate the counterfactual $E(Y)$ for both $E[Y^T|D=0]$ and $E[Y^C|D=1]$, and thus obtain the native estimator, the treatment effect on the treated, and the selection bias.  
+
+>*Additional note on the notation* (See Morgan and Winship:54-8)  
+1. The notations $D = 1$ and $D = 0$ tell us whether we are looking at the (actual) treatment or the control group. Whereas the notations $Y^T$ and $Y^C$ are the realized values of $Y$ if one gets treated ($Y^T$) or one does not get treated ($Y^C$).  
+2. Therefore, in the decomposed naive estimator of the ATE, the **treatment effect on the treated** (ATT) part means: The difference in the expected $Y$ between (i) if people in the current treatment group ($D = 1$) get treated ($E[Y^T|D=1]$), which is observed, and (ii) if people in the current treatment group ($D = 1$) did not get treatment ($E[Y^C|D=1]$), which is the counterfactual.  
+3. Whereas the **selectio bias** part means: The difference in the expected $Y$ between (i) if the current control group ($D = 0$) did not get the treatment ($E[Y^C|D=0]$), which is observed, and (ii) if the current treatment group ($D = 1$) also did not get the treatment ($E[Y^C|D=1]$), which is counterfactual. That is, **the baseline difference of $Y$ if both the treatment and the control group were not treated.**  
+4. There is also a definition of the **treatment effect on the control** (ATC), which can be expressed as $E[Y^T|D=0] - E[Y^C|D=0]$. This means: The difference in the expected $Y$ between (i) if people in the current control group ($D = 0$) get treated ($E[Y^T|D=0]$), which is the counterfactual, and (ii) if people in the current control group ($D = 0$) did not get treated ($E[Y^C|D=0]$), which is observed. 
 
 Following the example given in Q2 in Exam 3, let us simulate a data that has family income as a confounder for the relationship between school quality and adulthood unemployment.  
 
