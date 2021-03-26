@@ -1831,7 +1831,7 @@ library(stargazer)</code></pre>
 <td>Counterfactual</td>
 </tr>
 <tr class="even">
-<td>Treatment Group (<span class="math inline">\(D = 0\)</span>)</td>
+<td>Control Group (<span class="math inline">\(D = 0\)</span>)</td>
 <td>Counterfactual</td>
 <td>Observable as <span class="math inline">\(Y\)</span></td>
 </tr>
@@ -1853,7 +1853,7 @@ library(stargazer)</code></pre>
 <p>This is due to the fact that this additional factor is related to both assignment to treatment and the potential outcome.</p>
 <p>For example, if family income both affects the likelihood of a child going to a high quality school AND one’s likelihood to be unemployed in adulthood, using the naive estimation of ATE will lead us to <strong>overstate</strong> the effect of school quality in reducing unemployment because those in the treated group will have a lower potential outcome (unemployment risk) then the control group <em>even if they are not treated</em>.</p>
 <p>As covered in the lecture, we can decompose the naive estimator to:</p>
-<p><span class="math display">\[\hat E[\Delta]_\text{NAIVE} = E[Y^T|D=1] - E[Y^C|D=1] + E[Y^C|D=1] - E[Y^T|D=0]\]</span> where <span class="math inline">\(E[Y^T|D=1] - E[Y^C|D=1]\)</span> is the <strong>treatment effect on the treated</strong> and <span class="math inline">\(E[Y^C|D=1] - E[Y^C|D=0]\)</span> is the <strong>selectio bias</strong> (you can think of as the effect of the treatment on the observed control group -units failed to be selected to receive the treatment).</p>
+<p><span class="math display">\[\hat E[\Delta]_\text{NAIVE} = E[Y^T|D=1] - E[Y^C|D=1] + E[Y^C|D=1] - E[Y^C|D=0]\]</span> where <span class="math inline">\(E[Y^T|D=1] - E[Y^C|D=1]\)</span> is the <strong>treatment effect on the treated</strong> and <span class="math inline">\(E[Y^C|D=1] - E[Y^C|D=0]\)</span> is the <strong>selectio bias</strong> (you can think of as the effect of the treatment on the observed control group -units failed to be selected to receive the treatment).</p>
 <p>Although in the real world, we cannot observe the counterfactuals, we can simulate data that suffers from the selection bias problem and calculate the counterfactual <span class="math inline">\(E(Y)\)</span> for both <span class="math inline">\(E[Y^T|D=0]\)</span> and <span class="math inline">\(E[Y^C|D=1]\)</span>, and thus obtain the native estimator, the treatment effect on the treated, and the selection bias.</p>
 <p>Following the example given in Q2 in Exam 3, let us simulate a data that has family income as a confounder for the relationship between school quality and adulthood unemployment.</p>
 <pre class="r"><code># --------- Simulate First IV: Family income ---------
