@@ -135,7 +135,7 @@ The first question of Exam 3 aims to understand how gender and education predict
 Group                     |     $Y^T$            |   $Y^C$
 --------------------------|----------------------|----------------------
 Treatment Group ($D = 1$) | Observable as $Y$   |   Counterfactual 
-Control Group ($D = 0$) | Counterfactual       |   Observable as $Y$
+Treatment Group ($D = 0$) | Counterfactual       |   Observable as $Y$
 
 
 ### Naive Estimation of the Average Treatment Effect
@@ -162,7 +162,7 @@ $$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D = 1] - E[Y^C|D = 0]$$
 
 As covered in the lecture, we can decompose the naive estimator to:
 
-$$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D=1] - E[Y^C|D=1] + E[Y^C|D=1] - E[Y^C|D=0]$$
+$$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D=1] - E[Y^C|D=1] + E[Y^C|D=1] - E[Y^T|D=0]$$
 where $E[Y^T|D=1] - E[Y^C|D=1]$ is the **treatment effect on the treated** and $E[Y^C|D=1] - E[Y^C|D=0]$ is the **selectio bias** (you can think of as the effect of the treatment on the observed control group -units failed to be selected to receive the treatment).
 
 Although in the real world, we cannot observe the counterfactuals, we can simulate data that suffers from the selection bias problem and calculate the counterfactual $E(Y)$ for both $E[Y^T|D=0]$ and $E[Y^C|D=1]$, and thus obtain the native estimator, the treatment effect on the treated, and the selection bias.  
@@ -283,6 +283,10 @@ unemploy_df %>%
 ```{r }
 
 # Your code here
+m1 <- lm(unemp ~ sch_high_q, unemploy_df)
+m2 <- lm(unemp ~ sch_high_q + fam_inc, unemploy_df)
+
+stargazer(m1,m2, type = "text")
 
 ```
 
@@ -290,8 +294,22 @@ unemploy_df %>%
 
 ```{r }
 
-# Your code here
+# First, you can sort out the Ys based on treated or not & counterfactual or not
+observed_treated <- unemploy_df %>% filter(sch_high_q == 1)
+observed_control <- unemploy_df %>% filter(sch_high_q == 0)
+counterfactual_treated <- unemploy_df %>% filter(sch_high_q_counterf == 0)
+counterfactual_control <- unemploy_df %>% filter(sch_high_q_counterf == 1)
+# Note that counterfactual_treated is the same as observed_control, 
+# same for the other pair
 
+# Naive Estimator of the Average Treatment Effect
+mean(observed_treated$unemp) - mean(observed_control$unemp)
+
+# Treatment effect on the treated
+mean(observed_treated$unemp) - mean(counterfactual_control$unemp_counterf)
+
+# Selection bias
+mean(counterfactual_control$unemp_counterf) - mean(observed_control$unemp)
 ```
 
 ---
