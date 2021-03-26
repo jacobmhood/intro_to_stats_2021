@@ -135,7 +135,7 @@ The first question of Exam 3 aims to understand how gender and education predict
 Group                     |     $Y^T$            |   $Y^C$
 --------------------------|----------------------|----------------------
 Treatment Group ($D = 1$) | Observable as $Y$   |   Counterfactual 
-Treatment Group ($D = 0$) | Counterfactual       |   Observable as $Y$
+Control Group ($D = 0$) | Counterfactual       |   Observable as $Y$
 
 
 ### Naive Estimation of the Average Treatment Effect
@@ -162,7 +162,7 @@ $$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D = 1] - E[Y^C|D = 0]$$
 
 As covered in the lecture, we can decompose the naive estimator to:
 
-$$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D=1] - E[Y^C|D=1] + E[Y^C|D=1] - E[Y^T|D=0]$$
+$$\hat E[\Delta]_\text{NAIVE} = E[Y^T|D=1] - E[Y^C|D=1] + E[Y^C|D=1] - E[Y^C|D=0]$$
 where $E[Y^T|D=1] - E[Y^C|D=1]$ is the **treatment effect on the treated** and $E[Y^C|D=1] - E[Y^C|D=0]$ is the **selectio bias** (you can think of as the effect of the treatment on the observed control group -units failed to be selected to receive the treatment).
 
 Although in the real world, we cannot observe the counterfactuals, we can simulate data that suffers from the selection bias problem and calculate the counterfactual $E(Y)$ for both $E[Y^T|D=0]$ and $E[Y^C|D=1]$, and thus obtain the native estimator, the treatment effect on the treated, and the selection bias.  
