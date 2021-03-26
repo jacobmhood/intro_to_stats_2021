@@ -1,0 +1,125 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 7 Solution"
+author: "Di Zhou"
+date: "3/19/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Part 1 Exercise
+
+Given that **standardized coefficients tell us the change in $Y$, in $Y$'s standard deviation units, for a one-standard-deviation increase in $X_i$, while holding other $X$s constant**, interpret the standardized coefficients of `age_recode` and `edu` in the above modeling result.
+
+**Answer**: one-standard-deviation increase of age will lead to 0.098 sd increase in earning. One-standard-deviation increase of education will lead to 0.622 sd increase in earning.
+
+---
+
+### Part 2 Exercise
+
+1. What is the null and the alternative hypothesis for the above ANOVA test?
+
+2. What is your decision given the ANOVA result? 
+
+**Answer:**  
+  Q1. $H_0: \mu_\text{wh,m} = \mu_\text{bl,m} = \mu_\text{wh,f} = \mu_\text{bl,f}$; $H_a$: At least one of the means are not equal to others.  
+  Q2. Reject the Null.
+  
+---
+
+### Part 3 Exercise
+
+Why heteroskedasticity does NOT affect $R^2$?  
+  
+**Answer:**  
+  $R^2$ is the proportion of explained variance. Heteroskedasticity concerns the variance of the residual errors, which does not affect the value of TSS (total sum of squares) and SSE (residual sum of square errors), which are used to calculate $R^2$.
+  
+---
+
+### Part 4 Exercise 
+
+  1. What will be the predicted difference in estimated mean earnings for a white person with a college degree and a black person with a college degree? Whose earnings will be higher?
+  
+  2. What will be the predicted difference in estimated mean earnings for a white person with a college degree and a black person without a college degree? Whose earnings will be higher?
+  
+  3. What will be the predicted difference in estimated mean earnings for a white person without a college degree and a black person without a college degree? Whose earnings will be higher?
+  
+  4. What will be the predicted difference in estimated mean earnings for a white person without a college degree and a black person with a college degree? Whose earnings will be higher?  
+  
+  5. What will be the predicted difference in estimated mean earnings for a white person with a college degree and a white person without a college degree? Whose earnings will be higher?
+    
+  6. What will be the predicted difference in estimated mean earnings for a black person with a college degree and a black person without a college degree? Whose earnings will be higher?
+  
+  7. How to interpret the interaction coefficient? 
+  
+**Answer**  
+  Q1: -(-2.773 + 1.496)  = 1.277, white with college will be 1.277 higher than black with college  
+  
+  Q2: 6.129 - (-2.773) = 8.902, white with college will be 8.902 higher than black without college  
+  
+  Q3: 2.773, white without college will be 2.773 higher than black without college    
+  
+  Q4: -(-2.773 + 6.129 + 1.496) = -4.852, white without college will be 4.852 lower than black with college  
+  
+  Q5: 6.129, white with college will be 6.129 higher than white without college
+  
+  Q6: 6.129 + 1.496 = 7.625, black with college will be 7.625 higher than black without college
+  
+  Q7: There are two ways to interpret the interaction coefficient: (1) For black respondents, having a college degree will provide an additional premium in one's earning. (2) For respondents with a college degree, being black will provide an additional premium in one's earning.
+
+To solve these questions, you can write down the prediction equation of this model:
+
+$$\hat {Earning} = 15.077 -2.773 \cdot \text{black} + 6.129 \cdot \text{college} + 1.496 \cdot \text{black} \cdot \text{college}$$  
+Then, specify the prediction equations for four possible respondents and compare them accordingly.
+
+1. A white person with a college degree:
+$$\hat {Earning} = 15.077 -2.773 \cdot 0 + 6.129 \cdot 1 + 1.496 \cdot 0 \cdot 1$$
+2. A black person with a college degree:
+$$\hat {Earning} = 15.077 -2.773 \cdot 1 + 6.129 \cdot 1 + 1.496 \cdot 1 \cdot 1$$
+
+3. A white person without a college degree:
+$$\hat {Earning} = 15.077 -2.773 \cdot 0 + 6.129 \cdot 0 + 1.496 \cdot 0 \cdot 0$$
+
+4. A black person without a college degree:
+$$\hat {Earning} = 15.077 -2.773 \cdot 1 + 6.129 \cdot 0 + 1.496 \cdot 1 \cdot 0$$
+
+---
