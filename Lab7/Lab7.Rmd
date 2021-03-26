@@ -264,7 +264,6 @@ hetero_df %>%
   geom_point(shape = 1, alpha = 0.7) +
   labs(title = "Scatterplot of Simulated Data with Heteroskedasticity")
 
-
 ##-----------------------------------------------
 
 # Fit model:
