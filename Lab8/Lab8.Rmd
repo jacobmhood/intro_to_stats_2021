@@ -294,6 +294,7 @@ unemploy_df %>%
 
 ```
 
+---
 
 ## Part 3: Replication Project: Submit Data Extract and Prepare for Replication  
 
@@ -332,6 +333,7 @@ Your data extraction should include 2010 ACS, 2000 5%, 1990 1%, 1980 5%, and for
 
 2. Sign in to your Github account, create a Repo called "final_rep" (or other names you like), sync this repo to your local replication project folder. 
 
-3. After your data is ready, save it to your local replication project folder and create a `.Rproj` file in this folder before you start coding. Make sure to sync your coding files once in a while to track your coding history. Note that you cannot sync your raw data since it is too large, but you should sync the rest of your files. 
+3. After your data is ready, save it to your local replication project folder and **create a `.Rproj` file in this folder** before you start coding. Make sure to **sync your coding files to Github** once in a while to track your coding history. Note that you cannot sync your raw data since it is too large, but you should sync the rest of your files. 
 
+---
 
