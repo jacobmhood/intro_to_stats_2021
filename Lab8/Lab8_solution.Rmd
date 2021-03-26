@@ -1,0 +1,200 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 8"
+author: "Di Zhou"
+date: "3/26/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+```{r setup, include=F, message=F}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(stargazer)
+
+```
+
+### Part 1 Exercise 1 Answer  
+  1.A. The regression equation for using Male and $D_\text{HS}$ as the reference:
+  $$Y = \beta_0 + \beta_1 D_\text{female} + \beta_2 D_\text{SC} + \beta_3 D_\text{BA} + \epsilon$$  
+  
+  1.B. The regression equation for using Male and $D_\text{SC}$ as the reference:
+  $$Y = \beta_0 + \beta_1 D_\text{female} + \beta_2 D_\text{HS} + \beta_3 D_\text{BA} + \epsilon$$
+
+  2. For all education levels, the gender gap is $\beta_1$.  
+  
+  3. For all education levels, the gender gap is $\beta_1$.
+  
+  4. There is no difference. 
+  
+---
+
+### Part 1 Exercise 2 Answer  
+
+  1.A. Using Male and $D_\text{HS}$ as the reference:
+  
+  $$Y = \beta_0 + \beta_1 D_\text{female} + \beta_2 D_\text{SC} + \beta_3 D_\text{BA} + \beta_4 D_\text{female} D_\text{SC} + \beta_5 D_\text{female} D_\text{BA} + \epsilon$$
+  
+  1.B. Using Male and $D_\text{SC}$ as the reference:  
+  
+  $$Y = \beta_0 + \beta_1 D_\text{female} + \beta_2 D_\text{HS} + \beta_3 D_\text{BA} + \beta_4 D_\text{female} D_\text{HS} + \beta_5 D_\text{female} D_\text{BA} + \epsilon$$  
+  
+  
+  2.(i) For individuals with high school education, $\hat Y_\text{male, HS} = \beta_0$, $\hat Y_\text{female, HS} = \beta_0 + \beta_1$, so for equation (1.A.) the gender gap for people with high school education is $\beta_1$.  
+  
+  2.(ii) For individuals with some college education, $\hat Y_\text{male, SC} = \beta_0 + \beta_2$, $\hat Y_\text{female, SC} = \beta_0 + \beta_1 + \beta_2 + \beta_4$, so for equation (1.A.) the gender gap for people with some college education is $\beta_1 + \beta_4$.   
+  
+  2.(iii) For individuals with BA or higher education, $\hat Y_\text{male, BA} = \beta_0 + \beta_3$, $\hat Y_\text{female, BA} = \beta_0 + \beta_1 + \beta_3 + \beta_5$, so for equation (1.A.) the gender gap for people with BA or higher education is $\beta_1 + \beta_5$.  
+  
+  3.(i) For individuals with high school education, $\hat Y_\text{male, HS} = \beta_0 + \beta_2$, $\hat Y_\text{female, HS} = \beta_0 + \beta_1 + \beta_2 + \beta_4$, so for equation (1.B.) the gender gap for high school education is $\beta_1 + \beta_4$.  
+  
+  3.(ii) For individuals with some college education, $\hat Y_\text{male, SC} = \beta_0$, $\hat Y_\text{female, SC} = \beta_0 + \beta_1$, so for equation (1.B.) the gender gap for some college education is $\beta_1$.  
+  
+  3.(iii) For individuals with BA or higher education, $\hat Y_\text{male, BA} = \beta_0 + \beta_3$, $\hat Y_\text{female, BA} = \beta_0 + \beta_1 + \beta_3 + \beta_5$, so for equation (1.B.) the gender gap for BA education is $\beta_1 + \beta_5$.  
+
+4.Since 1e wants to test whether the gender gap differs between *those with some college* and *those with BA or higher*, **equation (1.B.) that uses $D_\text{SC}$ as the reference can help us answer the question**, because the difference in gender gap between people with some college and those with BA or higher is represented by **$\beta_5$**, where as in equation (1.A.) there is no single coefficient representing the difference in gender gap between the two categories in focus.  
+    
+  Note that for equation (1.A.), we CANNOT test whether $\beta_4 - \beta_5 = 0$ to derive whether the difference in gender gap between people with some college and those with BA or higher differs from zero, because the standard errors and t-values we get from the regression results are only for the value of each individual coefficient, not their difference.   
+  
+  The takeaway is that when you include interaction with dummy variables in your regression equation, the coefficient of the interaction terms represent the variation in effect **between your reference category and that specific non-reference category**, and you cannot directly compare the variation in effect between your non-reference category dummies because the regression result does not provide hypothesis testing for that. 
+
+---
+
+```{r, include=F}
+
+# --------- Simulate First IV: Family income ---------
+# Simulate a distribution of family income (in 1,000 dollar)
+# random beta distribution for skewed distribution
+set.seed(5678)
+family_income <- 20*rbeta(1000, 2, 10) 
+
+# Check distribution
+hist(family_income) 
+
+
+# --------- Simulate Second IV: School Quality Dummy ---------
+# Simulate a dummy variable for high vs. low shool quality
+
+# The probability of going to a high quality school (Dummy = 1) 
+# is a linear increasing function of familty income
+prob_of_high_q_sch <- (2 + scale(family_income))/7
+
+# # Check the relationship btw family income and prob of high q sch
+# tibble(prob_of_high_q_sch = prob_of_high_q_sch,
+#        family_income = family_income) %>%
+#   ggplot() +
+#   geom_point(aes(family_income, prob_of_high_q_sch))
+
+# Simulate the dummy variable for school quality (high = 1, low = 0)
+set.seed(5678)
+school_quality_dummy <- rbinom(1000, 1, prob_of_high_q_sch)
+
+
+# --------- Simulate DV: Adult Unemployment ---------
+set.seed(5678)
+# An unemployment risk index
+unemp <- 17 - 0.3*school_quality_dummy - 0.5*family_income + rnorm(1000, 0, 2)
+# Check distribution
+hist(unemp)
+
+
+# --------- Create a Df of Simulated Data ---------
+unemploy_df <- tibble(
+  fam_inc = family_income,
+  sch_high_q = school_quality_dummy,
+  unemp = unemp
+)
+
+# --------- Add counterfactual variables---------
+unemploy_df <- unemploy_df %>%
+  mutate(sch_high_q_counterf = ifelse(sch_high_q == 1, 0, 1),
+         unemp_counterf = 17 - 0.3*sch_high_q_counterf - 0.5*family_income + rnorm(1000, 0, 2))
+
+```
+
+### Part 2 Exercise
+
+1. Simulate the data using the code above (make sure to run all the code with the same set.seed() function used in the original code). Run two regression models, one with only school quality as the IV, and the other with both school quality and family income as IVs. Display your result using `stargazer()`. How does the coefficient of school quality change? How about $R^2$? Why? 
+
+```{r }
+# Estimate regression model
+m1 <- lm(unemp ~ sch_high_q, unemploy_df)
+m2 <- lm(unemp ~ sch_high_q + fam_inc, unemploy_df)
+stargazer(m1, m2, type = "text")
+
+```
+  
+  
+  The coefficient of school quality decreases from Model 1 to Model 2, because in Model 2, we controlled the confounder whose effect was expressed through school quality in Model 1. $R^2$ increases from Model 1 to Model 2, because we correctly included the confounder in our model whose variation explains more variation in Y compared to Model 1 that only include school quality as the IV.
+  
+  
+2. According to the definition and equations we learned and using the simulate data, calculate (i) the Naive Estimator of ATE, (ii) treatment effect on the treated, and (iii) selection bias. How does these values compare? Interpret your results in a few words.
+
+```{r }
+# First, you can sort out the Ys based on treated or not & counterfactual or not
+observed_treated <- unemploy_df %>% filter(sch_high_q == 1)
+observed_control <- unemploy_df %>% filter(sch_high_q == 0)
+counterfactual_treated <- unemploy_df %>% filter(sch_high_q_counterf == 0)
+counterfactual_control <- unemploy_df %>% filter(sch_high_q_counterf == 1)
+
+# Note that observed_control is the same as counterfactual_control, 
+# same for the other pair
+
+# Naive Estimator of the Average Treatment Effect
+mean(observed_treated$unemp) - mean(observed_control$unemp)
+
+# Treatment effect on the treated
+mean(observed_treated$unemp) - mean(counterfactual_control$unemp_counterf)
+
+# Selection bias
+mean(counterfactual_control$unemp_counterf) - mean(observed_control$unemp)
+
+```
+  
+  The absolute value of the naive ATE is larger than the absolute value of the treatment effect on the treated. This is because those are selected to the treatment group tend to have a higher family income that helps reduce adulthood unemployment risk. Therefore, the actual effect of school quality on the treated group is smaller than the naive estimation.  
+
+---
+
+### Part 3 Exercise
+
+The screenshot is for reference only. For some variables, I included several options that you only need to pick one. Same for the 1970 samples. 
+
+![](graph/rep_datacart.png){width=60%}
+
+---
