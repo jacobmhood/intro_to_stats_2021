@@ -1783,11 +1783,11 @@ counterfactual_control &lt;- unemploy_df %&gt;% filter(sch_high_q_counterf == 1)
 mean(observed_treated$unemp) - mean(observed_control$unemp)</code></pre>
 <pre><code>## [1] -0.9775141</code></pre>
 <pre class="r"><code># Treatment effect on the treated
-mean(observed_treated$unemp) - mean(counterfactual_control$unemp_counterf)</code></pre>
-<pre><code>## [1] -0.7594192</code></pre>
+mean(observed_treated$unemp) - mean(counterfactual_treated$unemp_counterf)</code></pre>
+<pre><code>## [1] -0.4000579</code></pre>
 <pre class="r"><code># Selection bias
-mean(counterfactual_control$unemp_counterf) - mean(observed_control$unemp)</code></pre>
-<pre><code>## [1] -0.218095</code></pre>
+mean(counterfactual_treated$unemp_counterf) - mean(observed_control$unemp)</code></pre>
+<pre><code>## [1] -0.5774562</code></pre>
 <p>The absolute value of the naive ATE is larger than the absolute value of the treatment effect on the treated. This is because those are selected to the treatment group tend to have a higher family income that helps reduce adulthood unemployment risk. Therefore, the actual effect of school quality on the treated group is smaller than the naive estimation.</p>
 <hr />
 </div>
