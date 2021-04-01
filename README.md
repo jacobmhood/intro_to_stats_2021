@@ -53,4 +53,6 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
 + Lab zip folder will be shared via Slack before lab
 + View lab exercise solution: [Lab 8 Solution](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab8/Lab8_solution.html)
 
-
+### Lab 9 Regression with Binary Outcomes: Linear Probability Model and Logistic Regression (4/2/2021)
++ View lab notes: [Lab 9](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab9/Lab9.html)
++ Lab zip folder will be shared via Slack before lab

@@ -1,0 +1,341 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 9"
+author: "Di Zhou"
+date: "4/2/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+## Logistics & Announcement  
+
+* No office hour today. Please email me for appointment. 
+* Future office hour adjustment: Friday 10-11am (please also let me know if you plan to come) or by appointment. 
+* PS3 posted (NYU Classes > Resources > Assignments > ps3)
+* Replication project check-up: Questions? Issues? Do you want to devote some lab time every week for co-working on the replication project? 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tidyverse, stargazer, kableExtra, gridExtra, effects)
+
+```
+
+## Part 1: Simulate Data with Binary Outcomes
+
+First, let's simulate a dataset on the support of same-sex marriage (Yes=1) by education, age, gender, and race. In the process of data simulation, we will understand how binary outcomes can be transformed to probability in logistic regression models.  
+  
+  
+```{r }
+# Support Same Sex Marriage (Yes=1) = Education + Age + Gender + Race
+
+# -------Simulate IVs-------
+set.seed(123)
+# Years of education
+eduy <- rpois(1000,12) 
+hist(eduy)
+# Age
+age <- rpois(1000,40) 
+hist(age)
+# Gender dummy
+female <- rbinom(1000, 1, 0.5)
+table(female)
+# Race dummy
+black <- rbinom(1000, 1, 0.3)
+table(black)
+
+# -------Simulate DV-------
+# log_odds is the log odds of supporting same-sex marriage
+# Log odds is a LINEAR FUNCTION of IVs
+log_odds = 0.8*eduy + (-0.2)*age + 0.8*female 
+
+# Tranform log odds to probability using the logistic function
+# which is the INVERSE FUNCTION of log odds
+# p is the probability of supporting the same-sex marriage
+p = exp(log_odds) / (1 + exp(log_odds))
+
+# support is whether one supports same-sex marriage
+# the value is generated according to one's probability p
+set.seed(123)
+support <- rbinom(1000, 1, p)
+
+# You can see how log odds, probability, and the final Y 
+# are mapped to each other through plots
+par(mfrow = c(1, 2))
+plot(x = log_odds, y = p)
+plot(x = p,  y = support)
+```
+
+```{r }
+# Create dataframe
+support_df <- tibble(
+  support = support,
+  eduy = eduy,
+  age = age,
+  female = female,
+  black = black
+)
+
+head(support_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+support_df %>%
+  ggplot() +
+  geom_boxplot(aes(x = as.factor(support), y = age))
+
+support_df %>%
+  group_by(support) %>%
+  summarise(
+    mean_eduy = mean(eduy), 
+    mean_age = mean(age),
+    perc_female = mean(female),
+    perc_black = mean(black)
+    ) %>%
+  t() %>%
+  as.data.frame() %>% 
+  kbl("html") %>%
+  kable_classic_2(full_width = F)
+
+
+```
+
+---
+
+### Part 1 Exercise  
+  A logistic function or logistic curve is a common S-shaped curve (sigmoid curve) with equation
+$$f(x)=\frac{L}{1+e^{-k(x-x_0)}},$$
+  
+  where:  
+  
+  $x_0$ is the $x$ value of the sigmoid's midpoint;  
+  $L$ is the curve's maximum value;  
+  $k$ is the logistic growth rate or steepness of the curve.  
+  
+  For example, the graph below plots logistic functions with $L = 1, x_0 = 0$ whereas $k = 2, 1, \text{and   } 0.5$.
+  
+<p align="center">
+![](logistic.png){width=50%}
+</p>  
+  
+Question: Show that in a logistic regression model where
+
+$$\log(\frac{p_i}{1-p_i}) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k,$$
+
+the probability $p_i$ can be expressed as a standard logistic sigmoid function of the linear combination of $X$ where $L=1, k=1, x_0 = 0$. That is, show that $p_i$ is a function of $z = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k$ where $p_i = f(z) = \frac{1}{1+e^{-z}}$.
+
+*Hint:* The $\log$ in the above equation uses the natural log $\ln$, and recall that $e^{\ln x} = x$
+
+---
+
+## Part 2: Linear Probability Model  
+
+### Estimate LPM 
+
+  Linear Probability Model, which models the probability of $Y=1$ using the model 
+  
+  $$P(Y = 1) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k + \epsilon$$  
+  
+  can be estimated using the same method as we estimate a regular linear model. In R, simply use `lm()`.  
+  Note that the error term of LPM is not normally distributed and is heteroskedastic. If you are interested, [read more about it here](https://www.dummies.com/education/economics/econometrics/3-main-linear-probability-model-lpm-problems/#:~:text=The%20error%20term%20of%20an,for%20a%20given%20X%20value.). 
+
+
+```{r, warning=F, message=F}
+
+m1 <- lm(support ~ eduy, support_df)
+m2 <- lm(support ~ eduy + age, support_df)
+m3 <- lm(support ~ eduy + age + female, support_df)
+m4 <- lm(support ~ eduy + age + female + black, support_df)
+
+stargazer(m1, m2, m3, m4, type="text", omit.stat = c("f"))
+```
+  
+  
+  The interpretation of the coefficients of LPM is also straightforward: Holding other variables constant, one unit increase in $X_k$ will increase/decrease the probability of $Y = 1$ by $...$. Note that this effect is **additive**.  
+  
+  For example, in Model 4, holding other variables constant, compared to male, female is 6.5% more likely to support same-sex marriage. This effect is statistically significant at the 0.05 level.
+
+---
+
+### Part 2 Exercise
+
+Create two plots for this exercise and post your outputs on Slack.
+
+1. Use the original dataset (`support_df`), plot a scatterplot with `eduy` on X and `support` on Y. Fitted an OLS line. For your `geom_point()` function, use `position = position_jitter(width = ..., height = ...)` to make the distribution of observations more discernible.
+
+2. Plot a predicted effect of `eduy` on `support` according to `m4`. For the purpose of this exercise, use `seq(0, 25, 1)` to generate the number sequence for `eduy`.  
+
+3. What are the *empirical* value ranges of X and Y, and what are the *modeling* value ranges of X and Y? 
+
+```{r }
+
+# Your code here
+
+```
+
+---
+
+# Part 3: Logistic Regression  
+
+### 3.1 Estimate Logistic Regression in R
+
+In R, you can use `glm(..., family = binomial(link = "logit"))` or equivalently `glm(..., family = "binomial")`to fit logistic regression models.  
+
+Usually, we will get qualitatively similar result as the linear probability model. But logistic regression ensures the predicted value of Y to range between 0 and 1. 
+
+```{r}
+# Estimate Logistic Regression
+logit1 <- glm(support ~ eduy, support_df, family = binomial(link="logit"))
+logit2 <- glm(support ~ eduy + age, support_df, family = binomial(link="logit"))
+logit3 <- glm(support ~ eduy + age + female, support_df, family = binomial(link="logit"))
+logit4 <- glm(support ~ eduy + age + female + black, support_df, family = binomial(link="logit"))
+
+stargazer(logit1, logit2, logit3, logit4, 
+          type="text",
+          omit.stat = c("f"))
+
+```
+
+### 3.2 Interpret the Coefficients of Logistic Regression
+
+
+  The functional form of logistic regression is:  
+  
+  $$\log(\frac{p_i}{1-p_i}) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k$$
+  **$\beta_k$ is the effect on log odds, $\log(\frac{p_i}{1-p_i})$**. But the value change in log odds is difficult to grasp intuitively. As you can see from the logistic function in the exercise in Part 1, the change in log odds will result in very different amount of change in $p$ depending on the value of log odds. Remember that $\beta_k < 0$ indicates a negative effect, whereas $\beta_k > 0$ indicates a positive effect.   
+
+```{r, echo = F, fig.align="center", fig.height=4}  
+plot(x = log_odds, y = p)
+```  
+  
+  Therefore, when we interpret the coefficients of logistic regression models, we look at $exp(\beta_k), \text{or   } e^{\beta_k}$. **If the value of $X_k$ increases by one unit, we will need to *multiply* the odds by $exp(\beta_k)$**.  Alternatively, **if $\beta_k$ is positive, as $X_k$ increases by one unit, the odds of $Y = 1$ increases about $(exp(\beta_k) - 1)\%$**.  
+  
+  For example, for Model 4 (`logit4`), the coefficient of `female` ($0.679$) means that compared to male, holding other variables constant, the odds (the probability of support over the probability of not support) for female to support same-sex marriage will be multiplied by $exp(0.679) = 1.97$. Alternatively, the odds for female to support is $exp(0.679) - 1 = 0.97 = 97\%$ higher than male. This effect is statistically significant at the 0.05 level. 
+  
+  Because $exp(\beta_k)$ tells us how the odds changes in terms of multiplication (not addition), $exp(\beta_k)$ is called **odds ratio** (see Part 3 Exercise). Remember that since $exp(\beta_k)$ is the odds ratio, $exp(\beta_k) < 1$ indicates a deflating ("negative") effect, whereas $exp(\beta_k) > 1$ indicates a inflating (positive) effect.  
+  
+  According to the natural exponential function, you can map the value of $\beta_k$ to $exp(\beta_k)$. 
+
+<p align="center">
+  ![](exponential.jpeg)
+</p> 
+
+  In R, you can report a model's odds ratio (i.e. find the value of $exp(\beta_k)$) by running `exp(coef(your_logistic_model))`. 
+  
+```{r }
+# Find odds ratio of logit4
+exp(coef(logit4))
+
+```
+
+---
+
+### Part 3 Exercise
+
+In a logistic regression model with two predictors:  
+  
+  $$\log(\frac{p_i}{1-p_i}) = \beta_0 + \beta_1X_1 + \beta_2X_2$$
+Suppose the value of $X_2$ increases by one unit and we obtain the new probability $p_i'$, use $\beta_2$ to express the following: 
+
+1. Additive difference in *log odds*:  
+
+  $$\text{log odds}_i' - \text{log odds}_i =\log(\frac{p_i'}{1-p_i'}) - \log(\frac{p_i}{1-p_i}) = ?$$  
+
+2. Multiplicative difference in *odds*, i.e. *odds ratio*:  
+
+  $$\frac{\text{odds}_i'}{\text{odds}_i} = \frac{\frac{p_i'}{1-p_i'}}{\frac{p_i}{1-p_i}} = ?$$  
+*Hint:* Recall that $a^n \cdot a^m = a^{n + m}, a^n \div a^m = a^{n - m}$
+  
+---
+
+### 3.3 Plot Predicted Probabilities from Logistic Regression  
+
+You can use the same method we applied in the LPM plotting section. You can also use the `Effect()` function from the package `effects` (`install.packages("effects")`) to generate a dataframe with $\hat{Y}$ directly.
+
+```{r }
+# only let female and education varies, hold other predictors at their means
+pred_logit4 <- Effect(
+  # Key IVs for which you examine the predicted effects
+  c("eduy", "female"),   
+  # Model
+  logit4,
+  # Values of IVs, for other IVs use mean
+  xlevels = list(
+    female = c(0, 1), 
+    eduy = seq(0, 25, 1),
+    age = mean(support_df$age), 
+    black = mean(support_df$black)
+    ),
+  # Set confidence intervals
+  confidence.level = .95) %>%
+  # Convert to dataframe
+  as.data.frame()
+
+# Check the df:
+head(pred_logit4, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+# Plot
+pred_logit4 %>%
+  ggplot(aes(x = eduy, y = fit, ymax = upper, ymin = lower, 
+             fill = as.factor(female), linetype = as.factor(female))) + 
+  geom_line() + 
+  geom_ribbon(alpha = 0.3) +
+  labs(title = "Predicted Probability of Support to Same-Sex Marriage",
+       x = "Years of Education", 
+       y = "Predicted Probability") +
+  scale_fill_manual(name = "", 
+                    values = c("grey70", "red"), 
+                    label = c("Male", "Female")) +
+  scale_linetype_manual(name = "", 
+                        values = c("dashed", "solid"), 
+                        label = c("Male", "Female")) +
+  theme_bw() 
+
+
+
+```
+
+### 3.4 Extended Readings on Logit Regression  
+
+1. ["Randomization Does Not Justify Logistic Regression" by David A. Freedman](https://arxiv.org/pdf/0808.3914.pdf)  
+
+2. ["Interaction terms in logit and probit models" by Chunrong Ai and Edward C. Norton](https://www.sciencedirect.com/science/article/pii/S0165176503000326)  
+  
+  
+  
+  
+
