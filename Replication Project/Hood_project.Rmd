@@ -1,0 +1,47 @@
+---
+title: "Hood Replication Project"
+author: "Jacob Hood"
+date: "4/1/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, results = "asis"}
+knitr::opts_chunk$set(echo = TRUE)
+library(pacman)
+p_load(tidyverse, ipumsr, kableExtra)
+```
+
+## Loading data
+```{r}
+ddi <- read_ipums_ddi("usa_00003.xml")
+data <- read_ipums_micro(ddi)
+```
+
+```{r}
+head(data, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+```
+
+## Cleaing data
+```{r}
+# Selecting variables tp keep 
+data_clean <- data %>%
+  select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, LABFORCE,	CLASSWKR, OCC1990,	WKSWORK2,	UHRSWORK, INCWAGE)
+
+# View first 10 rows
+head(data_clean, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+```
+
+```{r}
+
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
