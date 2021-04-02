@@ -5,43 +5,60 @@ date: "4/1/2021"
 output: pdf_document
 ---
 
+## Setting up environment 
 ```{r setup, include=FALSE, results = "asis"}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
 p_load(tidyverse, ipumsr, kableExtra)
 ```
 
-## Loading data
-```{r}
+## Loading data into environment
+```{r loading data}
 ddi <- read_ipums_ddi("usa_00003.xml")
 data <- read_ipums_micro(ddi)
+crosswalk_data <- read.csv("occ_crosswalk.csv")
 ```
 
-```{r}
-head(data, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
-```
-
-## Cleaing data
-```{r}
-# Selecting variables tp keep 
+## Cleaning data
+```{r selecting variables}
+# Selecting variables to keep 
 data_clean <- data %>%
   select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, LABFORCE,	CLASSWKR, OCC1990,	WKSWORK2,	UHRSWORK, INCWAGE)
+```
 
-# View first 10 rows
-head(data_clean, n = 10) %>% kbl("html") %>% kable_classic_2(full_width = T)
+```{r remove percentiles}
+# Removing the top (99%) and bottom (1%) income percentiles 
+data_clean <- data_clean %>% filter(INCWAGE < quantile(data_clean$INCWAGE, 0.99) & INCWAGE > quantile(data_clean$INCWAGE, 0.01))
+```
+
+```{r select correct obvs}
+# Filtering out people active in labor force, black or white, ages 25-59, and not Hispanic
+data_clean <- data_clean %>% 
+  filter(LABFORCE == 2 & AGE <= 59 & AGE >= 25 & HISPAN == 0 & RACE < 3) %>%
+  filter(EDUC != 0 & INCWAGE < 999998) # Removing missing values for education and income
+```
+
+```{r create unique id}
+# Creating unique id for each observation 
+data_clean <- data_clean %>% unite("ID", "SAMPLE", "SERIAL", "PERNUM", remove = T)
+
+nrow(data_clean)
+n_distinct(data_clean$ID) # Checking that each ID is unique 
+head(data_clean)
+```
+
+```{r new variables}
+# Finally, create new variables for log weekly hours worked, log weekly wage, potential work experience,
+# and potential work experience squared 
+data_clean <- data_clean %>% mutate("LOGWKSWRK" = log(WKSWORK2), "LOGWKWAGE" = log(INCWAGE/52), "PWRKEXP" = (AGE - EDUC - 6), "SQ_PWRKEXP" = PWRKEXP^2)
+
+head(data_clean)
 ```
 
 ```{r}
+data_clean <- data_clean %>% left_join(data_clean, crosswalk_data, by = "OCC1990")
 
+head(data_clean, 30)
 ```
 
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Descriptive Statistics 

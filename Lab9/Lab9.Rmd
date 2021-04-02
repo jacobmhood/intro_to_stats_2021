@@ -202,9 +202,39 @@ Create two plots for this exercise and post your outputs on Slack.
 3. What are the *empirical* value ranges of X and Y, and what are the *modeling* value ranges of X and Y? 
 
 ```{r }
+support_df %>%
+  ggplot() +
+  aes(x = eduy, y = support) +
+  geom_point(shape = 1, position = position_jitter(width = 1, height = 0.03)) +
+  geom_smooth(method = "lm", se = F) 
 
-# Your code here
+```
 
+```{r}
+pred_IV <- tibble(eduy = seq(0, 25, 1)) %>%         #create df with key IV
+  mutate(age = mean(support_df$age), na.rm = T,
+black = mean(support_df$black), na.rm = T,
+female = mean(support_df$female), na.rm = T)
+```
+
+```{r}
+# use `predict` to predict the Y
+# the model you are using, the df you use, setting CI
+predicted_support <- predict(m4, pred_IV, interval = "confidence", level = 0.95)
+
+# bind the columns
+pred_result <- cbind(pred_IV, predicted_support)
+```
+
+```{r}
+# Plot
+pred_result %>% 
+  ggplot(aes(x = eduy, y = fit)) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.3) + # add 95% CI
+  theme_classic() +
+  labs(x = "Eduy",
+       y = "Predicted Support") +
+  ggtitle("Predicted Support by Eduy")
 ```
 
 ---
