@@ -7,25 +7,10 @@ output:
   html_document:
     df_print: paged
 ---
-
-# Instructions
-
-\begin{enumerate}
-    \item Submit two files for each problem set. The first is a \textbf{R Markdown} (\texttt{.Rmd}) file that can be run without error from start to end. The second is a \textbf{PDF} rendered from your R Markdown file or created using \LaTeX{}. 
-    \item Name your files following this convention: \texttt{[Last Name]\_ps1.Rmd} and \texttt{[Last Name]\_ps1.pdf}. 
-    \item Both files should be submitted to the TA via e-mail (di.zhou@nyu.edu) before the time specified above.
-    \item You are given plenty of time to work on the problem set. Please plan ahead and start early. \textbf{Except for special circumstances, the TA will not accept last-minute questions asked on the day when the problem set is due}.
-    \item You are encouraged to discuss the problems with your classmates. Notice as well that we have students in this class who are not in your cohort. It would be great if you could reach out to them and work together. But \textbf{the R Markdown and PDF files that you submit have to be created on your own}.
-    \item Comment on your code wherever possible and explain your ideas in detail. You will get credit for showing the steps you take and for explaining your reasoning, even if you do not get the correct final result.
-\end{enumerate}
-
-\noindent\rule{16.5cm}{0.4pt}
-
-
 ```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
-
-# Load packages here
+library(pacman)
+p_load(tidyverse, kableExtra, sandwich, scales)
 
 ```
 
@@ -53,9 +38,22 @@ Recall that in our first lecture on regression, we talked about the **Gauss-Mark
   
   
 ```{r }
+set.seed(1234)
+X <- rgamma(3000,5,4)
+Y_predicted <- -0.25 + 1.2*X + rnorm(3000,0,1)
 
-# Your code here
+df <- data.frame(
+  X,
+  Y)
+```
 
+```{r}
+# Creating the scatterplot
+df %>% ggplot(aes(x = X, y = Y_predicted)) +
+  geom_point(shape =1, alpha = 0.7) +
+  geom_smooth(method = 'lm') +
+  labs(title = "Simulation with beta0 = -0.25,  
+       beta1 = 1.2, X=Gamma(5, 4), and episolon=Normal(0, 1)", x = "X", y = "Predicted Y")
 ```
 
 **Bonus Question** [10pts]: From assumption (a), (b) and (d), choose one assumption and simulate a data that violates that assumption (all other assumptions should be satisfied). Create a plot which illustrates how the violation of the assumption affects the regression results. This can be a scatterplot with both the "true" and "false" OLS lines, a sampling distribution of the OLS estimator (comparing your estimate model results with actual simulations), or anything that shows how the violation leads us to false decisions if we assume the assumption is true. (The point is to demonstrate a contrast between the "true" and the "false", not just diagnostics of the "false".)  
@@ -64,9 +62,7 @@ When simulating data, you don't have to use the parameters set in the previous p
 
 *Hint*: You can search how to use `+ stat_function()` to plot a nonlinear line when plotting with `ggplot()`, or search how to use the base R functions such as `plot()` and `curve()`.
 
-```{r }
-
-# Your code here
+```{r}
 
 ```
 
@@ -87,20 +83,50 @@ covid_risk = rescale( 0 - 7*vaccine - 2*info + e, to = c(0, 100))
 
 **1.** [5pts] Import the data `covid.csv`, according to the counterfactual framework, constructing a counterfactual "risk factor" in the dataframe. 
 
-```{r }
+```{r}
+# Importing data
+covid_data <- read.csv("covid.csv")
 
-# Your code here
+set.seed(1234) # set the same seed to ensure identical results
+n = 1000
+e = rnorm(n, 0, 0.5)
+covid_risk = rescale( 0 - 7*covid_data$vaccine - 2*covid_data$info + e, to = c(0, 100))
+                      
+# --------- Create a Df of Simulated Data ---------
+covid_data <- covid_data %>% mutate(
+  "Risk Factor" = covid_risk)
 
+head(covid_data, 5)
+```
+
+
+```{r}
+# --------- Add counterfactual variables---------
+covid_data <- covid_data %>%
+  mutate(vaccine_counterf = ifelse(vaccine == 1, 0, 1),
+         risk_counterf = 0 - 7*vaccine_counterf - 2*info + e)
+
+head(covid_data)
 ```
 
 **2.** [10pts] Fill out the table below (round to 1 decimal points):
 
 Group                     |     $Y^T$            |   $Y^C$
 --------------------------|----------------------|----------------------
-Treatment Group ($D = 1$) | $E[Y^T|D = 1] = ?$    |   $E[Y^C|D = 1] = ?$
-Control Group ($D = 0$)  |   $E[Y^T|D = 0] = ?$       |  $E[Y^C|D = 0] = ?$
+Treatment Group ($D = 1$) | $E[Y^T|D = 1] = 96.6$    |   $E[Y^C|D = 1] = 103.4$
+Control Group ($D = 0$)  |   $E[Y^T|D = 0] = 31.7$       |  $E[Y^C|D = 0] = 24.8$
 
   
+```{r}
+treat <- covid_data %>% filter(covid_data$vaccine == "1") %>% sum(covid_data$`Risk Factor`)/nrow(covid_data)
+control <- covid_data %>% filter(covid_data$vaccine == "0") %>% sum(covid_data$`Risk Factor`)/nrow(covid_data)
+cf_treat <- covid_data %>% filter(covid_data$vaccine_counterf == "1") %>% sum(covid_data$"risk_counterf")/nrow(covid_data)
+cf_control <- covid_data %>% filter(covid_data$vaccine_counterf == "0") %>% sum(covid_data$"risk_counterf")/nrow(covid_data)
+treat
+control
+cf_treat
+cf_control
+```
   
   
 **3.** [15pts]Estimate the following:
@@ -134,8 +160,9 @@ Variable Name|  Variable Detail
 **1**. [10pts] Import `admin.csv` to your R environment. Estimate (a) a linear probability model and (b) a logistic regression model to predict the probability of being admitted based on the applicant's GRE, GPA, and institution tier. Display the two modeling results in a table.
 
 ```{r}
+# Importing data
 
-# Your code here
+admin_data <- read.csv("admin.csv")
 
 ```
 
