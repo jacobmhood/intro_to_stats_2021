@@ -56,7 +56,7 @@ head(data_clean)
 ```
 
 ```{r}
-data_clean <- data_clean %>% left_join(data_clean, crosswalk_data, by = "OCC1990")
+data_clean <- data_clean %>% left_join(data_clean, crosswalk_data, by = "occ1990")
 ```
 
 ## Descriptive Statistics 
