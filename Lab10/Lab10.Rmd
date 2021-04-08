@@ -1,0 +1,456 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 10"
+author: "Di Zhou"
+date: "4/9/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+## Logistics & Announcement  
+
+* PS3 (NYU Classes > Resources > Assignments > ps3) due on April 17th
+* Replication project check-up: Questions? Issues? 
+
+|         Task                       |  Timeline          |
+|------------------------------------|--------------------|
+| Obtaining the raw data from IPUMS  | By Mar. 29th       |
+| **Cleaning the data**                  | **Mar. 29th to Apr. 11th**   |
+| Replicating Table A1a, Table A1b, and Figure 1 and put in LaTeX | Apr. 12th to Apr. 25th  |
+| Replicating regression and report in Table A2a, Table A2b and put in LaTeX | Apr. 26th to May 9th |
+| Wiggle room for formatting and debugging, etc. | May 10th to May 14th |
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tidyverse, stargazer, kableExtra, gridExtra, effects, gmodels, MASS, nnet)
+
+# Load data
+load("data/support_level_df.RData")
+
+```
+
+## Part 1: Exam 4 
+
+### 1.1 Properties of Exponents and Logarithms
+
+  Working with logistic regressions will require basic knowledge about the properties of exponents and logarithms. You can refresh yourself using [this document](https://wou.edu/mathcenter/files/2015/09/Exponents-and-Logarithms.pdf).  
+
+  The most important law to remember is how logarithms is defined by exponents:  
+  
+  >$y = \log_ax$ if and only if $x = a^y$, where $a > 0$
+
+  In the context of logistic regressions, the base of the $\log$ is always the the number $e$ (the natural number/Euler’s number). $e$ is an important mathematical constant approximately equal to $2.71828$.  
+
+  If we have: 
+  $$y = \log_e x$$
+  This is equivalent to:  
+  $$e^y = e^{\log_e x} \text{        }  \Rightarrow  \text{       }  e^y = x$$ 
+  Therefore, when we have the logistic regression equation:  
+  
+  $$\log(\frac{p_i}{1-p_i}) = \beta_0 + \beta_1X_1 + \beta_2X_2$$
+  
+  According to the properties of exponents and logarithms:  
+  
+  $$e^{\log(\frac{p_i}{1-p_i})} = e^{\beta_0 + \beta_1X_1 + \beta_2X_2}  \text{          }  \Rightarrow  \text{       } \frac{p_i}{1-p_i} = e^{\beta_0 + \beta_1X_1 + \beta_2X_2} $$
+  Note that $\frac{p_i}{1-p_i}$ is the **odds**. 
+  
+### 1.2 Link function: The logit link functions
+
+  For general linear models, the dependent variable can be expressed as a *nonlinear transformation* of the *linear combination* of the independent variables.  
+
+  If $y_i$ is the expected value of the response, $z_i$ is the linear combination of the predictors (i.e. $z_i = \beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... + \beta_kx_{ik}$). We can express this nonlinear relationship between the DV and IV either as $g(y_i) = z_i$ or $y_i = g^{-1}(z_i)$, where the link functions $g(\cdot)$ and $g^{-1}(\cdot)$ are nonlinear functions and are the inverse function of each other. (You can review the definition of inverse function [here](https://en.wikipedia.org/wiki/Inverse_function)). 
+  
+  In logistic regression, we have:
+
+|  $z_i = g(y_i)$         |  $y_i = g^{-1}(z_i)$    |
+|------------------------------|------------------------------|
+| $z_i =  \text{logit}(y_i) = \log_e\frac{y_i}{1-y_i}$  |   $y_i = \text{logit}^{-1}(z_i) = \frac{1}{1 + e^{-z_i}}$ |
+| Linear combinition of IV is a nonlinear function of the DV | DV is a nonlinear function of the linear combinition of IV |
+|   |   |     
+
+  As we have shown in Lab 9, the logit function, $f(x) = \log_e\frac{x}{1-x}$, and the standard logistic function, $f(x)=\frac{1}{1+e^{-x}}$, are inverse functions of each other.  
+  
+  You can read more about general linear model and the link functions in Fox's Chapter 15 (p.379-385).
+    
+  
+### 1.3 Probability, Odds, and Odds Ratio  
+
+1. **Probability of success**, noted as $p_i$, is the probability of something we care happens, such as getting a callback from the employer (versus no callback), or supporting same-sex marriage (versus not support).  
+
+  In the context of logistic regression, $p_i = \text{logit}^{-1}(\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k)$  
+
+2. **Odds**, noted as $\frac{p_i}{1-p_i}$, is the ratio between “the probability of success” and “the probability of not success”.  
+  
+  In the context of logistic regression,  $\text{odds} = \frac{p_i}{1-p_i} = e^{\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k}$
+
+3. **Odds ratio**, in the context of logistic regression, is the ratio between two odds, so its mathematical expression is something like $\frac{\frac{p_i'}{1-p_i'}}{\frac{p_i}{1-p_i}}$.  
+
+  As we covered in lecture and in lab, the coefficients of a logistic regression model, when reported as $exp(\cdot)$, can be understood as the **odds ratio** as the IV increased by 1 unit (see Lab 9 Part 3 exercise).  
+  
+  For example, in Exam 4, when we ignore the interaction effect, the coefficient of "criminal record", which equals to $-0.99$, can be intepreted as: the **odds ratio** of getting a callback between people with and without a criminal record is $exp(-0.99) = 0.37$. Or, the **odds** of getting a callback from the employer will "increase" by a factor of 0.37 for people having a criminal record in comparison to those who don't (holding other variables at constant). This means that the **odds** for people with a criminal record to get a callback from the employer will decrease by 63% ($1 - exp(-0.99) = 0.63$) in comparison to people without a criminal record.  
+  
+  Notice that none of these interpretations are about **probabilities**, they are about **odds**. 
+
+
+## Part 2: Bi-variate Associations (Contingency Tables)  
+
+For today, we will use a similar dataset about same-sex marriage support. But now we have three support levels (1 = Oppose, 2 = Neutral, 3 = Support) instead of a binary outcome.
+
+```{r }
+
+# Check data
+head(support_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
+
+```
+
+In R, you can create a contigency table by using the `table()` function and input the two categorical variables you are interested in. To conduct a chi-square test of independence, simply use the function `chisq.test(your_contingency_table)`. 
+
+```{r }
+
+# Create variables for contingency tables
+support_df <- support_df %>%
+  mutate(# Covert dummies to categorical variables
+         gender = ifelse(female == 0, "male", "female"),
+         race = ifelse(black == 1, "black", "white"))
+
+# Simple contingency table and chi-square test for support levels and race
+t1 <- table(support_df$support_level, support_df$race)
+t1
+chisq.test(t1)
+
+```
+
+---
+
+### Part 2 Exercise
+
+Recall that the $\chi^2$ statistic is defined as: 
+
+$$\chi^2 = \sum\frac{(f^o - f^e)^2}{f^e},$$
+where $f^o$ is the observed frequency and $f^e$ is the expected frequency.  
+
+You are given the following contingency table of support levels and gender: 
+
+```
+   Cell Contents
+|-------------------------|
+|                       N |
+|              Expected N |
+|           N / Row Total |
+|           N / Col Total |
+|         N / Table Total |
+|-------------------------|
+ 
+Total Observations in Table:  1000 
+
+                         | support_df$gender 
+support_df$support_level |    female |      male | Row Total | 
+-------------------------|-----------|-----------|-----------|
+                       1 |       105 |       147 |       252 | 
+                         |   123.228 |   128.772 |           | 
+                         |     0.417 |     0.583 |     0.252 | 
+                         |     0.215 |     0.288 |           | 
+                         |     0.105 |     0.147 |           | 
+-------------------------|-----------|-----------|-----------|
+                       2 |       109 |       126 |       235 | 
+                         |   114.915 |   120.085 |           | 
+                         |     0.464 |     0.536 |     0.235 | 
+                         |     0.223 |     0.247 |           | 
+                         |     0.109 |     0.126 |           | 
+-------------------------|-----------|-----------|-----------|
+                       3 |       275 |       238 |       513 | 
+                         |   250.857 |   262.143 |           | 
+                         |     0.536 |     0.464 |     0.513 | 
+                         |     0.562 |     0.466 |           | 
+                         |     0.275 |     0.238 |           | 
+-------------------------|-----------|-----------|-----------|
+            Column Total |       489 |       511 |      1000 | 
+                         |     0.489 |     0.511 |           | 
+-------------------------|-----------|-----------|-----------|
+
+```
+1. State you null and alternative hypotheses of the $\chi^2$ test;  
+2. Calculate the $\chi^2$ statistic using the formula above;
+3. Calculate the p-value of your test statistic. *Hint*: (a) recall that the degree of freedom is calculated by $\text{df} =(\text{nrow}−1)·(\text{ncol}−1)$, (b) search `pchisq`   
+
+```{r }
+
+# Your code here
+
+```
+
+---
+
+## Part 3: Ordered Logit Regression Model  
+
+### 3.1 Model Setup
+
+* The cumulative probability for individual $i$’s choice up to response level $j$ is given by:  
+
+$$C_{i,j} = Pr(y_i \le j) = \sum^{j}_{k = 1}Pr(y_i = k) = \frac{1}{1 + exp(-\phi_j + x_i\beta)}, \\j = 1, 2, ..., J.$$
+  
+* Notice that $\phi_1, \phi_2, \phi_3, ..., \phi_J$ are cutpoints corresponding to each response category. We also set $\phi_0$ to be $-\infty$ and $\phi_J$ to be $\infty$. 
+
+* Thus, the probability of being in response category $j$ is:  
+
+$$Pr(y_i = j) = \frac{1}{1 + exp(-\phi_j + x_i\beta)} - \frac{1}{1 + exp(-\phi_{j-1} + x_i\beta)}$$
+* In R, you can estimate a ordered logit model using the `polr()` function from the `MASS` package. 
+
+```{r }
+# Estimate ordered logit model
+ologit1 <- polr(support_level ~ eduy, data = support_df, method="logistic")
+ologit2 <- polr(support_level ~ eduy + age, data = support_df, method="logistic")
+ologit3 <- polr(support_level ~ eduy + age + female, data = support_df, method="logistic")
+ologit4 <- polr(support_level ~ eduy + age + female + black, data = support_df, method="logistic")
+
+stargazer(ologit1, ologit2, ologit3, ologit4, type="text")
+
+```
+
+### 3.2 Coefficients Interpretation  
+
+* In ordered logit models, the coefficients capture the effect on the log odds of moving to the "higher rank". The exponentiated coefficients indicates the **ratio between the odds** after and before the given predictor increased by one unit. The odds here is defined as the probability of being in a higher category divided by the probability of being in the current or lower category.
+
+$$\frac{\frac{Pr(y_i > j|X_k + 1)}{Pr(y_i \le j|X_k + 1)}}{\frac{Pr(y_i > j|X_k)}{Pr(y_i \le j|X_k)}} = exp(\beta_k)$$
+
+* To get these odds ratios in R, use `exp(coef(your_model_object))` (same as the code you use for getting odds ratio for logistic models).
+
+```{r }
+
+# Odds Ratio
+exp(coef(ologit4))
+
+```
+
+* **The proportional odds assumption/parallel regression assumption**: One of the assumptions underlying ordered logistic (and ordered probit) regression is that the relationship between each pair of outcome groups is the same. In other words, ordered logistic regression assumes that the coefficients that describe the relationship between, say, the lowest versus all higher categories of the response variable are the same as those that describe the relationship between the next lowest category and all higher categories, etc. You can test this assumption using the R package `brant` (not covered in this class).   
+
+---
+
+### Part 3.2 Exercise  
+
+Interpret the exponentiated regression coefficients of `eduy` and `age` of `ologit4`. 
+
+[Your Answer Here]
+
+---
+
+### 3.3 Plot Predicted Probability
+
+```{r }
+predicted_ord <- as.data.frame(Effect(c("eduy"), 
+                                  ologit4,
+                                  xlevels = list(
+                                    eduy = seq(3, 24, by = 0.5),
+                                    age = mean(support_df$age),
+                                    black = mean(support_df$black),
+                                    female = mean(support_df$female))
+                                  ), 
+                           level=95)
+
+
+# Get predicted yhat, pivot to long form
+predicted_y_ord <- predicted_ord %>% 
+  dplyr::select(eduy, prob.X1, prob.X2, prob.X3) %>%
+  pivot_longer(!eduy, names_to = "level_y", values_to = "yhat") 
+
+# Get predicted upper CI of yhat, pivot to long form
+predicted_upr_ord <- predicted_ord %>% 
+  dplyr::select(eduy, U.prob.X1, U.prob.X2, U.prob.X3) %>%
+  pivot_longer(!eduy, names_to = "level_upr", values_to = "upr") %>%
+  dplyr::select(-eduy, -level_upr)
+
+# Get predicted lower CI of yhat, pivot to long form
+predicted_lwr_ord <- predicted_ord %>% 
+  dplyr::select(eduy, L.prob.X1, L.prob.X2, L.prob.X3) %>%
+  pivot_longer(!eduy, names_to = "level_lwr", values_to = "lwr") %>%
+  dplyr::select(-eduy, -level_lwr)
+
+# Combine to one df for plotting
+predicted_plot_ord <- cbind(predicted_y_ord, predicted_upr_ord, predicted_lwr_ord)
+
+# Plot
+figure1 <- predicted_plot_ord %>% 
+  ggplot(aes(x = eduy, y = yhat, 
+             ymax = upr, ymin = lwr, 
+             fill = as.factor(level_y),
+             linetype = as.factor(level_y))) + 
+  geom_line() + 
+  geom_ribbon(alpha = 0.3) +
+  labs(title = "Support For Same Sex Marriage (Ordered Logit)",
+       x = "Years of Education",
+       y = "Predicted Probability") +
+  scale_fill_manual(name = "",
+                    values = c("#3182bd", "#31a354", "#de2d26"), 
+                    label = c("Disagree", "Neutral", "Agree")) +
+  scale_linetype_manual(name = "", 
+                        values = c("dashed", "dotdash", "solid"), 
+                        label = c("Disagree", "Neutral", "Agree")) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+figure1
+
+```
+
+
+## Part 4: Multinomial Logit Regression Model
+
+### 4.1 Model Setup
+
+* Multinomial logit model can be used to predict the probability of a response falling into a certain category among categories that are not ordered. One category needs to be chosen as the reference/baseline category.
+
+* The multinomial logit model assumes that the **probabilities** of the outcomes $Y_i = 1, 2, ..., K$ are given as :  
+
+$$\pi_{i}^{(1)}(x_i) = \Pr[Y_i = 1|X_i = x_i] = \frac{1}{1 + \sum_{k=2}^K \exp(\alpha_k + \beta_k x_i)} \\
+\pi_{i}^{(2)}(x_i)  = \Pr[Y_i = 2|X_i = x_i] = \frac{\exp(\alpha_2 + \beta_2 x_i)}{1 + \sum_{k=2}^K \exp(\alpha_k + \beta_k x_i)} \\
+\\
+...
+\\
+\pi_{i}^{(K)}(x_i)  = \Pr[Y_i = K|X_i = x_i] = \frac{\exp(\alpha_K + \beta_K x_1)}{1 + \sum_{k=2}^K \exp(\alpha_k + \beta_k x_i)}$$
+
+($Y = 1$ is the reference category in the above setup)
+
+* Notice that for each observation unit $i$, the outcome probabilities have to sum to one, since each $i$ must "choose" any of the $K$ option:
+
+$$\sum_{k=1}^K \pi_i^{(k)}(x_i) = 1.$$
+  
+* Multinomial logit model can be estimated using the `multinom()` function from the `nnet` package.  
+
+```{r, warning=F, message=F}
+
+# Estimate multinomial logit models
+mlogit1 <- multinom(support_level ~ eduy, data = support_df)
+mlogit2 <- multinom(support_level ~ eduy + age, data = support_df)
+mlogit3 <- multinom(support_level ~ eduy + age + female, data = support_df)
+mlogit4 <- multinom(support_level ~ eduy + age + female + black, data = support_df)
+
+stargazer(mlogit1, mlogit2, mlogit3, mlogit4, 
+          type="text")
+```
+
+### 4.2 Coefficients Interpretation
+
+* The exponentiated regression coefficients from the multinomial logit model can be interpreted in terms of **relative risk ratios**. This makes the interpretation of the coefficients a bit more intuitive, compared to the coefficients from either binary or ordinal logistic regression.  
+
+$$\text{Relative Risk Ratio} = \frac{\frac{\pi_i(x_i + 1)^{(k)}}{\pi_i(x_i+1)^{(1)}}}{\frac{\pi_i(x_i)^{(k)}}{\pi_i(x_i)^{(1)}}} \\
+= \frac{\exp(\alpha_k)\exp[\beta_k (x_i + 1)]}{\exp(\alpha_k)\exp(\beta_kx_i)} \\
+=\exp(\beta_k)$$  
+  
+* The interpretation for $\beta_k$ is: holding others at constant, for one unit increase of the predictor, the relative risk of falling into the category $k$, instead of the baseline category, increases by a factor of $exp(\beta_k)$.
+
+* To get the relative risk ratios in R, use `exp(coef(your_model_object))` (same as the code you use for getting odds ratio for logistic models).
+
+```{r }
+# Get relative risk ratios for the 4th model
+exp(coef(mlogit4))
+
+```
+
+---
+
+### Part 4.2 Exercise  
+
+Interpret the coefficients of `eduy` and `age` from the above output of exponentiated regression coefficients of `mlogit4`.
+
+[Your Answer Here]
+
+---  
+  
+### 4.3 Plot Predicted Effect
+  
+  We can also plot the predicted effect for multinomial logistic models. For example, we can plot the predicted probabilities for the three possible outcomes (support, neutral, oppose) using the `Effect()` function.
+
+```{r }
+# Get predicted y values
+predicted_mul <- as.data.frame(Effect(c("eduy"), 
+                                  mlogit4,
+                                  xlevels = list(
+                                    eduy = seq(3, 24, by = 0.5),
+                                    age = mean(support_df$age), 
+                                    black = mean(support_df$black), 
+                                    female = mean(support_df$female))
+                                  ), 
+                           level=95)
+
+# Get predicted yhat, pivot to long form
+predicted_y_mul <- predicted_mul %>% 
+  dplyr::select(eduy, prob.X1, prob.X2, prob.X3) %>%
+  pivot_longer(!eduy, names_to = "level_y", values_to = "yhat") 
+
+# Get predicted upper CI of yhat, pivot to long form
+predicted_upr_mul <- predicted_mul %>% 
+  dplyr::select(eduy, U.prob.X1, U.prob.X2, U.prob.X3) %>%
+  pivot_longer(!eduy, names_to = "level_upr", values_to = "upr") %>%
+  dplyr::select(-eduy, -level_upr)
+
+# Get predicted lower CI of yhat, pivot to long form
+predicted_lwr_mul <- predicted_mul %>% 
+  dplyr::select(eduy, L.prob.X1, L.prob.X2, L.prob.X3) %>%
+  pivot_longer(!eduy, names_to = "level_lwr", values_to = "lwr") %>%
+  dplyr::select(-eduy, -level_lwr)
+
+# Combine to one df for plotting
+predicted_plot_mul <- cbind(predicted_y_mul, predicted_upr_mul, predicted_lwr_mul)
+
+# Plot
+figure2 <- predicted_plot_mul %>% 
+  ggplot(aes(x = eduy, y = yhat, 
+             ymax = upr, ymin = lwr, 
+             fill = as.factor(level_y),
+             linetype = as.factor(level_y))) + 
+  geom_line() + 
+  geom_ribbon(alpha = 0.3) +
+  labs(title = "Support For Same Sex Marriage (Multinomial Logit)",
+       x = "Years of Education",
+       y = "Predicted Probability") +
+  scale_fill_manual(name = "",
+                    values = c("#3182bd", "#31a354", "#de2d26"), 
+                    label = c("Disagree", "Neutral", "Agree")) +
+  scale_linetype_manual(name = "", 
+                        values = c("dashed", "dotdash", "solid"), 
+                        label = c("Disagree", "Neutral", "Agree")) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+figure2
+
+
+grid.arrange(figure1, figure2)
+
+```
