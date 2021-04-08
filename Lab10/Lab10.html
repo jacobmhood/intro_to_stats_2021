@@ -1915,7 +1915,7 @@ summary {
 <li><a href="#model-setup-1">4.1 Model Setup</a></li>
 <li><a href="#coefficients-interpretation-1">4.2 Coefficients Interpretation</a></li>
 <li><a href="#part-4.2-exercise">Part 4.2 Exercise</a></li>
-<li><a href="#plot-predicted-effect">4.3 Plot Predicted Effect</a></li>
+<li><a href="#plot-predicted-probabilities">4.3 Plot Predicted Probabilities</a></li>
 </ul></li>
 </ul>
 </div>
@@ -2025,8 +2025,8 @@ h3 { font-size: 20px; }
 <td><span class="math inline">\(y_i = \text{logit}^{-1}(z_i) = \frac{1}{1 + e^{-z_i}}\)</span></td>
 </tr>
 <tr class="even">
-<td>Linear combinition of IV is a nonlinear function of the DV</td>
-<td>DV is a nonlinear function of the linear combinition of IV</td>
+<td>Linear combination of IV is a nonlinear function of the DV</td>
+<td>DV is a nonlinear function of the linear combination of IV</td>
 </tr>
 <tr class="odd">
 <td></td>
@@ -2051,7 +2051,7 @@ h3 { font-size: 20px; }
 <li><strong>Odds ratio</strong>, in the context of logistic regression, is the ratio between two odds, so its mathematical expression is something like <span class="math inline">\(\frac{\frac{p_i&#39;}{1-p_i&#39;}}{\frac{p_i}{1-p_i}}\)</span>.</li>
 </ol>
 <p>As we covered in lecture and in lab, the coefficients of a logistic regression model, when reported as <span class="math inline">\(exp(\cdot)\)</span>, can be understood as the <strong>odds ratio</strong> as the IV increased by 1 unit (see Lab 9 Part 3 exercise).</p>
-<p>For example, in Exam 4, when we ignore the interaction effect, the coefficient of “criminal record”, which equals to <span class="math inline">\(-0.99\)</span>, can be intepreted as: the <strong>odds ratio</strong> of getting a callback between people with and without a criminal record is <span class="math inline">\(exp(-0.99) = 0.37\)</span>. Or, the <strong>odds</strong> of getting a callback from the employer will “increase” by a factor of 0.37 for people having a criminal record in comparison to those who don’t (holding other variables at constant). This means that the <strong>odds</strong> for people with a criminal record to get a callback from the employer will decrease by 63% (<span class="math inline">\(1 - exp(-0.99) = 0.63\)</span>) in comparison to people without a criminal record.</p>
+<p>For example, in Exam 4, when we ignore the interaction effect, the coefficient of “criminal record”, which equals to <span class="math inline">\(-0.99\)</span>, can be interpreted as: the <strong>odds ratio</strong> of getting a callback between people with and without a criminal record is <span class="math inline">\(exp(-0.99) = 0.37\)</span>. Or, the <strong>odds</strong> of getting a callback from the employer will “increase” by a factor of 0.37 for people having a criminal record in comparison to those who don’t (holding other variables at constant). This means that the <strong>odds</strong> for people with a criminal record to get a callback from the employer will decrease by 63% (<span class="math inline">\(1 - exp(-0.99) = 0.63\)</span>) in comparison to people without a criminal record.</p>
 <p>Notice that none of these interpretations are about <strong>probabilities</strong>, they are about <strong>odds</strong>.</p>
 </div>
 </div>
@@ -2253,7 +2253,7 @@ black
 </tr>
 </tbody>
 </table>
-<p>In R, you can create a contigency table by using the <code>table()</code> function and input the two categorical variables you are interested in. To conduct a chi-square test of independence, simply use the function <code>chisq.test(your_contingency_table)</code>.</p>
+<p>In R, you can create a contingency table by using the <code>table()</code> function and input the two categorical variables you are interested in. To conduct a chi-square test of independence, simply use the function <code>chisq.test(your_contingency_table)</code>.</p>
 <pre class="r"><code># Create variables for contingency tables
 support_df &lt;- support_df %&gt;%
   mutate(# Covert dummies to categorical variables
@@ -2557,8 +2557,8 @@ exp(coef(mlogit4))</code></pre>
 <p>[Your Answer Here]</p>
 <hr />
 </div>
-<div id="plot-predicted-effect" class="section level3">
-<h3>4.3 Plot Predicted Effect</h3>
+<div id="plot-predicted-probabilities" class="section level3">
+<h3>4.3 Plot Predicted Probabilities</h3>
 <p>We can also plot the predicted effect for multinomial logistic models. For example, we can plot the predicted probabilities for the three possible outcomes (support, neutral, oppose) using the <code>Effect()</code> function.</p>
 <pre class="r"><code># Get predicted y values
 predicted_mul &lt;- as.data.frame(Effect(c(&quot;eduy&quot;), 

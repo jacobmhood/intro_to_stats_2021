@@ -103,7 +103,7 @@ load("data/support_level_df.RData")
 |  $z_i = g(y_i)$         |  $y_i = g^{-1}(z_i)$    |
 |------------------------------|------------------------------|
 | $z_i =  \text{logit}(y_i) = \log_e\frac{y_i}{1-y_i}$  |   $y_i = \text{logit}^{-1}(z_i) = \frac{1}{1 + e^{-z_i}}$ |
-| Linear combinition of IV is a nonlinear function of the DV | DV is a nonlinear function of the linear combinition of IV |
+| Linear combination of IV is a nonlinear function of the DV | DV is a nonlinear function of the linear combination of IV |
 |   |   |     
 
   As we have shown in Lab 9, the logit function, $f(x) = \log_e\frac{x}{1-x}$, and the standard logistic function, $f(x)=\frac{1}{1+e^{-x}}$, are inverse functions of each other.  
@@ -125,7 +125,7 @@ load("data/support_level_df.RData")
 
   As we covered in lecture and in lab, the coefficients of a logistic regression model, when reported as $exp(\cdot)$, can be understood as the **odds ratio** as the IV increased by 1 unit (see Lab 9 Part 3 exercise).  
   
-  For example, in Exam 4, when we ignore the interaction effect, the coefficient of "criminal record", which equals to $-0.99$, can be intepreted as: the **odds ratio** of getting a callback between people with and without a criminal record is $exp(-0.99) = 0.37$. Or, the **odds** of getting a callback from the employer will "increase" by a factor of 0.37 for people having a criminal record in comparison to those who don't (holding other variables at constant). This means that the **odds** for people with a criminal record to get a callback from the employer will decrease by 63% ($1 - exp(-0.99) = 0.63$) in comparison to people without a criminal record.  
+  For example, in Exam 4, when we ignore the interaction effect, the coefficient of "criminal record", which equals to $-0.99$, can be interpreted as: the **odds ratio** of getting a callback between people with and without a criminal record is $exp(-0.99) = 0.37$. Or, the **odds** of getting a callback from the employer will "increase" by a factor of 0.37 for people having a criminal record in comparison to those who don't (holding other variables at constant). This means that the **odds** for people with a criminal record to get a callback from the employer will decrease by 63% ($1 - exp(-0.99) = 0.63$) in comparison to people without a criminal record.  
   
   Notice that none of these interpretations are about **probabilities**, they are about **odds**. 
 
@@ -141,7 +141,7 @@ head(support_df, 10) %>% kbl("html") %>% kable_classic_2(full_width = F)
 
 ```
 
-In R, you can create a contigency table by using the `table()` function and input the two categorical variables you are interested in. To conduct a chi-square test of independence, simply use the function `chisq.test(your_contingency_table)`. 
+In R, you can create a contingency table by using the `table()` function and input the two categorical variables you are interested in. To conduct a chi-square test of independence, simply use the function `chisq.test(your_contingency_table)`. 
 
 ```{r }
 
@@ -393,7 +393,7 @@ Interpret the coefficients of `eduy` and `age` from the above output of exponent
 
 ---  
   
-### 4.3 Plot Predicted Effect
+### 4.3 Plot Predicted Probabilities
   
   We can also plot the predicted effect for multinomial logistic models. For example, we can plot the predicted probabilities for the three possible outcomes (support, neutral, oppose) using the `Effect()` function.
 
