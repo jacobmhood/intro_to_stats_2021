@@ -53,7 +53,7 @@ h3 { font-size: 20px; }
 | **Cleaning the data**                  | **Mar. 29th to Apr. 11th**   |
 | Replicating Table A1a, Table A1b, and Figure 1 and put in LaTeX | Apr. 12th to Apr. 25th  |
 | Replicating regression and report in Table A2a, Table A2b and put in LaTeX | Apr. 26th to May 9th |
-| Wiggle room for formatting and debugging, etc. | May 10th to May 14th |
+| Write the 2-page project report + Wiggle room for formatting and debugging, etc. | May 10th to May 14th |
 
 
 ```{r setup, include=FALSE}
