@@ -1,0 +1,186 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 10 Solution"
+author: "Di Zhou"
+date: "4/9/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tidyverse, stargazer, kableExtra, gridExtra, effects, gmodels, MASS, nnet)
+
+# Load data
+load("data/support_level_df.RData")
+
+```
+
+## Part 2: Bi-variate Associations (Contingency Tables)  
+
+```{r, echo=FALSE}
+
+# Create variables for contingency tables
+support_df <- support_df %>%
+  mutate(# Covert dummies to categorical variables
+         gender = ifelse(female == 0, "male", "female"),
+         race = ifelse(black == 1, "black", "white"))
+
+```
+
+### Part 2 Exercise
+
+Recall that the $\chi^2$ statistic is defined as: 
+
+$$\chi^2 = \sum\frac{(f^o - f^e)^2}{f^e},$$
+where $f^o$ is the observed frequency and $f^e$ is the expected frequency.  
+
+You are given the following contingency table of support levels and gender: 
+
+```
+   Cell Contents
+|-------------------------|
+|                       N |
+|              Expected N |
+|           N / Row Total |
+|           N / Col Total |
+|         N / Table Total |
+|-------------------------|
+ 
+Total Observations in Table:  1000 
+
+                         | support_df$gender 
+support_df$support_level |    female |      male | Row Total | 
+-------------------------|-----------|-----------|-----------|
+                       1 |       105 |       147 |       252 | 
+                         |   123.228 |   128.772 |           | 
+                         |     0.417 |     0.583 |     0.252 | 
+                         |     0.215 |     0.288 |           | 
+                         |     0.105 |     0.147 |           | 
+-------------------------|-----------|-----------|-----------|
+                       2 |       109 |       126 |       235 | 
+                         |   114.915 |   120.085 |           | 
+                         |     0.464 |     0.536 |     0.235 | 
+                         |     0.223 |     0.247 |           | 
+                         |     0.109 |     0.126 |           | 
+-------------------------|-----------|-----------|-----------|
+                       3 |       275 |       238 |       513 | 
+                         |   250.857 |   262.143 |           | 
+                         |     0.536 |     0.464 |     0.513 | 
+                         |     0.562 |     0.466 |           | 
+                         |     0.275 |     0.238 |           | 
+-------------------------|-----------|-----------|-----------|
+            Column Total |       489 |       511 |      1000 | 
+                         |     0.489 |     0.511 |           | 
+-------------------------|-----------|-----------|-----------|
+
+```
+1. State you null and alternative hypotheses of the $\chi^2$ test;  
+2. Calculate the $\chi^2$ statistic using the formula above;
+3. Calculate the p-value of your test statistic. *Hint*: (a) recall that the degree of freedom is calculated by $\text{df} =(\text{nrow}−1)·(\text{ncol}−1)$, (b) search `pchisq`   
+
+**Answer**  
+  
+  1. $H_0$: Support level and gender are independent; $H_a$: Support level and gender are not independent.  
+```{r }
+# 2. Calculate the Chi-squared statistic by hand:
+(105 - 123.228)^2/123.228 + (147-128.772)^2/128.772 + (109-114.915)^2/114.915 + (126-120.085)^2/120.085 + (275-250.857)^2/250.857 + (238-262.143)^2/262.143
+# chi-sq = 10.41945
+
+# 3. p-value
+pchisq(10.41945, 2, lower.tail = F)
+# OR: 1 - pchisq(10.41945, 2, lower.tail = T)
+
+```
+
+You can use the `CrossTable` function in the `gmodels` package to obtain the above table with expected frequencies and chi-square test results:
+
+```{r }
+CrossTable(support_df$support_level, support_df$gender, prop.chisq = F, expected = T)
+
+```
+
+---
+
+## Part 3: Ordered Logit Regression Model  
+
+
+### Part 3.2 Exercise  
+
+Interpret the exponentiated regression coefficients of `eduy` and `age` of `ologit4`. 
+
+```
+##      eduy       age    female     black 
+## 2.3726365 0.7965623 2.8403564 0.9533769
+```
+
+**Answer:**
+
+Holding others as constant, for one unit increase in years of education, the odds of one moving towards the next higher support level will increase by a factor of 2.37, which means the odds will increase by 137%. This effect is statistically significant at the p<0.01 level.
+
+Holding others as constant, for one unit increase in one's age, the odds of one moving towards the next higher support level will "increase" by a factor of 0.80, which means the odds will decrease by 20%. This effect is statistically significant at the p<0.01 level.
+
+---
+
+## Part 4: Multinomial Logit Regression Model
+
+### 4.2 Coefficients Interpretation
+
+### Part 4.2 Exercise  
+
+Interpret the coefficients of `eduy` and `age` from the above output of exponentiated regression coefficients of `mlogit4`.
+
+```
+##   (Intercept)     eduy       age   female     black
+## 2   1.9535790 1.820853 0.8464970 2.060538 0.9811196
+## 3   0.3756124 3.983080 0.6977276 5.400878 0.9056941
+```
+
+**Answer:**
+
+Holding others at constant, for one unit increase in years of education, the relative risk of being neutral to same-sex marriage instead of opposing it will increase by a factor of 1.82, which means the relative risk will increase by 82%. This effect is statistically significant at the p<0.01 level.
+
+Holding others at constant, for one unit increase in years of education, the relative risk of being supportive to same-sex marriage instead of opposing it will increase by a factor of 3.98, which means the relative risk will increase by 298%. This effect is statistically significant at the p<0.01 level.
+
+Holding others at constant, for one unit increase in age, the relative risk of being neutral to same-sex marriage instead of opposing it will "increase" by a factor of 0.85, which means the relative risk will decrease by 15%. This effect is statistically significant at the p<0.01 level.
+
+Holding others at constant, for one unit increase in age, the relative risk of being supportive to same-sex marriage instead of opposing it will "increase" by a factor of 0.70, which means the relative risk will decrease by 30%. This effect is statistically significant at the p<0.01 level.
+
+---  
