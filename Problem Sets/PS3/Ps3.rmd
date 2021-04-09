@@ -29,10 +29,12 @@ Recall that in our first lecture on regression, we talked about the **Gauss-Mark
   
 **1.** [15pts] For each of the assumptions, discuss what will go wrong when the assumption is violated. Be brief in your answers. *Note*: In addition to class materials, you can learn more about these assumptions in the [$\text{\underline{Wikipedia article}}$](https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem) on the Gauss–Markov theorem, particularly the "Gauss–Markov theorem as stated in econometrics" section. (You can skip all the mathematical proofs and remarks.)  
   
-  [Your Answer Here]  
-  
-  
-
+  (a) **Linearity**: If the linearity assumption is violated, then an OLS model would not be appropriate for these data. A non-linear model (like quadratic) might be used instead. 
+  (b) **Exogeneity of Predictors**: If this assumption is violated (meaning the error term is correlated with explanatory variables, i.e.$\epsilon =/= 0) then that means part of the error term is predictable and we will not get an accurate prediction of expected values. 
+  (c) **No Perfect Collinearity**: If there is perfect or multi-collinearity between variables, it will be difficult to interpret our regression coefficients because the standard errors have been inflated. 
+  (d) **Homoskedasticity**: If there is heteroskedasticity, our standard errors of the coefficients are not reliable. Thus, our confidence intervals for the regression coefficients would either be too narrow or too wide, and thus inaccurate. 
+      
+      
 **2.** [5pts] Let $\beta_0 = -0.25$, $\beta_1 = 1.2$, $X \sim \Gamma(5, 4)$, and $\epsilon \sim Normal(0, 1)$. Here, $\Gamma(\alpha, \psi)$ denotes the Gamma distribution with shape parameter $\alpha$ and rate parameter $\psi$. (You can search how to use R to simulate from this distribution.)  
   Simulate a dataset of size $n = 3,000$ from this process in which all of the assumptions you've discussed above hold. Estimate a OLS model and plot regression diagnostics of this model.  
   
@@ -62,9 +64,49 @@ When simulating data, you don't have to use the parameters set in the previous p
 
 *Hint*: You can search how to use `+ stat_function()` to plot a nonlinear line when plotting with `ggplot()`, or search how to use the base R functions such as `plot()` and `curve()`.
 
+# Simulating a violation of homoskedasticity 
 ```{r}
+##-----------------------------------------------
+# Simulate IV
+set.seed(1234)
+X <- rpois(1000, lambda = 6)  
 
+# Simulate error term  to violate homoskedasticity 
+set.seed(1234)
+error_violate <- rnorm(1000, 0, 8*X)
+
+#Simulate error term to satisfy homoskedasticity
+set.seed(1234)
+error_satsify <-rnorm(1000, 0, 3) # Here, error term isn't dependent on X  
+
+# Calculate DV for violation
+Y <- -3 + 25*X + error_violate
+# Calculate DV for satisfy
+Y2 <--3 + 25*X + error_satsify
+
+# Put variables into a dataframes
+violate_df<- tibble(X = X, Y = Y)
+satisfy_df <- tibble(X = X, Y = Y2)
+
+# Plot Y against X, violate_df
+violate_df %>%
+  ggplot(aes(x = X, y = Y)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  labs(title = "Scatterplot of Simulated Data with Heteroskedasticity")
+       
+# Plot Y against X, satisfy_df
+satisfy_df %>%
+  ggplot(aes(x = X, y = Y2)) +
+  geom_point(shape = 1, alpha = 0.7) +
+  labs(title = "Scatterplot of Simulated Data with Homoskedasticity")
+
+
+m_violate <- lm(Y ~ X, violate_df)
+m_satisfy <- lm(Y2 ~ X, satisfy_df)
+stargazer(m_violate, m_satisfy, type = "text")
 ```
+
+**As shown in the regression table, when there is heteroskedasticity our regression coefficient is underestimated compared to when there is not heteroskedasticity (24.032 vs. 24.991, respectively).**
 
 # Part 2 Causality
 
