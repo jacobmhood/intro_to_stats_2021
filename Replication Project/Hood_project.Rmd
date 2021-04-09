@@ -23,7 +23,7 @@ crosswalk_data <- read.csv("occ_crosswalk.csv")
 ```{r selecting variables}
 # Selecting variables to keep 
 data_clean <- data %>%
-  select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, LABFORCE,	CLASSWKR, OCC1990,	WKSWORK2,	UHRSWORK, INCWAGE)
+  select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, EDUCD, LABFORCE,	CLASSWKR, CLASSWKRD, OCC1990,	WKSWORK2,	UHRSWORK, INCWAGE)
 ```
 
 ```{r remove percentiles}
@@ -48,15 +48,94 @@ head(data_clean)
 ```
 
 ```{r new variables}
-# Finally, create new variables for log weekly hours worked, log weekly wage, potential work experience,
+# Finally, create new variables for log weekly hours worked, weekly wage, log weekly wage, potential work experience,
 # and potential work experience squared 
-data_clean <- data_clean %>% mutate("LOGWKSWRK" = log(WKSWORK2), "LOGWKWAGE" = log(INCWAGE/52), "PWRKEXP" = (AGE - EDUC - 6), "SQ_PWRKEXP" = PWRKEXP^2)
+data_clean <- data_clean %>% mutate("LOGWKSWRK" = log(WKSWORK2), "WKWAGE" = INCWAGE/WKSWORK2, "LOGWKWAGE" = log(INCWAGE/WKSWORK2), "PWRKEXP" = (AGE - EDUC - 6), "SQ_PWRKEXP" = PWRKEXP^2)
 
 head(data_clean)
 ```
 
+```{r new variables}
+# Renaming the dummy sex and race variables to character strings, and creating a new variable for both race and gender
+data_clean <- data_clean %>% mutate(GENDER = ifelse(SEX == 1, "male", "female")) %>% mutate(RACE = ifelse(RACE == 1, "white", "black" )) %>% mutate(RACEGENDER = ifelse(GENDER == "male" & RACE == "white", "white male", ifelse(GENDER == "female" & RACE== "white", "white female", ifelse(GENDER == "male" & RACE == "black", "black male", "black female")))) 
+```
+
 ```{r}
-data_clean <- data_clean %>% left_join(data_clean, crosswalk_data, by = "occ1990")
+# Creating variable for Foreign Born (=1)
+data_clean <- data_clean %>% mutate(ForeignBorn = ifelse(BPL >= 150, 1, 0))
+```
+
+```{r}
+# Creating variable for Public Sector (=1)
+data_clean <- data_clean %>% mutate(PublicSector = ifelse(CLASSWKRD >= 24 & CLASSWKRD < 29, 1, 0))
+```
+
+```{r}
+# Creating variable for College (=1)
+data_clean <- data_clean %>% mutate(College = ifelse(EDUCD == 101, 1, 0 ))
+```
+
+```{r}
+# Creating variable for Some College (=1)
+data_clean <- data_clean %>% mutate(SomeCol = ifelse(EDUCD > 064 & EDUCD < 101, 1, 0))
+```
+
+```{r}
+# Creating variable for High School (=1)
+data_clean <- data_clean %>% mutate(HSGrad = ifelse(EDUCD >= 062 & EDUCD <= 064, 1, 0))
+```
+
+```{r}
+data_clean <- data_clean %>% mutate(LessHS = ifelse(EDUCD < 062, 1, 0))
+```
+
+```{r}
+# Creating variable for Married (=1)
+data_clean <- data_clean %>% mutate(Married = ifelse(MARST != 1 | MARST !=2, 0, 1))
+```
+
+```{r}
+# Creating variable for Presence of Child Under 5 (=1)
+data_clean <- data_clean %>% mutate(Child5 = ifelse(NCHLT5 == 0, 0, 1))
+```
+
+```{r}
+# Creating variable for Northeast Region (=1)
+data_clean <- data_clean %>% mutate(Northeast = ifelse(REGION == 11 | REGION == 12, 1, 0))
+```
+
+```{r}
+# Creating variable for Midwest Region (=1)
+data_clean <- data_clean %>% mutate(Midwest = ifelse(REGION == 21 | REGION == 22, 1, 0))
+```
+
+```{r}
+# Creating variable for South Region (=1)
+data_clean <- data_clean %>% mutate(South = ifelse(REGION == 31 | REGION == 32 | REGION == 33, 1, 0))
+```
+
+```{r}
+# Creating variable for West Region (=1)
+data_clean <- data_clean %>% mutate(West = ifelse(REGION == 42 | REGION == 43, 1, 0))
+```
+
+```{r}
+# Creating variable for Metro (=1)
+data_clean <- data_clean %>% mutate(Metro = ifelse(METRO >= 2, 1, 0))
+```
+
+```{r}
+test <- data_clean %>% filter(YEAR == 1990) %>% filter(RACEGENDER == "white male")
+test %>% summarise(Weekly_wage_Adj = mean((WKWAGE/130.7)*100))
 ```
 
 ## Descriptive Statistics 
+```{r}
+
+```
+
+
+```{r}
+
+```
+

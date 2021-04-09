@@ -10,7 +10,7 @@ output:
 ```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-p_load(tidyverse, kableExtra, sandwich, scales)
+p_load(tidyverse, kableExtra, sandwich, scales, stargazer)
 
 ```
 
@@ -44,7 +44,7 @@ Y_predicted <- -0.25 + 1.2*X + rnorm(3000,0,1)
 
 df <- data.frame(
   X,
-  Y)
+  Y_predicted)
 ```
 
 ```{r}
@@ -86,9 +86,13 @@ covid_risk = rescale( 0 - 7*vaccine - 2*info + e, to = c(0, 100))
 ```{r}
 # Importing data
 covid_data <- read.csv("covid.csv")
+```
 
-set.seed(1234) # set the same seed to ensure identical results
-n = 1000
+
+```{r}
+ # set the same seed to ensure identical results
+n = nrow(covid_data)
+set.seed(1234)
 e = rnorm(n, 0, 0.5)
 covid_risk = rescale( 0 - 7*covid_data$vaccine - 2*covid_data$info + e, to = c(0, 100))
                       
@@ -118,26 +122,46 @@ Control Group ($D = 0$)  |   $E[Y^T|D = 0] = 31.7$       |  $E[Y^C|D = 0] = 24.8
 
   
 ```{r}
-treat <- covid_data %>% filter(covid_data$vaccine == "1") %>% sum(covid_data$`Risk Factor`)/nrow(covid_data)
-control <- covid_data %>% filter(covid_data$vaccine == "0") %>% sum(covid_data$`Risk Factor`)/nrow(covid_data)
-cf_treat <- covid_data %>% filter(covid_data$vaccine_counterf == "1") %>% sum(covid_data$"risk_counterf")/nrow(covid_data)
-cf_control <- covid_data %>% filter(covid_data$vaccine_counterf == "0") %>% sum(covid_data$"risk_counterf")/nrow(covid_data)
-treat
-control
-cf_treat
-cf_control
+treat <- covid_data %>% filter(covid_data$vaccine == 1)
+control <- covid_data %>% filter(covid_data$vaccine == 0) 
+cf_treat <- covid_data %>% filter(covid_data$vaccine_counterf == 0)
+cf_control <- covid_data %>% filter(covid_data$vaccine_counterf == 1)
+```
+
+
+```{r}
+mean(treat$"Risk Factor")
+mean(control$"Risk Factor")
+mean(cf_treat$risk_counterf)
+mean(cf_control$risk_counterf)
 ```
   
   
 **3.** [15pts]Estimate the following:
 
-(a) The Naive Estimator of ATE  
-  
-(b) Treatment Effect on the Treated  
+(a) The Naive Estimator of ATE
+```{r}
+mean(treat$`Risk Factor`) - mean(control$`Risk Factor`)
+```
 
-(c) Treatment Effect on the Control  
   
-(d) Selection Bias  
+(b) Treatment Effect on the Treated 
+```{r}
+mean(treat$`Risk Factor`) - mean(cf_treat$risk_counterf)
+```
+
+
+(c) Treatment Effect on the Control
+```{r}
+mean(control$`Risk Factor`) - mean(cf_control$risk_counterf)
+```
+
+  
+(d) Selection Bias
+```{r}
+mean(cf_treat$risk_counterf) - mean(control$`Risk Factor`)
+```
+
   
 
 **4**. [15pts] Write a non-technical, short summary reporting your results in response to the above mentioned researcher who used the naive estimation. Imagine that you are explaining this to an audience who may not be familiar with the specific terminologies of the counterfactual framework (such as ATE or Treatment Effect on the Treated), but is interested in your substantive findings.
@@ -161,9 +185,16 @@ Variable Name|  Variable Detail
 
 ```{r}
 # Importing data
-
 admin_data <- read.csv("admin.csv")
+head(admin_data)
+```
 
+(a) Estimating linear probability model and (b) Estimate logistic regression model, display both in table  
+```{r}
+lpm1 <- lm(admit ~ gre + gpa + rank, admin_data)
+logit1 <- glm(admit ~ gre + gpa + rank, admin_data, family = binomial(link="logit"))
+
+stargazer(lpm1, logit1, type = "text")
 ```
 
 **2**. [10pts] In one or two paragraphs, summarize your modeling result for each model.
@@ -174,9 +205,24 @@ admin_data <- read.csv("admin.csv")
 **3**. [15pts] Plot the predicted probability of admission based on one's GPA percentile and institution rank (holding GRE at the mean) for the logistic regression model. For the purpose of this exercise, please set the value of `gpa` to range from 1 to 4. Make sure to add appropriate title and labels to your figure.
 
 ```{r }
+#create df with key IVs, fix GRE at mean 
+pred_IV <- tibble(gpa = rep(1:4), rank = rep(1:4)) %>% mutate(gre = mean(admin_data$gre, na.rm = T))
 
-# Your code here
+# use `predict` to predict the Y
+# the model you are using, the df you use, setting CI
+predict_admit <- predict(logit1, pred_IV, interval = "confidence", level = 0.95)
 
+# bind the columns
+pred_result <- cbind(pred_IV, predict_admit)
+
+# Plot
+pred_result %>% 
+  ggplot(aes(x = gpa, y = predict_admit)) +
+  geom_line(aes(color = rank)) +   # group linetype by gender
+  labs(x = "IQ",
+       y = "Predicted SAT Math Score") +
+  ggtitle("Predicted SAT Math Score by IQ and Gender",
+          subtitle = "(Modeled with interaction between IQ and gender)")
 ```
 
 # Part 4 (Not Graded) Final Replication Project
