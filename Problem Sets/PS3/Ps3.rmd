@@ -137,20 +137,14 @@ n = nrow(covid_data)
 set.seed(1234)
 e = rnorm(n, 0, 0.5)
 covid_risk = rescale( 0 - 7*covid_data$vaccine - 2*covid_data$info + e, to = c(0, 100))
-                      
-# --------- Create a Df of Simulated Data ---------
-covid_data <- covid_data %>% mutate(
-  "Risk Factor" = covid_risk)
-
-head(covid_data, 5)
-```
+```                      
 
 
 ```{r}
 # --------- Add counterfactual variables---------
 covid_data <- covid_data %>%
   mutate(vaccine_counterf = ifelse(vaccine == 1, 0, 1),
-         risk_counterf = 0 - 7*vaccine_counterf - 2*info + e)
+         risk_counterf = rescale(0 - 7*vaccine_counterf - 2*info + e, to = c(0,100)))
 
 head(covid_data)
 ```
@@ -159,8 +153,8 @@ head(covid_data)
 
 Group                     |     $Y^T$            |   $Y^C$
 --------------------------|----------------------|----------------------
-Treatment Group ($D = 1$) | $E[Y^T|D = 1] = 96.6$    |   $E[Y^C|D = 1] = 103.4$
-Control Group ($D = 0$)  |   $E[Y^T|D = 0] = 31.7$       |  $E[Y^C|D = 0] = 24.8$
+Treatment Group ($D = 1$) | $E[Y^T|D = 1] = 41.82$    |   $E[Y^C|D = 1] = 58.14$
+Control Group ($D = 0$)  |   $E[Y^T|D = 0] = 67.32$       |  $E[Y^C|D = 0] = 49.7$
 
   
 ```{r}
@@ -172,8 +166,8 @@ cf_control <- covid_data %>% filter(covid_data$vaccine_counterf == 1)
 
 
 ```{r}
-mean(treat$"Risk Factor")
-mean(control$"Risk Factor")
+mean(treat$covid_risk)
+mean(control$covid_risk)
 mean(cf_treat$risk_counterf)
 mean(cf_control$risk_counterf)
 ```
@@ -183,25 +177,25 @@ mean(cf_control$risk_counterf)
 
 (a) The Naive Estimator of ATE
 ```{r}
-mean(treat$`Risk Factor`) - mean(control$`Risk Factor`)
+mean(treat$covid_risk) - mean(control$covid_risk)
 ```
 
   
 (b) Treatment Effect on the Treated 
 ```{r}
-mean(treat$`Risk Factor`) - mean(cf_treat$risk_counterf)
+mean(treat$covid_risk) - mean(cf_treat$risk_counterf)
 ```
 
 
 (c) Treatment Effect on the Control
 ```{r}
-mean(control$`Risk Factor`) - mean(cf_control$risk_counterf)
+mean(control$covid_risk) - mean(cf_control$risk_counterf)
 ```
 
   
 (d) Selection Bias
 ```{r}
-mean(cf_treat$risk_counterf) - mean(control$`Risk Factor`)
+mean(cf_treat$risk_counterf) - mean(control$covid_risk)
 ```
 
   
