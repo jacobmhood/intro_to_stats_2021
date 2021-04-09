@@ -58,3 +58,6 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
 + Lab zip folder will be shared via Slack before lab
 + View lab exercise solution: [Lab 9 Solution](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab9/Lab9_Solution.html)
 
+### Lab 10 Chi-square Test, Ordered Logit, and Multinomial Logit Regressions (4/9/2021)
++ View lab notes: [Lab 10](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab10/Lab10.html)
++ Lab zip folder will be shared via Slack before lab
