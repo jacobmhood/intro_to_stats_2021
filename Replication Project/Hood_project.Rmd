@@ -14,7 +14,7 @@ p_load(tidyverse, ipumsr, kableExtra, data.table)
 
 ## Loading data into environment
 ```{r loading data}
-ddi <- read_ipums_ddi("usa_00003.xml")
+ddi <- read_ipums_ddi("usa_00004.xml")
 data <- read_ipums_micro(ddi)
 crosswalk_data <- read.csv("occ_crosswalk.csv")
 ```
@@ -23,7 +23,7 @@ crosswalk_data <- read.csv("occ_crosswalk.csv")
 ```{r selecting variables}
 # Selecting variables to keep 
 data_clean <- data %>%
-  select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, EDUCD, LABFORCE,	CLASSWKR, CLASSWKRD, OCC1990,	WKSWORK2,	UHRSWORK, INCWAGE)
+  select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, EDUCD, LABFORCE,	CLASSWKR, CLASSWKRD, OCC1990,	WKSWORK1,	UHRSWORK, INCWAGE)
 ```
 
 ```{r remove percentiles}
@@ -35,13 +35,14 @@ data_clean <- data_clean %>% group_by(YEAR) %>% filter(INCWAGE != 0) %>% filter(
 # Filtering out people active in labor force, black or white, ages 25-59, and not Hispanic
 data_clean <- data_clean %>% 
   filter(LABFORCE == 2 & AGE <= 59 & AGE >= 25 & HISPAN == 0 & RACE < 3) %>%
-  filter(EDUC != 0 & INCWAGE < 999998)
+  filter(EDUC != 0 & INCWAGE < 999998)  %>% # Removing missing values for education and income
+  filter(WKSWORK1 != 0)
 ```
 
 
 ```{r select correct obvs}
 # Filtering out values from EDUCD that are individual yeras only and not grouped categories, so we can later construct potential work experience variable
-data_clean <- data_clean %>% filter(EDUCD == 011 | EDUCD ==012 |EDUCD == 014 | EDUCD ==015 | EDUCD ==016 | EDUCD ==017 | EDUCD ==022 | EDUCD ==023 | EDUCD ==025 | EDUCD ==026 | EDUCD ==030 | EDUCD ==040 |EDUCD == 050 | EDUCD ==060 | EDUCD ==070 |EDUCD == 080 |EDUCD == 090 |EDUCD == 100 |EDUCD == 110 |EDUCD == 111 |EDUCD == 112 |EDUCD == 113 |EDUCD == 114 |EDUCD == 115 |EDUCD == 116) # Removing missing values for education and income
+data_clean <- data_clean %>% filter(EDUCD == 011 | EDUCD ==012 |EDUCD == 014 | EDUCD ==015 | EDUCD ==016 | EDUCD ==017 | EDUCD ==022 | EDUCD ==023 | EDUCD ==025 | EDUCD ==026 | EDUCD ==030 | EDUCD ==040 |EDUCD == 050 | EDUCD ==060 | EDUCD ==070 |EDUCD == 080 |EDUCD == 090 |EDUCD == 100 |EDUCD == 110 |EDUCD == 111 |EDUCD == 112 |EDUCD == 113 |EDUCD == 114 |EDUCD == 115 |EDUCD == 116) 
 ```
 
 ```{r}
@@ -82,8 +83,11 @@ n_distinct(data_clean$ID) # Checking that each ID is unique
 # and potential work experience squared 
 
  # adjusting for inflation (1999 dollars)
-data_clean <- data_clean %>% mutate(ADJINCWAGE = ifelse(YEAR == 1980, INCWAGE*2.295, ifelse(YEAR == 1990, INCWAGE*1.334, INCWAGE*1.000))) %>%
-mutate("LOGWKSWRK" = log(WKSWORK2), "WKWAGE" = ADJINCWAGE/WKSWORK2, "LOGWKWAGE" = log(ADJINCWAGE/WKSWORK2), "PWRKEXP" = (AGE - EDUY - 6), "SQ_PWRKEXP" = PWRKEXP^2)
+data_clean <- data_clean %>% mutate(ADJINCWAGE = ifelse(YEAR == 1980, INCWAGE*2.295, ifelse(YEAR == 1990, INCWAGE*1.334, INCWAGE*1.000))) %>% mutate("LOGWKSWRK" = log(WKSWORK1), "WKWAGE" = ADJINCWAGE/WKSWORK1, "LOGWKWAGE" = log(ADJINCWAGE/WKSWORK1), "PWRKEXP" = (AGE - EDUY - 6), "SQ_PWRKEXP" = PWRKEXP^2)
+```
+
+```{r}
+head(data_clean)
 ```
 
 ```{r new variables}
@@ -137,8 +141,8 @@ mutate(West = ifelse(REGION == 42 | REGION == 43, 1, 0)) %>%
 ```
 
 ```{r}
-test <- data_clean %>% filter(YEAR == 1980) %>% filter(RACEGENDER == "black male")
-mean(test$PublicSector)
+test <- data_clean %>% filter(YEAR == 1980) %>% filter(RACEGENDER == "black female")
+mean(test$UHRSWORK)
 ```
 
 ## Descriptive Statistics 
