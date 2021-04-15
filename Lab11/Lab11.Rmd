@@ -53,7 +53,9 @@ h3 { font-size: 20px; }
 | Cleaning the data                  | Mar. 29th to Apr. 11th   |
 | **Replicating Table A1a, Table A1b, and Figure 1 and put in LaTeX** | **Apr. 12th to Apr. 25th**  |
 | Replicating regression and report in Table A2a, Table A2b and put in LaTeX | Apr. 26th to May 9th |
-| Write the 2-page project report + Wiggle room for formatting and debugging, etc. | May 10th to May 14th |
+| Write the 2-page project report + Wiggle room for formatting and debugging, etc. | May 10th to May 14th |  
+
+* Last two labs: Please fill out [this anonymous survey](https://nyu.qualtrics.com/jfe/form/SV_5bFlkv5phi6J5D8) to let me know what you prefer to cover for the last two sessions. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -82,7 +84,7 @@ data(Wages, package = "plm")
 
 ```
 
-  Note that this dataset does not contain a person identifier or a year variable, which are ususally helpful and necessary variables for analysis. We can add these two variables to the dataframe using the `mutate` function.  
+  Note that this dataset does not contain a person identifier or a year variable, which are usually helpful and necessary variables for analysis. We can add these two variables to the dataframe using the `mutate` function.  
   
 ```{r }
 
@@ -155,7 +157,7 @@ grid.arrange(fig3, fig4)
 
 ## Part 2 Fixed Effects and Random Effects Models
 
-  As you may have observed, the relationship between work experience and log wage revealed by the two different estimation approaches are quite different. In general, the OLS model estimated on the aggregate data gives a much smaller slope than OLS estimated by each individual's wage trajactory. We might even run into the Simpson's paradox, where the OLS model slope of the aggregate data is negative, whereas the OLS model slopes of the individual trends are mostly positive (as shown in the example graph in Part 1 Exercise).  
+  As you may have observed, the relationship between work experience and log wage revealed by the two different estimation approaches are quite different. In general, the OLS model estimated on the aggregate data gives a much smaller slope than OLS estimated by each individual's wage trajectory. We might even run into the Simpson's paradox, where the OLS model slope of the aggregate data is negative, whereas the OLS model slopes of the individual trends are mostly positive (as shown in the example graph in Part 1 Exercise).  
   
   Once we look into the **within-individual** relationship between the outcome and the predictor, we see that a simple OLS model's predictions are not really in line with the data. This is also expected as there is a lot of **between-individual heterogeneity in the trends, which we cannot capture when we pool across all observations**.
   
@@ -185,7 +187,7 @@ $$Y_{it} = \alpha + X_{it}\beta + \eta_i + \epsilon_{it}.$$
 
   On the other hand, in the random effects model we assume that $\eta_i$ is **a random variable**, so it will have an expected value and a variance.  
   
-  Random effects models assume that the "random effect" ($\eta_i$) is not correlated with the within-individual error term. Further, it is assumed that $\eta_i$ has a mean of zero and a constant variance. Usually, we also assume that $\eta_i$ follows a Normal distribtuion: $\eta_i \sim \text{Normal}(0, \sigma_\eta^2)$
+  Random effects models assume that the "random effect" ($\eta_i$) is not correlated with the within-individual error term. Further, it is assumed that $\eta_i$ has a mean of zero and a constant variance. Usually, we also assume that $\eta_i$ follows a Normal distribution: $\eta_i \sim \text{Normal}(0, \sigma_\eta^2)$
 
   Hence, similar to $\epsilon_{it}$, $\eta_i$ is treated as a random disturbance around the conditional mean of $Y_{it}$ with variance $\sigma_\eta^2$, where the only difference is that $\eta_i$ **is varying across individuals but not within them**.  
 
@@ -358,7 +360,7 @@ grid.arrange(fig_ols,
 
 ```
 
-Notice that the intercept for the random effects model lies always between the the intercept for the OLS model and the fixed effects model. This is the expected behavior which might be roughly explained by the random effects model setup in which we assume that the individual-level error term $\eta_i$ follows a Normal distribution. This means that we are assuming that the individual-specific intercepts ($\alpha_i$)  are randomly varying around a grand mean ($\alpha$) according to a bell-shaped curve. If the variance of $\eta_i$ is small, this is unlikely that the estimates of the individual-specific interccepts are far away from the grand mean. Our estimates for the $\alpha_i$ will therefore be "shrunk" towards the grand-mean ($\alpha$). 
+Notice that the intercept for the random effects model lies always between the the intercept for the OLS model and the fixed effects model. This is the expected behavior which might be roughly explained by the random effects model setup in which we assume that the individual-level error term $\eta_i$ follows a Normal distribution. This means that we are assuming that the individual-specific intercepts ($\alpha_i$)  are randomly varying around a grand mean ($\alpha$) according to a bell-shaped curve. If the variance of $\eta_i$ is small, this is unlikely that the estimates of the individual-specific intercepts are far away from the grand mean. Our estimates for the $\alpha_i$ will therefore be "shrunk" towards the grand-mean ($\alpha$). 
 
 ---
 
