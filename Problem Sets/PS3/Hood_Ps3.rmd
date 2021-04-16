@@ -11,7 +11,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE, results = "asis")
 library(pacman)
 p_load(tidyverse, kableExtra, scales, stargazer, effects)
-
 ```
 
 # Part 1 Assumptions of OLS Regression
@@ -30,7 +29,7 @@ Recall that in our first lecture on regression, we talked about the **Gauss-Mark
 **1.** [15pts] For each of the assumptions, discuss what will go wrong when the assumption is violated. Be brief in your answers. *Note*: In addition to class materials, you can learn more about these assumptions in the [$\text{\underline{Wikipedia article}}$](https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem) on the Gauss–Markov theorem, particularly the "Gauss–Markov theorem as stated in econometrics" section. (You can skip all the mathematical proofs and remarks.)  
   
   (a) **Linearity**: If the linearity assumption is violated, then an OLS model would not be appropriate for these data. A non-linear model (like quadratic) might be used instead. 
-  (b) **Exogeneity of Predictors**: If this assumption is violated (meaning the error term is correlated with explanatory variables, i.e.$\epsilon =/= 0)$, potentially because of omitted variables bias, then part of the error term is predictable and our parameter estimates become biased.  
+  (b) **Exogeneity of Predictors**: If this assumption is violated (meaning the error term is correlated with explanatory variables), potentially because of omitted variables bias, then part of the error term is predictable and our parameter estimates become biased.  
   (c) **No Perfect Collinearity**: If there is perfect or multi-collinearity between variables, it will be difficult to interpret our regression coefficients because the standard errors have been inflated. 
   (d) **Homoskedasticity**: If there is heteroskedasticity, our beta coefficients do not change but our standard errors of the coefficients are no longer reliable. Thus, our confidence intervals based on these standard errors would either be too narrow or too wide.
       
@@ -104,7 +103,7 @@ m_satisfy <- lm(Y2 ~ X, satisfy_df)
 stargazer(m_violate, m_satisfy, type = "latex")
 ```
 
-**As shown in the regression table, when there is heteroskedasticity our regression coefficient is underestimated compared to when there is not heteroskedasticity (24.032 vs. 24.991, respectively).**
+**As shown in the regression table, when there is heteroskedasticity our standard error is inflated compared to when there is not heteroskedasticity (0.689 vs. 0.037, respectively).**
 
 # Part 2 Causality
 
@@ -145,27 +144,22 @@ covid_data <- covid_data %>%
 
 Group                     |     $Y^T$            |   $Y^C$
 --------------------------|----------------------|----------------------
-Treatment Group ($D = 1$) | $E[Y^T|D = 1] = 41.82$    |   $E[Y^C|D = 1] = 58.14$
-Control Group ($D = 0$)  |   $E[Y^T|D = 0] = 67.32$       |  $E[Y^C|D = 0] = 49.7$
+Treatment Group ($D = 1$) | $E[Y^T|D = 1] = 41.8$    |   $E[Y^C|D = 1] = 49.7$
+Control Group ($D = 0$)  |   $E[Y^T|D = 0] = 67.3$       |  $E[Y^C|D = 0] = 58.1$
 
 
 ```{r}
 # Creating variables for treatment and control, both observed and counterfactual
+# Calculating means
 treat <- covid_data %>% filter(covid_data$vaccine == 1)
 control <- covid_data %>% filter(covid_data$vaccine == 0) 
 cf_treat <- covid_data %>% filter(covid_data$vaccine_cf == 0)
 cf_control <- covid_data %>% filter(covid_data$vaccine_cf == 1)
+meantreat <- mean(treat$covid_risk)
+meancontrol <- mean(control$covid_risk)
+meancf_treat <- mean(cf_treat$risk_cf)
+meancf_control <- mean(cf_control$risk_cf)
 ```
-
-
-```{r}
-# Calculating mean risk for each group, both oberved and counterfactual  
-mean(treat$covid_risk)
-mean(control$covid_risk)
-mean(cf_treat$risk_cf)
-mean(cf_control$risk_cf)
-```
-  
   
 **3.** [15pts]Estimate the following:
 
@@ -196,9 +190,9 @@ mean(cf_treat$risk_cf) - mean(control$covid_risk)
 
 **4**. [15pts] Write a non-technical, short summary reporting your results in response to the above mentioned researcher who used the naive estimation. Imagine that you are explaining this to an audience who may not be familiar with the specific terminologies of the counterfactual framework (such as ATE or Treatment Effect on the Treated), but is interested in your substantive findings.
 
-There is one big problem in trying to determine the effect of having a vaccination center on that area's rate of COVID infections: it's not possible to observe the effects of both having and not having a vaccination center in the same area at the same time. This is the biggest problem we face when trying to claim that "X" variable affects "Y" variable in a certain way. Constructing a counterfactual framework for this study can help us make stronger causal claims. Basically, we construct extra variables that simulate the other outcome we can't directly observe in our data: what would happen to infection rates if an area that received the treatment (having a vaccination center) didn't receive the treatment, for instance. If we think that the quality of information might be an unobserved factor, then we have a problem of selection bias. This means that we can expect those who receive higher quality information will be more likely to want and ultimately receive vaccinations. People aren't randomly assigned to live in these different areas, so we can also expect that the quality of information people get about COVID is associated with where they choose to live. Thus, there are important differences between those in the control group and those in the treatment group that we must consider to figure out the effect of living in an area with a vaccination center.
+There is one big problem in trying to determine the effect of having a vaccination center on that area's COVID risk: it's not possible to observe the effects of both having and not having a vaccination center in the same area at the same time. This is the biggest problem we face when trying to claim that "X" variable affects "Y" variable in a certain way. Constructing a counterfactual framework can help us make stronger claims. Basically, we construct extra variables that simulate the other outcome we can't directly observe in our data: what would happen to COVID risk if an area that received the treatment (having a vaccination center) didn't receive the treatment, for instance. If we think that the quality of information might be an unobserved factor, then we have a problem of selection bias. This means that we can expect those who receive higher quality information will be more likely to want and ultimately receive vaccinations. People aren't randomly assigned to live in these different areas, so we can also expect that the quality of information people get about COVID is associated with where they choose to live. Thus, there are important differences between those in the control group and those in the treatment group that we must consider to figure out the effect of living in an area with a vaccination center.
 
-A biased or "naive" guess of the average treatment effect (ATE) is, that for areas having a vaccination center (treatment) compared to those that don't (control), these areas have a 25.5 unit lower risk of COVID. It's a biased and thus unreliable guess because 1) as discussed, it can't take into account both potential outcomes happening in the same area and 2) the quality of information creates an issue of selection bias. Our counterfactual framework helps here. The treatment effect on the treated we calculate with the help of this framework (16.31 unit decrease in COVID risk) is not equal to the biased guess we calculated earlier (25.5). This shows that our hunch about selection bias in the data is true. If people were randomly assigned to these areas, these two numbers would be equal, so information quality is playing an important role here. Also with this framework, we can calculate the effect of not having a vaccination center for the areas we actually observed in this condition: an increase of 17.6 units. Since we know quality of information residents receive is significant here, we need to calculate the selection bias. We take the difference between the effect on COVID risk from our variable simulating what would happen if areas that have vaccination centers didn't have vaccination centers, and the effect on infection rates we actually observe in those areas without vaccination centers, giving us -9.19. By taking into account different qualities of information residents receive, we can see that this variable causes a problem of self-selection where people with higher quality information are more likely to be in the treatment group (having vaccination center). 
+A biased or "naive" guess of the average treatment effect (ATE) is, that for areas having a vaccination center (treatment) compared to those that don't (control), these areas have a 25.5 unit lower risk of COVID. It's a biased and thus unreliable guess because 1) it can't take into account both potential outcomes happening in the same area and 2) the quality of information creates an issue of selection bias. Our counterfactual framework helps here. The treatment effect on the treated we calculate with the help of this framework (16.31 unit decrease in COVID risk) is not equal to the biased guess we calculated earlier (25.5). This shows that our hunch about selection bias in the data is true. If people were randomly assigned to these areas, these two numbers would be equal, so information quality is playing an important role here. Also with this framework, we can calculate the effect of not having a vaccination center for the areas we actually observed in this condition: a risk increase of 17.6 units. Since we know quality of information residents receive is significant here, we need to calculate the selection bias. We take the difference between the effect on COVID risk from our variable simulating what would happen if areas that have vaccination centers didn't have vaccination centers, and the effect on infection rates we actually observe in those areas without vaccination centers, giving us -9.19. By taking into account different qualities of information residents receive, we can see that this variable causes a problem of self-selection where people with higher quality information are more likely to be in the treatment group (having vaccination center) and thus have lower risk. 
 
 # Part 3 Linear Probability Model and Logistic Regression 
 
@@ -235,7 +229,7 @@ In the logistic model, for a 1 unit increase in GRE score, the odds of being adm
 
 **3**. [15pts] Plot the predicted probability of admission based on one's GPA percentile and institution rank (holding GRE at the mean) for the logistic regression model. For the purpose of this exercise, please set the value of `gpa` to range from 1 to 4. Make sure to add appropriate title and labels to your figure.
 
-```{r}
+```{r fig.align='left'}
 # Using effect function to predict admission by gpa and rank, gre held at mean
 pred_logit <- Effect(
   # Key IVs
@@ -278,5 +272,7 @@ pred_logit %>%
 
 # Part 4 (Not Graded) Final Replication Project
 
-At this point, you should complete most of the data cleaning and start replicating the descriptive tables and figure. You can submit an additional PDF file if you have made progress in replication Table A1a, Table A1b, and Figure 1.  
+At this point, you should complete most of the data cleaning and start replicating the descriptive tables and figure. You can submit an additional PDF file if you have made progress in replication Table A1a, Table A1b, and Figure 1.
+
+**I've just started putting together the tables so I don't have anything ready to knit to pdf just yet** 
 

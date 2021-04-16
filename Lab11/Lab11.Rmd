@@ -81,7 +81,7 @@ p_load(tidyverse, stargazer, kableExtra, gridExtra, plm, effects)
 
 # load data into the environment
 data(Wages, package = "plm")
-
+head(Wages)
 ```
 
   Note that this dataset does not contain a person identifier or a year variable, which are usually helpful and necessary variables for analysis. We can add these two variables to the dataframe using the `mutate` function.  
@@ -115,9 +115,35 @@ Before estimating models, let's create some descriptive plots for exploratory pu
   Note: Due to sample randomness, it is okay if your plot looks different from the example. It is also fine if your plot has legends. 
 
 ```{r }
+# Sample pid
+set.seed(12345)
+bypid <- Wages_clean %>%
+  distinct(pid, .keep_all = T) %>%
+  sample_n(10) %>%
+  pull(pid)
 
-# Your code here
 
+# Aggregate trend
+fig1 <- Wages_clean %>%
+  filter(pid %in% bypid) %>%
+  ggplot(aes(x = exp, y = lwage)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = F) +
+  labs(title = "Scatterplot with OLS Line")
+fig1
+```
+
+
+```{r }
+# Look at individual trend
+fig2 <- Wages_clean %>%
+  filter(pid %in% bypid) %>%
+  ggplot(aes(x = exp, y = lwage, color = as.factor(pid), group = as.factor(pid))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = F) +
+  labs(title = "Scatterplot with OLS Line, by PID")
+
+grid.arrange(fig1, fig2)
 ```
 
 ---

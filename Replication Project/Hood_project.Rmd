@@ -35,19 +35,12 @@ data_clean <- data_clean %>% group_by(YEAR) %>% filter(INCWAGE != 0) %>% filter(
 # Filtering out people active in labor force, black or white, ages 25-59, and not Hispanic
 data_clean <- data_clean %>% 
   filter(LABFORCE == 2 & AGE <= 59 & AGE >= 25 & HISPAN == 0 & RACE < 3) %>%
-  filter(EDUC != 0 & INCWAGE < 999998)  %>% # Removing missing values for education and income
-  filter(WKSWORK1 != 0)
-```
-
-
-```{r select correct obvs}
-# Filtering out values from EDUCD that are individual yeras only and not grouped categories, so we can later construct potential work experience variable
-data_clean <- data_clean %>% filter(EDUCD == 011 | EDUCD ==012 |EDUCD == 014 | EDUCD ==015 | EDUCD ==016 | EDUCD ==017 | EDUCD ==022 | EDUCD ==023 | EDUCD ==025 | EDUCD ==026 | EDUCD ==030 | EDUCD ==040 |EDUCD == 050 | EDUCD ==060 | EDUCD ==070 |EDUCD == 080 |EDUCD == 090 |EDUCD == 100 |EDUCD == 110 |EDUCD == 111 |EDUCD == 112 |EDUCD == 113 |EDUCD == 114 |EDUCD == 115 |EDUCD == 116) 
+  filter(EDUC != 0 & INCWAGE < 999998 & UHSWORK !=0 & WKSWORK1 !=0)  # Removing missing values for education and income
 ```
 
 ```{r}
-# Recoding EDUCD to Years of Schooling
-data_clean <- data_clean %>% mutate(EDUY = ifelse(EDUCD == 011, 1, ifelse(EDUCD == 012, 2, ifelse(EDUCD == 014, 3, ifelse(EDUCD == 015, 4, ifelse(EDUCD == 016, 5, ifelse(EDUCD == 017, 6, ifelse(EDUCD == 022, 7, ifelse(EDUCD == 023, 8, ifelse(EDUCD == 025, 9, ifelse(EDUCD == 026, 10, ifelse(EDUCD == 030, 11, ifelse(EDUCD == 040, 12, ifelse(EDUCD == 050, 13, ifelse(EDUCD == 060, 14, ifelse(EDUCD == 070, 15, ifelse(EDUCD == 080, 16, ifelse(EDUCD == 090, 17, ifelse(EDUCD == 100, 18, ifelse(EDUCD == 110, 19, ifelse(EDUCD == 111 | 114, 20, ifelse(EDUCD == 112, 21, ifelse(EDUCD = 113 | 115, 22, 23)))))))))))))))))))))))
+# For grouped school years, setting years of schooling to the mean
+data_clean <- data_clean %>% mutate(EDUY = ifelse(EDUC == 01, 4, ifelse(EDUC == 02, 9, ifelse(EDUC == 03, 11, ifelse(EDUC == 04, 12, ifelse(EDUC == 05, 13, ifelse(EDUC == 06, 14, ifelse(EDUC == 07, 15, ifelse (EDUC == 08, 16, ifelse (EDUC == 08, 17, ifelse(EDUC == 09, 17, ifelse(EDUC == 10, 18, 21))))))))))))
 ```
 
 ```{r}
