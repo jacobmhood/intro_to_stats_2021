@@ -66,3 +66,4 @@ Lab materials for SOC-GA 2332 Intro to Stats (Spring 2021, NYU Sociology)
 ### Lab 11 Panel Data, Fixed Effects and Random Effects Models (4/16/2021)
 + View lab notes: [Lab 11](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab11/Lab11.html)
 + Lab zip folder will be shared via Slack before lab
++ View lab exercise solution: [Lab 11 Solution](https://htmlpreview.github.io/?https://github.com/di-zhou/intro_to_stats_2021/blob/main/Lab11/Lab11_solution.html)
