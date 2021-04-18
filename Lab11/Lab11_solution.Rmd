@@ -1,0 +1,256 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 11 Solution"
+author: "Di Zhou"
+date: "4/16/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tidyverse, stargazer, kableExtra, gridExtra, plm, effects)
+
+```
+
+## Part 1 Panel Data Structure 
+
+```{r, echo=F}
+
+# load data into the environment
+data(Wages, package = "plm")
+
+Wages_clean <- Wages %>%
+        # Add person ID: genearte a number sequence from 1 to 595, 
+        # each number repeats for numbers of observation in the panel 
+  mutate(pid = rep(1:595, each = nrow(Wages)/595),
+        # Add year: generate a number sequence from 1976 to 1982, 
+        # and repeat this sequence for 595 times
+         year = rep(1976:1982, times = 595))
+
+```
+
+### Part 1 Exercise 
+
+  Before estimating models, let's create some descriptive plots for exploratory purposes. Suppose we are interested in the relationship between **years of full-time work experience** and **wage**. Replicate the the plot below following the listed steps. This plot contains two panels, with one illustrating the aggregate relationship and the other the individual-level trajectories.
+  
+![](graph/exercise1.png){width=60%}  
+
+  1. Sample ten persons from the dataset;
+  2. Create an "aggregate trend" scatter plot of these individuals across all observation years with an OLS regression line for the variable `exp` and `lwage` (the upper panel);
+  3. Similarly, create an "individual trend" scatter plot (the lower panel);
+  4. Arrange the two plots using `grid.arrange()`, post your plot to Slack;
+  5. How does the relationship between `exp` and `lwage` differ in these two plots? What would be the possible reasons for the difference?  
+  
+  Note: Due to sample randomness, it is okay if your plots look different from the example. It is also fine if your plot has legends. 
+
+```{r , message=F}
+
+# sample pid
+set.seed(930412)
+pid_sample <- sample(1:595, 10, replace = FALSE)
+
+# Look at aggregate trend
+fig1 <- Wages_clean %>%
+  filter(pid %in% pid_sample) %>%
+  ggplot(aes(x = exp, y = lwage)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = F)
+
+# Look at individual trend
+fig2 <- Wages_clean %>%
+  filter(pid %in% pid_sample) %>%
+  ggplot(aes(x = exp, y = lwage, color = as.factor(pid), group = as.factor(pid))) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = "lm", se = F) +
+  theme(legend.position = "none")
+
+grid.arrange(fig1, fig2)
+
+```
+  
+```{r , message=F, echo=F }  
+
+# Sample pid by gender
+set.seed(930412)
+pid_bysex <- Wages_clean %>%
+  distinct(pid, .keep_all = T) %>%
+  group_by(sex) %>%
+  sample_n(10) %>%
+  ungroup() %>%
+  pull(pid)
+
+```
+
+## Part 2 Fixed Effects and Random Effects Models
+
+```{r , echo = F}
+
+# Simple OLS model (for purpose of comparison)
+m_ols <- lm(lwage ~ exp + sex, data = Wages_clean)
+
+# Fixed effects model -using person dummies
+m_fe_dummy <- lm(lwage ~ exp + as.factor(pid) , data = Wages_clean)
+
+# Fixed effects model -using plm package
+# model = "within" indicates fixed effects model
+# index = c("pid") is the grouping variable in your fixed effects model
+m_fe <- plm(lwage ~ exp, data = Wages_clean, model = "within", index = c("pid"))
+
+# Random effects model -using plm package
+m_re <- plm(lwage ~ exp + sex, data = Wages_clean, model = "random", index = c("pid"))
+
+# Save a subsample of the gender-balanced 20 individuals sampled earlier 
+Wages_sample <- Wages_clean %>%
+  filter(pid %in% pid_bysex) %>%
+  dplyr::select(pid, lwage, sex, exp)
+# A df that match pid with gender
+sample_gender_key <- Wages_sample %>%
+  dplyr::select(pid, sex) %>%
+  distinct(pid, .keep_all = T)
+
+# Create a number sequence for years of experience
+exp_seq = seq(1, 46, 1)
+
+# --------- predicted effect of the fixed effects model -----------
+
+# Create a IV df with pid and years of experience based on the subsample
+IV_fe <- tibble(
+  pid = rep(pid_bysex, each = length(exp_seq)),
+  exp = rep(exp_seq, times = 20)
+  )
+
+# Get predicted Y using the OLS dummy model
+yhat_fe <- predict(m_fe_dummy, newdata = IV_fe, interval = "confidence")
+
+# Combine results
+predict_fe <- cbind(IV_fe, yhat_fe) %>%
+  left_join(sample_gender_key, by = "pid")
+
+# --------- predicted effect of the random effects model -----------
+
+# dataset to make predictions
+IV_re <-  tibble(
+    pid = rep(pid_bysex, each = length(exp_seq)),
+    exp = rep(exp_seq, times = 20)
+) %>%
+  left_join(sample_gender_key, by = "pid")
+
+# here predictions are based on alpha + X_{it}\beta
+yhat_temp_re <-  predict(m_re, newdata = IV_re)
+    
+# predict eta using `ranef` function
+eta_re <- ranef(m_re) %>%
+  cbind(pid = as.numeric(names(.)), 
+        eta = .) %>%
+  as.data.frame() %>%
+  filter(pid %in% Wages_sample$pid)
+
+# merge predicted eta_i to tmp_rand
+predict_re <- cbind(IV_re, yhat_temp_re) %>%
+  left_join(eta_re, by = "pid") %>%
+  # add eta_i to alpha + X_{it}\beta
+  mutate(yhat_re = yhat_temp_re + eta)
+
+# --------- predicted effect of the OLS model -----------
+predict_ols <- Effect(
+  # Key IVs for which you examine the predicted effects
+  c("sex", "exp"),   
+  m_ols,
+  # Values of IVs
+  xlevels = list(
+    sex = c(replicate("female", n = length(exp_seq)), 
+            replicate("male", n = length(exp_seq))),
+    exp = rep(exp_seq)
+    ),
+  # Set confidence intervals
+  confidence.level = .95) %>%
+  # Convert to dataframe
+  as.data.frame()
+
+```
+
+### Part 2 Exercise
+
+Try to recreate the figure below that demonstrates the three different model curves by each individual's pid. Make sure that you run all the code chunks before this question to ensure you have necessary objects in your R environment. Then, to simplify the steps, you can create a dataframe that is ready for plotting using the code provided in the following code chunk.  
+
+![](graph/exercise2.png){width=70%}
+
+```{r }
+
+# Prepare df for combine
+predict_fe_temp <- predict_fe %>% 
+  dplyr::select(pid, exp, sex, fit) %>%
+  rename(yhat_fe = fit)
+
+predict_re_temp <- predict_re %>% 
+  dplyr::select(pid, exp, sex, yhat_re)
+
+predict_ols_temp <- predict_ols %>% 
+  dplyr::select(exp, sex, fit) %>%
+  rename(yhat_ols = fit)
+
+# Combine yhat of three models
+predict_combine <- predict_fe_temp %>%
+  full_join(predict_re_temp, by = c("pid", "exp", "sex")) %>%
+  left_join(predict_ols_temp, by = c("exp", "sex")) %>%
+  left_join(Wages_sample, by = c("pid", "exp", "sex"))
+
+```
+
+Your code for plotting below:
+
+```{r }
+
+# Plot
+predict_combine %>%
+  ggplot() +
+  geom_line(aes(x = exp, y = yhat_ols, color = "OLS")) +
+  geom_line(aes(x = exp, y = yhat_fe, color = "Fixed Effects")) +
+  geom_line(aes(x = exp, y = yhat_re, color = "Random Effects")) +
+  geom_point(aes(x = exp, y = lwage), shape = 1, alpha = 0.6) +
+  facet_wrap(.~pid) + 
+  scale_colour_manual(name = "", values = c("black", "darkmagenta", "darkcyan")) +
+  labs(x = "years of experience", y = "log wage")
+
+
+```
+
