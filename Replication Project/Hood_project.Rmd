@@ -9,7 +9,7 @@ output: pdf_document
 ```{r setup, include=FALSE, results = "asis"}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-p_load(tidyverse, ipumsr, kableExtra, data.table)
+p_load(tidyverse, ipumsr, kableExtra, data.table, seg, stargazer, tables, xtable)
 ```
 
 ## Loading data into environment
@@ -23,7 +23,7 @@ crosswalk_data <- read.csv("occ_crosswalk.csv")
 ```{r selecting variables}
 # Selecting variables to keep 
 data_clean <- data %>%
-  select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, EDUCD, LABFORCE,	CLASSWKR, CLASSWKRD, OCC1990,	WKSWORK1,	UHRSWORK, INCWAGE)
+  select(YEAR, SAMPLE, SERIAL, PERNUM, PERWT, REGION,	METRO,	NCHILD,	NCHLT5,	SEX, AGE,	MARST, RACE, HISPAN, BPL, EDUC, EDUCD, LABFORCE,	CLASSWKR, CLASSWKRD, OCC1990,	WKSWORK1, WKSWORK2,	UHRSWORK, INCWAGE)
 ```
 
 ```{r remove percentiles}
@@ -35,7 +35,8 @@ data_clean <- data_clean %>% group_by(YEAR) %>% filter(INCWAGE != 0) %>% filter(
 # Filtering out people active in labor force, black or white, ages 25-59, and not Hispanic
 data_clean <- data_clean %>% 
   filter(LABFORCE == 2 & AGE <= 59 & AGE >= 25 & HISPAN == 0 & RACE < 3) %>%
-  filter(EDUC != 0 & INCWAGE < 999998 & UHSWORK !=0 & WKSWORK1 !=0)  # Removing missing values for education and income
+  filter(EDUC != 0 & INCWAGE < 999998 & UHRSWORK != 00) %>%
+  filter(WKSWORK1 !=0 | WKSWORK2 != 0)  # Removing missing values for education and income
 ```
 
 ```{r}
@@ -63,29 +64,21 @@ dt.result <- merge(dt1, dt2, by = "OCC1990")
 data_clean <- as.data.frame(dt.result)
 ```
 
-```{r create unique id}
-# Creating unique id for each observation 
-data_clean <- data_clean %>% unite("ID", "SAMPLE", "SERIAL", "PERNUM", remove = T)
-
-nrow(data_clean)
-n_distinct(data_clean$ID) # Checking that each ID is unique 
-```
-
 ```{r new variables}
 # Finally, create new variables for log weekly hours worked, weekly wage, log weekly wage (all adjusted for inflation), potential work experience,
 # and potential work experience squared 
 
- # adjusting for inflation (1999 dollars)
-data_clean <- data_clean %>% mutate(ADJINCWAGE = ifelse(YEAR == 1980, INCWAGE*2.295, ifelse(YEAR == 1990, INCWAGE*1.334, INCWAGE*1.000))) %>% mutate("LOGWKSWRK" = log(WKSWORK1), "WKWAGE" = ADJINCWAGE/WKSWORK1, "LOGWKWAGE" = log(ADJINCWAGE/WKSWORK1), "PWRKEXP" = (AGE - EDUY - 6), "SQ_PWRKEXP" = PWRKEXP^2)
-```
+# recoding WKSWORK2 to values centered on the mean for Year 2010
+data_clean <- data_clean %>% mutate(ADJWKSWORK2 = ifelse(WKSWORK2 == 1, 7, ifelse(WKSWORK2 == 2, 20, ifelse (WKSWORK2 == 3, 33, ifelse(WKSWORK2 == 4, 43.5, ifelse(WKSWORK2 == 5, 48.5, 51))))))
 
-```{r}
-head(data_clean)
+ # adjusting for inflation (1999 dollars)
+data_clean <- data_clean %>% mutate(ADJINCWAGE = ifelse(YEAR == 1980, INCWAGE*2.295, ifelse(YEAR == 1990, INCWAGE*1.334, ifelse(YEAR == 2000, INCWAGE, INCWAGE*0.764)))) %>% 
+  mutate("LOGWKSWRK" = ifelse(YEAR == 2010, log(ADJWKSWORK2), log(WKSWORK1)), "WKWAGE" = ifelse(YEAR == 2010, ADJINCWAGE/ADJWKSWORK2, ADJINCWAGE/WKSWORK1), "LOGWKWAGE" = ifelse(YEAR == 2010, log(ADJINCWAGE/ADJWKSWORK2), log(ADJINCWAGE/WKSWORK1)), "PWRKEXP" = (AGE - EDUY - 6), "SQ_PWRKEXP" = PWRKEXP^2)
 ```
 
 ```{r new variables}
 # Renaming the dummy sex and race variables to character strings, and creating a new variable for both race and gender
-data_clean <- data_clean %>% mutate(GENDER = ifelse(SEX == 1, "male", "female")) %>% mutate(RACE = ifelse(RACE == 1, "white", "black" )) %>% mutate(RACEGENDER = ifelse(GENDER == "male" & RACE == "white", "white male", ifelse(GENDER == "female" & RACE== "white", "white female", ifelse(GENDER == "male" & RACE == "black", "black male", "black female")))) 
+data_clean <- data_clean %>% mutate(GENDER = ifelse(SEX == 1, "male", "female")) %>% mutate(RACE = ifelse(RACE == 1, "white", "black" )) %>% mutate(RACEGENDER = ifelse(GENDER == "male" & RACE == "white", "white male", ifelse(GENDER == "female" & RACE== "white", "white female", ifelse(GENDER == "male" & RACE == "black", "black male", "black female"))))
 ```
 
 ```{r}
@@ -97,15 +90,16 @@ mutate(PublicSector = ifelse(CLASSWKRD >= 24 & CLASSWKRD < 29, 1, 0))
 
 ```{r}
 # Creating variable for College (=1)
-data_clean <- data_clean %>% mutate(College = ifelse(EDUCD == 101, 1, 0 )) %>%
+data_clean <- data_clean %>% mutate(College = ifelse(EDUC >= 10 , 1, 0 )) %>%
 
 # Creating variable for Some College (=1)
-mutate(SomeCol = ifelse(EDUCD > 064 & EDUCD < 101, 1, 0)) %>%
+mutate(SomeCol = ifelse(EDUC > 06 & EDUC < 10, 1, 0)) %>%
 
 # Creating variable for High School (=1)
-mutate(HSGrad = ifelse(EDUCD >= 062 & EDUCD <= 064, 1, 0)) %>%
+mutate(HSGrad = ifelse(EDUC ==06, 1, 0)) %>%
 
-mutate(LessHS = ifelse(EDUCD < 062, 1, 0))
+  # Creating variable for Less than high school (=1)
+mutate(LessHS = ifelse(EDUC < 06, 1, 0))
 ```
 
 ```{r}
@@ -131,20 +125,124 @@ mutate(West = ifelse(REGION == 42 | REGION == 43, 1, 0)) %>%
 
 # Creating variable for Metro (=1)
  mutate(Metro = ifelse(METRO >= 2, 1, 0))
+
 ```
 
-```{r}
-test <- data_clean %>% filter(YEAR == 1980) %>% filter(RACEGENDER == "black female")
-mean(test$UHRSWORK)
-```
 
 ## Descriptive Statistics 
-```{r}
+```{r TableA1a}
+# Creating TableA1a
+TableA1A <- data_clean %>% filter(GENDER == "male") %>% group_by(YEAR, RACE) %>%
+  summarise("Weekly wage" = mean(WKWAGE),
+            "Weekly wage (logged)" = mean(LOGWKWAGE),
+            "Weekly working hours" = mean(UHRSWORK),
+            "Weekly working hours (logged)" = mean(log(UHRSWORK)),
+            "Public sector (=1)" = mean(PublicSector),
+            "College (=1)" = mean(College),
+            "Some college (=1)" =  mean(SomeCol),
+            "High school graduate (=1)" =  mean(HSGrad),
+            "Less than high school (=1)" =  mean(LessHS),
+            "Potential work experience" =  mean(PWRKEXP),
+            "Potential wok experience sq." =  mean(SQ_PWRKEXP),
+            "Married (=1)" =  mean(Married),
+            "Number of children" =  mean(NCHILD),
+            "Child under 5 (=1)" =  mean(Child5),
+            "Foreign born (=1)" =  mean(ForeignBorn),
+            "Northeast region (=1)" =  mean(Northeast),
+            "Midwest region (=1)" =  mean(Midwest),
+            "South region (=1)" =  mean(South),
+            "West region (=1)" =  mean(West),
+            "Lives in metropolitan area (=1)" = mean(Metro))
+TableA1A
+```
 
+```{r TableA1b}
+# Creating TableA1b
+TableA1B <- data_clean %>% filter(GENDER == "female") %>% group_by(YEAR, RACE) %>%
+  summarise("Weekly wage" = mean(WKWAGE),
+            "Weekly wage (logged)" = mean(LOGWKWAGE),
+            "Weekly working hours" = mean(UHRSWORK),
+            "Weekly working hours (logged)" = mean(log(UHRSWORK)),
+            "Public sector (=1)" = mean(PublicSector),
+            "College (=1)" = mean(College),
+            "Some college (=1)" =  mean(SomeCol),
+            "High school graduate (=1)" =  mean(HSGrad),
+            "Less than high school (=1)" =  mean(LessHS),
+            "Potential work experience" =  mean(PWRKEXP),
+            "Potential wok experience sq." =  mean(SQ_PWRKEXP),
+            "Married (=1)" =  mean(Married),
+            "Number of children" =  mean(NCHILD),
+            "Child under 5 (=1)" =  mean(Child5),
+            "Foreign born (=1)" =  mean(ForeignBorn),
+            "Northeast region (=1)" =  mean(Northeast),
+            "Midwest region (=1)" =  mean(Midwest),
+            "South region (=1)" =  mean(South),
+            "West region (=1)" =  mean(West),
+            "Lives in metropolitan area (=1)" = mean(Metro))
+            
+TableA1B
+```
+
+```{r}
+# Transposing table and exporting to latex
+TableA1A <- t(TableA1A)
+xtable(TableA1A)
 ```
 
 
 ```{r}
+# Transposing table and exporting to latex
+TableA1B <- t(TableA1B)
+xtable(TableA1B)
+```
 
+
+```{r}
+# N  men
+Nwhitemen1980 <- data_clean %>% filter(RACEGENDER == "white male") %>% filter(YEAR == "1980")
+nrow(Nwhitemen1980)
+Nblackmen1980 <- data_clean %>% filter(RACEGENDER == "black male") %>% filter(YEAR == "1980")
+nrow(Nblackmen1980)
+Nwhitemen1990 <- data_clean %>% filter(RACEGENDER == "white male") %>% filter(YEAR == "1990")
+nrow(Nwhitemen1990)
+Nblackmen1990 <- data_clean %>% filter(RACEGENDER == "black male") %>% filter(YEAR == "1990")
+nrow(Nblackmen1990)
+Nwhitemen2000 <- data_clean %>% filter(RACEGENDER == "white male") %>% filter(YEAR == "2000")
+nrow(Nwhitemen2000)
+Nblackmen2000 <- data_clean %>% filter(RACEGENDER == "black male") %>% filter(YEAR == "2000")
+nrow(Nblackmen2000)
+Nwhitemen2010 <- data_clean %>% filter(RACEGENDER == "white male") %>% filter(YEAR == "2010")
+nrow(Nwhitemen2010)
+Nblackmen2010 <- data_clean %>% filter(RACEGENDER == "black male") %>% filter(YEAR == "2010")
+nrow(Nblackmen2010)
+```
+
+
+```{r}
+# N  women
+Nwhitewomen1980 <- data_clean %>% filter(RACEGENDER == "white female") %>% filter(YEAR == "1980")
+nrow(Nwhitewomen1980)
+Nblackwomen1980 <- data_clean %>% filter(RACEGENDER == "black female") %>% filter(YEAR == "1980")
+nrow(Nblackwomen1980)
+Nwhitewomen1990 <- data_clean %>% filter(RACEGENDER == "white female") %>% filter(YEAR == "1990")
+nrow(Nwhitewomen1990)
+Nblackwomen1990 <- data_clean %>% filter(RACEGENDER == "black female") %>% filter(YEAR == "1990")
+nrow(Nblackwomen1990)
+Nwhitewomen2000 <- data_clean %>% filter(RACEGENDER == "white female") %>% filter(YEAR == "2000")
+nrow(Nwhitewomen2000)
+Nblackwomen2000 <- data_clean %>% filter(RACEGENDER == "black female") %>% filter(YEAR == "2000")
+nrow(Nblackwomen2000)
+Nwhitewomen2010 <- data_clean %>% filter(RACEGENDER == "white female") %>% filter(YEAR == "2010")
+nrow(Nwhitewomen2010)
+Nblackwomen2010 <- data_clean %>% filter(RACEGENDER == "black female") %>% filter(YEAR == "2010")
+nrow(Nblackwomen2010)
+```
+
+```{r}
+# Plotting Figure 1
+
+data_clean %>%
+  ggplot(aes(x = YEAR, y = WKWAGE, linetype = as.factor(RACEGENDER))) +
+  geom_line()
 ```
 
