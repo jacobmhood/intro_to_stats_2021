@@ -191,7 +191,7 @@ grid.arrange(fig3, fig4)
   
 ### 2.1 Fixed Effects Models  
 
-  First, fixed effects models **add a source of between-individual heterogeneity to the model**, while assuming that the slope remains the same across individuals. This leads us to the equation:
+  First, fixed effects models **add a source of between-individual heterogeneity to the model**, while assuming that the slope remains the same across individuals. In a simple scenario where we have only one predictor, this leads us to the equation:
 
 $$Y_{it} = \alpha + X_{it}\beta + \eta_i + \epsilon_{it},$$
 
@@ -235,12 +235,14 @@ m_fe_dummy <- lm(lwage ~ exp + as.factor(pid) , data = Wages_clean)
 # model = "within" indicates fixed effects model
 # index = c("pid") is the grouping variable in your fixed effects model
 m_fe <- plm(lwage ~ exp, data = Wages_clean, model = "within", index = c("pid"))
+m_fe2 <- plm(lwage ~ exp, data = Wages_clean, model = "within", index = c("pid", "year"))
 
 # Random effects model -using plm package
 m_re <- plm(lwage ~ exp + sex, data = Wages_clean, model = "random", index = c("pid"))
+m_re2 <- plm(lwage ~ exp + sex, data = Wages_clean, model = "random", index = c("pid", "year"))
 
 # Display modeling results 
-stargazer(m_ols, m_fe, m_re, type = "text", omit.stat = c("f", "ser"))
+stargazer(m_ols, m_fe, m_fe2, m_re, m_re2, type = "text", omit.stat = c("f", "ser"))
 
 # You can also compare the coefficients of your person dummy linear model and your fixed effects model
 # R-square of fixed effects model is different from OLS model! https://stats.stackexchange.com/questions/401264/which-r-squared-value-to-report-while-using-a-fixed-effects-model-within-betw
