@@ -128,7 +128,6 @@ mutate(West = ifelse(REGION == 42 | REGION == 43, 1, 0)) %>%
 
 ```
 
-
 ## Descriptive Statistics 
 ```{r TableA1a}
 # Creating TableA1a
@@ -189,16 +188,14 @@ TableA1A <- t(TableA1A)
 xtable(TableA1A)
 ```
 
-
 ```{r}
 # Transposing table and exporting to latex
 TableA1B <- t(TableA1B)
 xtable(TableA1B)
 ```
 
-
 ```{r}
-# N  men
+# Calculating N  men
 Nwhitemen1980 <- data_clean %>% filter(RACEGENDER == "white male") %>% filter(YEAR == "1980")
 nrow(Nwhitemen1980)
 Nblackmen1980 <- data_clean %>% filter(RACEGENDER == "black male") %>% filter(YEAR == "1980")
@@ -217,9 +214,8 @@ Nblackmen2010 <- data_clean %>% filter(RACEGENDER == "black male") %>% filter(YE
 nrow(Nblackmen2010)
 ```
 
-
 ```{r}
-# N  women
+# Calculating N  women
 Nwhitewomen1980 <- data_clean %>% filter(RACEGENDER == "white female") %>% filter(YEAR == "1980")
 nrow(Nwhitewomen1980)
 Nblackwomen1980 <- data_clean %>% filter(RACEGENDER == "black female") %>% filter(YEAR == "1980")
@@ -240,9 +236,16 @@ nrow(Nblackwomen2010)
 
 ```{r}
 # Plotting Figure 1
+fig1data <- data_clean %>% group_by(YEAR, RACEGENDER) %>% summarise(AVGWKWAGE = mean(WKWAGE)) # grouping data by year/group and averaging weekly wage
 
-data_clean %>%
-  ggplot(aes(x = YEAR, y = WKWAGE, linetype = as.factor(RACEGENDER))) +
-  geom_line()
+fig1 <- fig1data %>%
+  ggplot(aes(YEAR, y = AVGWKWAGE, linetype = RACEGENDER)) +
+  geom_line() + 
+  geom_point(aes(shape = RACEGENDER), size = 3) +
+  labs(x = "", y = "" , title = "Figure 1. Average Weekly Earnings (in Constant $US) by Race and Gender, 1980 to 2010") +
+    scale_linetype_manual(values = c("dashed", "dashed" , "solid", "solid"), label = c("Black Female", "Black Male", "White Female", "White Male")) +
+  scale_shape_manual(values = c(24, 22 , 17, 15), label = c("Black Female", "Black Male", "White Female", "White Male")) + 
+  theme(legend.title = element_blank()) +
+  ylim(300, 1100) 
 ```
 
