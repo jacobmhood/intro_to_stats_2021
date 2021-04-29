@@ -249,3 +249,38 @@ fig1 <- fig1data %>%
   ylim(300, 1100) 
 ```
 
+## Regression Analysis
+```{r}
+# Running linear models for men, by race and year
+m1980whitemen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitemen1980)
+m1980blackmen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackmen1980)
+m1990whitemen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitemen1990)
+m1990blackmen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackmen1990)
+m2000whitemen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitemen2000)
+m2000blackmen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackmen2000)
+m2010whitemen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitemen2010)
+m2010blackmen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackmen2010)
+
+```
+
+```{r}
+# Model table for men
+stargazer(m1980whitemen, m1980blackmen, m1990whitemen, m1990blackmen, m2000whitemen, m2000blackmen, m2010whitemen, m2010blackmen, type = "text")
+```
+
+```{r}
+# Running linear models for women, by race and year
+m1980whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen1980)
+m1980blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen1980)
+m1990whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen1990)
+m1990blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen1990)
+```
+
+
+```{r}
+m2000whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen2000)
+m2000blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen2000)
+m2010whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen2010)
+m2010blackwomen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen2010)
+```
+
