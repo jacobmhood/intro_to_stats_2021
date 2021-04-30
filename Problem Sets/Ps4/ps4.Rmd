@@ -8,25 +8,10 @@ output:
     df_print: paged
 ---
 
-# Instructions
-
-\begin{enumerate}
-    \item Submit two files for each problem set. The first is a \textbf{R Markdown} (\texttt{.Rmd}) file that can be run without error from start to end. The second is a \textbf{PDF} rendered from your R Markdown file or created using \LaTeX{}. 
-    \item Name your files following this convention: \texttt{[Last Name]\_ps1.Rmd} and \texttt{[Last Name]\_ps1.pdf}. 
-    \item Both files should be submitted to the TA via e-mail (di.zhou@nyu.edu) before the time specified above.
-    \item You are given plenty of time to work on the problem set. Please plan ahead and start early. \textbf{Except for special circumstances, the TA will not accept last-minute questions asked on the day when the problem set is due}.
-    \item You are encouraged to discuss the problems with your classmates. Notice as well that we have students in this class who are not in your cohort. It would be great if you could reach out to them and work together. But \textbf{the R Markdown and PDF files that you submit have to be created on your own}.
-    \item Comment on your code wherever possible and explain your ideas in detail. You will get credit for showing the steps you take and for explaining your reasoning, even if you do not get the correct final result.
-\end{enumerate}
-
-\noindent\rule{16.5cm}{0.4pt}
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-library(kableExtra)
-library(tidyverse)
-
-
+library(pacman)
+p_load(kableExtra, stargazer, plm, MASS)
 ```
 
 # Part 1 Forensic Statistics and the Chi-Square Test  
@@ -49,9 +34,17 @@ tbl %>% kbl(booktabs = T, align = "c") %>% kable_styling(full_width = F)
   
   Answers the questions below:  
   
-  1. If the election results had not been manipulated (i.e., fraud did not occur), what would be your best guess for the number of voting stations that reported a vote count for Candidate A ending in 1? And in 6? And in 9?  
+  1. If the election results had not been manipulated (i.e., fraud did not occur), what would be your best guess for the number of voting stations that reported a vote count for Candidate A ending in 1? And in 6? And in 9?
+
+Ending in 1: $f^e$ = (11/116)(11) = 1.04
+Ending in 6: $f^e$ = (14/116)(14) = 1.69
+Ending in 9: $f^e$ = (13/116)(13) = 1.46
+  
   
   2. If the election results had not been manipulated, what is the probability that a vote count for Candidate A ended in1? And in 6? And in 9?  
+Ending in 1: $f^e$ = (11/116)(11) = 1.04
+Ending in 6: $f^e$ = (14/116)(14) = 1.69
+Ending in 9: $f^e$ = (13/116)(13) = 1.46
   
   3. Following the logic from questions 1 and 2, complete columns 3 to 5 in the table below.
   

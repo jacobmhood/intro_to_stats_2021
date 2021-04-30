@@ -271,40 +271,23 @@ stargazer(m1980whitemen, m1980blackmen, m1990whitemen, m1990blackmen, m2000white
 ```{r}
 # Running linear models for women, by race and year
 m1980whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen1980)
-```
 
-
-```{r}
 m1980blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen1980)
-```
 
-
-```{r}
 m1990whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen1990)
-```
 
-
-```{r}
 m1990blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen1990)
-```
 
-
-```{r}
 m2000whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen2000)
-```
 
-
-```{r}
 m2000blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen2000)
-```
 
-
-```{r}
 m2010whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen2010)
+
+m2010blackwomen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen2010)
 ```
 
-
 ```{r}
-m2010blackwomen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + UHRSWORK + Metro + PublicSector + Midwest + South + West, data = Nblackwomen2010)
+stargazer(m1980whitewomen, m1980blackwomen, m1990whitewomen, m1990blackwomen, m2000whitewomen, m2000blackwomen, m2010whitewomen, m2010blackwomen, type = "text")
 ```
 
