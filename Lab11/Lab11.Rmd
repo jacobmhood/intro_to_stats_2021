@@ -52,7 +52,7 @@ h3 { font-size: 20px; }
 | Obtaining the raw data from IPUMS  | By Mar. 29th       |
 | Cleaning the data                  | Mar. 29th to Apr. 11th   |
 | **Replicating Table A1a, Table A1b, and Figure 1 and put in LaTeX** | **Apr. 12th to Apr. 25th**  |
-| Replicating regression and report in Table A2a, Table A2b and put in LaTeX | Apr. 26th to May 9th |
+| Replicating the regression results (Table A2a, Table A2b) and put in LaTeX | Apr. 26th to May 9th |
 | Write the 2-page project report + Wiggle room for formatting and debugging, etc. | May 10th to May 14th |  
 
 * Last two labs: Please fill out [this anonymous survey](https://nyu.qualtrics.com/jfe/form/SV_5bFlkv5phi6J5D8) to let me know what you prefer to cover for the last two sessions. 
