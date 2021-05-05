@@ -1,0 +1,332 @@
+---
+title: "SOC-GA 2332 Intro to Stats Lab 12"
+author: "Di Zhou"
+date: "5/7/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: paper
+    highlight: textmate
+    toc: true
+  pdf_document: 
+    toc: true
+---
+
+
+<style type="text/css">
+
+body{ 
+
+    font-size: 16px;
+    line-height: 1.7em;
+    <!-- text-align: justify; -->
+
+}
+
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    border: solid 1px;
+}
+
+h1 { font-size: 32px; }
+
+h2 { font-size: 24px; }
+
+h3 { font-size: 20px; }
+
+</style>
+
+<br>
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+
+library(pacman)
+p_load(tidyverse, data.table, foreign, stargazer, kableExtra, gridExtra, MatchIt, AER, TAM)
+
+options(scipen = 999)
+
+```
+
+## Part 1: Using Weights in Descriptive Statistics and Regression for IPUMS data
+
+We will use the IPUMS PERWT (person weight) variable to demonstrate how to use weights for descriptive statistics and regression models. 
+
+First, it is useful to review the PERWT variable description:  
+
+>PERWT indicates how many persons in the U.S. population are represented by a given person in an IPUMS sample.  
+  It is generally a good idea to use PERWT when conducting a person-level analysis of any IPUMS sample. The use of PERWT is optional when analyzing one of the "flat" or unweighted IPUMS samples. Flat IPUMS samples include the 1% samples from 1850-1930, all samples from 1960, 1970, and 1980, the 1% unweighted samples from 1990 and 2000, the 10% 2010 sample, and any of the full count 100% census datasets. PERWT must be used to obtain nationally representative statistics for person-level analyses of any sample other than those.  
+  
+In R, the `TAM` package can be used to generate weighted descriptive statistics. For regression models, you can directly input the weights in the `lm()` function. 
+
+```{r Weights}
+
+# -------Load data-------
+wt_example <- read.csv("data/wt_example.csv")
+
+# -------Descriptive statistics-------
+
+# -------1. Numeric variables-------
+# unweighted mean, var, and sd
+mean <- mean(wt_example$INCWAGE)
+var <- var(wt_example$INCWAGE)
+sd <- sd(wt_example$INCWAGE)
+
+# weighted mean, var, and sd
+wt_mean <- weighted.mean(wt_example$INCWAGE, wt_example$PERWT)
+wt_var <- weighted_var(wt_example$INCWAGE, wt_example$PERWT)
+wt_sd <- weighted_sd(wt_example$INCWAGE, wt_example$PERWT)
+
+# Compare
+tibble(Statistics = c("Mean", "Var", "SD"), 
+       Unweighted = c(mean, var, sd), 
+       Weighted = c(wt_mean, wt_var, wt_sd)) %>%
+  kbl("html") %>% 
+  kable_classic_2(full_width = F)
+
+
+# -------2. Categorical variables-------
+# Unweighted frequency table
+table(wt_example$SEX)
+# Weighted frequency table
+weighted_table(wt_example$SEX, wt_example$PERWT)
+
+
+# -------Regression-------
+
+# Since log(0) = -inf, you can add a very small number to INCWAGE before log transformation
+# but this assumes that those have 0 wage are homogenous populations, 
+# whereas in reality it can be a TRUNCATED data (see Lecture 12 Slide 38 to 40)
+
+# Unweigthed regression
+m1 <- lm(log(INCWAGE + 0.01) ~ SEX + EDUC + SEX*EDUC, data = wt_example)
+# Weigthed regression
+m2 <- lm(log(INCWAGE + 0.01) ~ SEX + EDUC + SEX*EDUC, data = wt_example, weights = PERWT)
+
+# Compare results
+stargazer(m1, m2, 
+          type = "text", 
+          column.labels = c("Unweighted", "Weighted"), 
+          dep.var.labels = "Log Wage")
+
+```
+
+## Part 2: Matching
+
+For following parts on causal inference, we will use the Early Childhood Longitudinal Study dataset. We will examine the effect of going to a Catholic school (`catholic = 1`), as opposed to a public school (`catholic = 0`), on students' standardized math score (`c5r2mtsc_std`). The pre-treatment covariates are:  
+  * `race_white`: Is the student white (1) or not (0)?  
+  * `p5hmage`: Mother’s age  
+  * `w3income`: Family income  
+  * `p5numpla`: Number of places the student has lived for at least 4 months  
+  * `w3momed_hsb`: Is the mother’s education level high-school or below (1) or some college or more (0)?  
+
+```{r }
+#import data
+ecls <- read.csv("data/ecls.csv") # the Early Childhood Longitudinal Study
+
+# covariates variable name vector
+ecls_cov <- c('race_white', 'p5hmage', 'w3income', 'p5numpla', 'w3momed_hsb')
+
+```
+
+### Check if sample is balanced
+
+To check if the sample is balanced or not, we first examine the difference in means by treatment status for outcome variable and covariants. As we can see, the difference in mean for match score and for covariates are statistically significant.  
+
+```{r }
+
+# Check difference in means by school type
+ecls %>%
+  group_by(catholic) %>%
+  summarise(n_students = n(),
+            mean_math = mean(c5r2mtsc_std),
+            std_error_math = sd(c5r2mtsc_std) / sqrt(n_students)) %>%
+  kbl("html") %>% 
+  kable_classic_2(full_width = F)
+
+# Two Sample t-test: (H0: mean math scores do not differ by school types)
+with(ecls, t.test(c5r2mtsc_std ~ catholic))
+
+
+# Check difference in means for pre-treatment covariates by school types
+
+# summarise group means for covariates
+ecls %>%
+  group_by(catholic) %>%
+  select(one_of(ecls_cov)) %>%
+  summarise_all(funs(mean(., na.rm = T))) %>%
+  kbl("html") %>% 
+  kable_classic_2(full_width = F)
+
+# Two sample t-test for every covariate
+# lapply: a build-in loop that apply the t-test function along the name vector
+lapply(ecls_cov, function(v) {
+  t.test(ecls[, v] ~ ecls[, 'catholic'])
+})
+
+```
+
+
+### Choose and execute a matching algorithm  
+
+To create a balanced sample from the original, unbalanced dataset, we need to choose and execute a matching algorithm in order to created a balanced dataset for estimate ATE. The package `MatchIt` estimates the propensity score in the background and then matches observations based on the method of your choice.
+
+```{r }
+
+# MatchIt does not allow missing values, 
+# so we need to remove observations with NAs
+ecls_nomiss <- ecls %>%  
+  select(c5r2mtsc_std, catholic, all_of(ecls_cov)) %>%
+  na.omit()
+
+# Nearest neighbor matching (see documentation for different matching methods)
+mod_match <- matchit(catholic ~ race_white + w3income + p5hmage + p5numpla + w3momed_hsb,
+                     method = "nearest", data = ecls_nomiss)
+
+```
+
+### Create matched dataset  
+
+Using the `matchit` function, we obtained a `matchit` object (`mod_match`) that can be used to create a dataframe that contains only the matched observations.  
+  
+  Note that in our case, this final dataset is smaller than the original: it contains 2,704 observations, meaning that 1,352 pairs of treated and control observations were matched.  
+  
+  Also note that the final dataset contains a variable called `distance`, which is the propensity score.
+
+```{r }
+# To create a dataframe containing only the matched observations
+dta_m <- match.data(mod_match)
+
+```
+
+### Examine covariates after matching  
+
+After matching, it is useful to plot the mean of each covariate against the estimated propensity score, color-coded by treatment status. If matching is done well, the treatment and control groups will have (near) identical means of each covariate at each value of the propensity score.
+
+```{r , message=F, warning=F}
+
+# A plotting function that plots the distribution of propensity score of a given covariate
+fn_bal <- function(dta, variable, yname) {
+  dta$variable <- dta[, variable]
+  if (variable == 'w3income') dta$variable <- dta$variable / 10^3
+  dta$catholic <- as.factor(dta$catholic)
+  support <- c(min(dta$variable), max(dta$variable))
+  ggplot(dta, aes(x = distance, y = variable, color = catholic)) +
+    geom_point(alpha = 0.2, size = 1.3) +
+    geom_smooth(method = "loess", se = F) +
+    xlab("Propensity score") +
+    ylab(yname) +
+    theme_bw() +
+    ylim(support)
+}
+
+# Plot and arrange the plots
+grid.arrange(
+  fn_bal(dta_m, "w3income", "Family Income"),
+  fn_bal(dta_m, "p5numpla", "Num Places Lived"),
+  fn_bal(dta_m, "p5hmage", "Mother Age"),
+  fn_bal(dta_m, "w3momed_hsb", "Mom Edu HS or Less"),
+  fn_bal(dta_m, "race_white", "Race is White"),
+  nrow = 3)
+
+
+# You can also check difference-in-means in matched data
+dta_m %>%
+  group_by(catholic) %>%
+  select(one_of(ecls_cov)) %>%
+  summarise_all(funs(mean)) %>%
+  kbl("html") %>% 
+  kable_classic_2(full_width = F)
+
+# two sample t-test
+lapply(ecls_cov, function(v) {
+  t.test(dta_m[, v] ~ dta_m$catholic)
+})
+
+
+```
+
+### Estimate Average Treatment Effects
+
+Using matched dataset, we can now estimate ATE using two different methods. We can either use the results of a two sample t-test and calculate the difference in means, or regress mean math score on school types. Note that since we are using the matched dataset, the distribution of the covariates are balanced in both the treatment and control group, and therefore with our without control variables in the linear model would not affect the ATE estimate. 
+
+```{r }
+
+# 1. Two sample t-test
+with(dta_m, t.test(c5r2mtsc_std ~ catholic))
+# mean in group 0: 0.3593668 
+# mean in group 1: 0.2096679 
+# ATE = 0.2096679 - 0.3593668 = -0.1496989
+
+# 2. OLS model
+# no covariates
+lm_treat1 <- lm(c5r2mtsc_std ~ catholic, data = dta_m)
+# with covariates
+lm_treat2 <- lm(c5r2mtsc_std ~ catholic + race_white + p5hmage +
+                  I(w3income / 10^3) + p5numpla + w3momed_hsb, data = dta_m)
+# display models
+stargazer(lm_treat1, lm_treat2, type="text",
+          omit.table.layout = "sn", star.char = c("+", "*", "**", "***"),
+          star.cutoffs = c(0.1, 0.05, 0.01, 0.001))
+```
+## Part 3: Propensity Score
+
+This part will demonstrate how to create propensity score. Recall that propensity score is the probability of being treated given a set of pre-treatment covariates. In R, we can estimate propensity score given the covariates by fitting a logistic regression with the treatment status as the outcome and covariates as predictors.  
+  
+  Note that there is a limitation for this method of estimation, because we do not consider unmeasured and unobserved covariates. 
+
+```{r }
+# Rescale income
+ecls <- ecls %>% mutate(w3income_1k = w3income/1000) # mutate: add new variables
+
+# Fit a logistic regress to generate propensity score using covariates
+# Note we assume that there is no unobserved covariates, which can be a limitation
+# Compared to OLS, the propsensity score relaxes some of the linear assumptions.
+m_ps <- glm(catholic ~ race_white + w3income_1k + p5hmage + p5numpla + w3momed_hsb,
+            family = binomial(), data = ecls) 
+summary(m_ps)
+
+# Use above model to generate propensity 
+# (the probability of being treated given a set of pre-treatment covariates)
+prs_df <- data.frame(pr_score = predict(m_ps, type = "response"),
+                     catholic = m_ps$model$catholic)
+
+head(prs_df) %>%
+  kbl("html") %>% 
+  kable_classic_2(full_width = F)
+
+# Check the region of common support
+# In every unit in the treatment, is there a control unit? 
+prs_df %>% 
+  ggplot(aes(x = pr_score, fill = as.factor(catholic))) + 
+  geom_histogram(binwidth = 0.02, alpha = 0.5, position="identity") +
+  ggtitle("Probability of Going to Catholic School") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(name=" ", 
+                    values = c("blue", "red"),
+                    labels = c("Public", "Catholic")) 
+# blue: control group: red: treatment group
+
+```
+
+
+## Part 4: Instrumental Variables 
+  
+  In this part I share three classic papers that used Instrumental Variables to estimate causal effects.
+
+1. The effect of participating in war on long-term wage, using **lottery number as IV**:  
+  [Lifetime Earnings and the Vietnam Era Draft Lottery: Evidence from Social Security Administrative Records](https://www.jstor.org/stable/2006669?seq=1#metadata_info_tab_contents), by Joshua D. Angrist, 1990, American Economic Review
+
+2. The effect of religious reform on literacy (human capital), using **distance to the religous reform center as IV**:  
+  [Was Weber Wrong? A Human Capital Theory of Protestant Economic History](https://academic.oup.com/qje/article/124/2/531/1905076), by Sascha O. Becker and Ludger Woessmann, 2009, Quarterly Journal of Economics  
+  
+3. The effect of using plough on modern day gender value, using **soil type as IV**:
+  [On the Origins of Gender Roles: Women and the Plough](https://academic.oup.com/qje/article/128/2/469/1943509), by Alberto Alesina, Paola Giuliano, Nathan Nunn, 2013, Quarterly Journal of Economics
+  
+  
+  
