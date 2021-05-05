@@ -135,7 +135,7 @@ ecls_cov <- c('race_white', 'p5hmage', 'w3income', 'p5numpla', 'w3momed_hsb')
 
 ### Check if sample is balanced
 
-To check if the sample is balanced or not, we first examine the difference in means by treatment status for outcome variable and covariants. As we can see, the difference in mean for match score and for covariates are statistically significant.  
+To check if the sample is balanced or not, we first examine the difference in means by treatment status for outcome variable and covariates As we can see, the difference in mean for match score and for covariates are statistically significant.  
 
 ```{r }
 

@@ -2086,7 +2086,7 @@ ecls &lt;- read.csv(&quot;data/ecls.csv&quot;) # the Early Childhood Longitudina
 ecls_cov &lt;- c(&#39;race_white&#39;, &#39;p5hmage&#39;, &#39;w3income&#39;, &#39;p5numpla&#39;, &#39;w3momed_hsb&#39;)</code></pre>
 <div id="check-if-sample-is-balanced" class="section level3">
 <h3>Check if sample is balanced</h3>
-<p>To check if the sample is balanced or not, we first examine the difference in means by treatment status for outcome variable and covariants. As we can see, the difference in mean for match score and for covariates are statistically significant.</p>
+<p>To check if the sample is balanced or not, we first examine the difference in means by treatment status for outcome variable and covariates As we can see, the difference in mean for match score and for covariates are statistically significant.</p>
 <pre class="r"><code># Check difference in means by school type
 ecls %&gt;%
   group_by(catholic) %&gt;%
