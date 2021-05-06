@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 4"
-author: "SOC-GA 2332 Intro to Stats (Spring 2021)"
+author: "Jacob Hood"
 date: 'Due: Saturday, May 8th, 11:59 pm'
 output:
   pdf_document: default
@@ -11,7 +11,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-p_load(kableExtra, stargazer, plm, MASS)
+p_load(kableExtra, stargazer, plm, MASS, foreign)
 ```
 
 # Part 1 Forensic Statistics and the Chi-Square Test  
@@ -36,15 +36,15 @@ tbl %>% kbl(booktabs = T, align = "c") %>% kable_styling(full_width = F)
   
   1. If the election results had not been manipulated (i.e., fraud did not occur), what would be your best guess for the number of voting stations that reported a vote count for Candidate A ending in 1? And in 6? And in 9?
 
-Ending in 1: $f^e$ = (11/116)(11) = 1.04
-Ending in 6: $f^e$ = (14/116)(14) = 1.69
-Ending in 9: $f^e$ = (13/116)(13) = 1.46
+Ending in 1: $f^e$ = (11/116)(11) = 11.6
+Ending in 6: $f^e$ = (14/116)(14) = 11.6
+Ending in 9: $f^e$ = (13/116)(13) = 11.6
   
   
   2. If the election results had not been manipulated, what is the probability that a vote count for Candidate A ended in1? And in 6? And in 9?  
-Ending in 1: $f^e$ = (11/116)(11) = 1.04
-Ending in 6: $f^e$ = (14/116)(14) = 1.69
-Ending in 9: $f^e$ = (13/116)(13) = 1.46
+Ending in 1: 11.6 out of 116 or = 0.1
+Ending in 6: 11.6 out of 116 or = 0.1
+Ending in 9: 11.6 out of 116 or = 0.1
   
   3. Following the logic from questions 1 and 2, complete columns 3 to 5 in the table below.
   
@@ -105,43 +105,73 @@ Variable Name|  Variable Detail
  
 
 1. Including all independent variables, build an OLS model and a fixed-effects model (use the `plm` R package);
+```{r}
+sibling_data <- read.dta("sibling_data.dta")
 
-2. Summarize regression results in a table;  
+olsmodel<- lm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data)
+femodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data, model = "within", index = c("householdid"))
+```
 
-3. Interpret the coefficient of `stress` in the OLS model;  
+2. Summarize regression results in a table;
+```{r}
+stargazer(olsmodel, femodel, type = "text")
+```
 
-4. Interpret the coefficient of `stress` in the fixed-effects model;  
+3. Interpret the coefficient of `stress` in the OLS model;
+**For mothers that experienced stress during pregnancy, their children's birthweight decrease by 0.651 units, holding all else constant**
+
+4. Interpret the coefficient of `stress` in the fixed-effects model; 
+
+**For mothers that experienced stress during pregnancy, their children's birthweight decreased by 0.641 units, holding all else constant**
 
 5. Interpret the coefficient of `magebirth` in the fixed-effects model;  
 
-6. Why don’t we get coefficients of `meduy`, `feduy`, and `numsibling` in the fixed-effects model?  
+**For a one unit increase in mother's age at brith, their children's birthweight increase by 0.049 units**
+
+6. Why don’t we get coefficients of `meduy`, `feduy`, and `numsibling` in the fixed-effects model?
+
+**Coefficients are not included for these variable because there is likely missing data**
 
 7. Perform a F-test to compare models and interpret outputs (use `pFtest` from the `plm` R package);
+```{r}
+pFtest(femodel, olsmodel)
+```
 
 8. Compared to an OLS model, what are the benefits of using a fixed-effect model?  
 
-```{r }
 
-
-
-```
+**OLS models aggregate (or pool) data, so they cannot account for individual-specific differences like fixed effects models can. Most importantly, fixed-effects models allow us to examine the effects of specific variables over time (using panel data). When we assume that individual factors might bias our variables of interest (i.e., children's birthweight), fixed-effect models are useful.**
 
 # Part 3 Random-Effects Model
 
 Let’s continue our discussions about estimating the effect of mother experiencing stress in pregnancy on birth weight.  
 
 1. Including all independent variables, build a random-effects model (use the `plm` R package);  
+```{r}
+remodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data, model = "random", index = c("householdid"))
+```
 
-2. Summarize regression results from OLS, fixed-effects, and random-effects models in a table;  
+2. Summarize regression results from OLS, fixed-effects, and random-effects models in a table;
+```{r}
+stargazer(olsmodel, femodel, remodel, type = "text")
+```
 
 3. How does the coefficient of `stress` change across models? What could be the potential causes that lead to these changes?  
 
 4. Why do we get coefficients of `meduy`, `feduy`, and `numsibling` in the random-effects model?  
 
-5. Perform a Hausman test to compare fixed-effects and random-effects models (figure out how to use the `phtest` function from the `plm` R package; you might look into the help page and examples by typing ?plm::phtest into your console)  
+5. Perform a Hausman test to compare fixed-effects and random-effects models (figure out how to use the `phtest` function from the `plm` R package; you might look into the help page and examples by typing ?plm::phtest into your console)
+```{r}
+phtest(femodel, remodel, model = c("within", "random"),
+)
+```
+
   
   (a) What is the null hypothesis of this model? What is the alternative hypothesis?  
   
+**$H_0$ = Both models are consistent**
+**$H_a$ = One model is inconsistent**
+
   (b) Is the null hypothesis rejected? Based on the test, which model would you use?
 
 ```{r }

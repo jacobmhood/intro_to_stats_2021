@@ -265,7 +265,12 @@ m2010blackmen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCo
 
 ```{r}
 # Model table for men
-stargazer(m1980whitemen, m1980blackmen, m1990whitemen, m1990blackmen, m2000whitemen, m2000blackmen, m2010whitemen, m2010blackmen, type = "text")
+stargazer(m1980whitemen, m1980blackmen, m1990whitemen, m1990blackmen, type = "text")
+```
+
+
+```{r}
+stargazer(m2000whitemen, m2000blackmen, m2010whitemen, m2010blackmen, type = "text")
 ```
 
 ```{r}
@@ -288,6 +293,6 @@ m2010blackwomen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + Some
 ```
 
 ```{r}
-stargazer(m1980whitewomen, m1980blackwomen, m1990whitewomen, m1990blackwomen, m2000whitewomen, m2000blackwomen, m2010whitewomen, m2010blackwomen, type = "text")
+stargazer(m1980whitewomen, m1980blackwomen, m1990whitewomen, m1990blackwomen, m2000whitewomen, m2000blackwomen, m2010whitewomen, m2010blackwomen, type = "text", omit = "ser", "f")
 ```
 
