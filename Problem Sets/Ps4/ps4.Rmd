@@ -11,7 +11,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-p_load(kableExtra, stargazer, plm, MASS, foreign)
+p_load(kableExtra, tidyverse, stargazer, plm, MASS, foreign, tibble)
 ```
 
 # Part 1 Forensic Statistics and the Chi-Square Test  
@@ -52,10 +52,10 @@ Ending in 9: 11.6 out of 116 or = 0.1
 
 tbl2 <- tibble(`Final Digit` = c(seq(1, 9, 1), 0, "Total"),
               `Observed Count` = c(11, 8, 9, 10, 5, 14, 20, 17, 13, 9, 116),
-              `Observed Share` = c(rep("", 10), "N/A"),
-              `Expected Count` = c(rep("", 10), "N/A"), 
-              `Expected Share` = c(rep("", 10), "N/A"),
-              `Chi-Square Stat` = c(rep("", 11))
+              `Observed Share` = c(11/116, 8/116, 9/116, 10/116, 5/116, 14/116, 20/116, 17/116, 13/116, 9/116, 116/116) %>% round(digits =2),
+              `Expected Count` = c(11.6, 11.6, 11.6, 11.6, 11.6, 11.6, 11.6, 11.6, 11.6, 11.6, 116),
+              `Expected Share` = c(rep(11.6/116, 10), 1.00),
+              `Chi-Square Stat` = c(0.03, 1.12, 0.58, 0.22, 3.76, 0.50, 6.08, 2.51, 0.17, 0.58, sum(0.03, 1.12, 0.58, 0.22, 3.76, 0.50, 6.08, 2.51, 0.17, 0.58) )
               )
               
 tbl2 %>% 
@@ -64,21 +64,57 @@ tbl2 %>%
 
 ```
 
-  4. Do the expected counts and shares match the observed ones? Just by looking at these discrepancies, are you able to determine whether fraud occurred?  
+  4. Do the expected counts and shares match the observed ones? Just by looking at these discrepancies, are you able to determine whether fraud occurred? 
+  
+**Our observed counts do no match our expected counts. However, we are not able to determine whether fraud occured from just looking at raw count distributions. Chi-Square test is needed to determine statistcal indepdence or dependence.** 
   
   5. Formally define the null and alternative hypotheses for the test of "no fraud" in that election.
   
-  6. Calculate the $\chi^2$ statistics for each row in the table (Column 6). Keep in mind that the $\chi^2$ statistic is computed form counts, not from proportions.  
+  **$H_0$ = The final digit of the vote count across voting stations and the observed count are statistically independent.**
+  **$H_a$ = The final digit of the vote count across voting stations and the observed count are statistcally dependent**
+  
+  6. Calculate the $\chi^2$ statistics for each row in the table (Column 6). Keep in mind that the $\chi^2$ statistic is computed form counts, not from proportions. 
+  
+```{r}
+#calculating chi-squared fro each row
+# create data frame 
+df <- tibble(final_digit = c(seq(1, 9, 1), 0),
+              observed_count = c(11, 8, 9, 10, 5, 14, 20, 17, 13, 9),
+             expected_count = c(rep(11.6, 10)))
 
-  7. Calculate the $\chi^2$ statistic for the entire distribution of outcomes and calculate the p-value.  
+# calculate by row
+# create  variable for chi-squared, rounded to 2 decimal places
+df <- df %>%
+  rowwise() %>% 
+  mutate(
+    chi_squared = ((observed_count - expected_count)^2)/expected_count
+    ) %>%
+  round(digits = 2)
 
-  8. Do you reject or fail to reject the null hypothesis of no fraud (use significance level $\alpha$ = .05).  
+df$chi_squared
+```
+  
+
+  7. Calculate the $\chi^2$ statistic for the entire distribution of outcomes and calculate the p-value.
+```{r}
+total_chi_sq <- sum(df$chi_squared)
+total_chi_sq
+p_value <- pchisq(total_chi_sq, df=9, lower.tail=F)
+p_value
+```
+  
+
+  8. Do you reject or fail to reject the null hypothesis of no fraud (use significance level $\alpha$ = .05).
+  
+**Because the p-value > .05 (.077), we fail to reject the null hypothesis of no fraud. **
 
   9. Write 3 paragraphs reporting your findings and explaining the logic that you followed to detect fraud in this election. You are writing this to someone who understands the concepts of sampling and ran- domness, but does not know what a Chi-Square test is. Imagine that this analysis is part of an academic article, and you have been invited to write a non-technical summary of your findings for the Upshot or Wonkblog.
 
 ```{r }
 
+In order to determine if election fraud happened, we need to determine if the last digit of each count is really randommly distributed across voting stations. Even if the numbers might look off at first glance - meaning non-random - this might not hold true after statistical tests. If there was no election fraud, then we can expect that the last digit of the vote count for Candidate A across all voting stations is statistcally indepdent from teh count we actially observe. 
 
+Chi-Squre test can help us determine statistical indepedence. 
 
 ```
 
@@ -167,7 +203,9 @@ phtest(femodel, remodel, model = c("within", "random"),
 ```
 
   
-  (a) What is the null hypothesis of this model? What is the alternative hypothesis?  
+  (a) What is the null hypothesis of this model? What is the alternative hypothesis?
+  
+  The null hypothesis of this model is that there is no correlation between the unique errors and the regressors in the model. The alternative hypothesis is that there is a correlation between the unique errors and the regressors in the model.
   
 **$H_0$ = Both models are consistent**
 **$H_a$ = One model is inconsistent**
