@@ -3,15 +3,15 @@ title: "Problem Set 4"
 author: "Jacob Hood"
 date: 'Due: Saturday, May 8th, 11:59 pm'
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-p_load(kableExtra, tidyverse, stargazer, plm, MASS, foreign, tibble)
+p_load(kableExtra, tidyverse, stargazer, plm, MASS, foreign, tibble, car)
 ```
 
 # Part 1 Forensic Statistics and the Chi-Square Test  
@@ -22,8 +22,7 @@ Human beings are very bad at making up numbers. If you are told to come up with 
   
   The setting is the following. There were 116 voting stations across the country. Each voting station has sent you the count of votes that went to Candidate A. To assess election fraud, you will be evaluating the frequency with which the final digit in each of these counts appears in the data. The table below shows precisely this. The first column list all values that the last digit in a vote count can take on (0 to 9). For example, if the number of votes that went to Candidate A in voting station #24 was 659, the final digit of this vote count would be 9. The second column tells you the frequency with which each final digit appeared across all voting stations. Among the 116 voting stations, 11 reported a number of votes for Candidate A that ended in 1, 8 reported a number of votes for Candidate A that ended in 2, and so on.
   
-  
-  
+
 ```{r , echo=FALSE}
 
 tbl <- tibble(`Final Digit` = c(seq(1, 9, 1), 0, "Total"),
@@ -61,7 +60,6 @@ tbl2 <- tibble(`Final Digit` = c(seq(1, 9, 1), 0, "Total"),
 tbl2 %>% 
   kbl(booktabs = T, align = "c") %>% 
   kable_styling(latex_options = "striped", full_width = F)
-
 ```
 
   4. Do the expected counts and shares match the observed ones? Just by looking at these discrepancies, are you able to determine whether fraud occurred? 
@@ -70,19 +68,19 @@ tbl2 %>%
   
   5. Formally define the null and alternative hypotheses for the test of "no fraud" in that election.
   
-  **$H_0$ = The final digit of the vote count across voting stations and the observed count are statistically independent.**
-  **$H_a$ = The final digit of the vote count across voting stations and the observed count are statistcally dependent**
+**$H_0$ = The final digit of the vote count across voting stations and the observed count are statistically independent.**
+
+**$H_a$ = The final digit of the vote count across voting stations and the observed count are statistically dependent**
   
   6. Calculate the $\chi^2$ statistics for each row in the table (Column 6). Keep in mind that the $\chi^2$ statistic is computed form counts, not from proportions. 
   
 ```{r}
-#calculating chi-squared fro each row
+#calculating chi-squared for each row
 # create data frame 
 df <- tibble(final_digit = c(seq(1, 9, 1), 0),
               observed_count = c(11, 8, 9, 10, 5, 14, 20, 17, 13, 9),
              expected_count = c(rep(11.6, 10)))
 
-# calculate by row
 # create  variable for chi-squared, rounded to 2 decimal places
 df <- df %>%
   rowwise() %>% 
@@ -91,32 +89,32 @@ df <- df %>%
     ) %>%
   round(digits = 2)
 
-df$chi_squared
+df$chi_squared #chi-squared by row
 ```
   
 
   7. Calculate the $\chi^2$ statistic for the entire distribution of outcomes and calculate the p-value.
 ```{r}
-total_chi_sq <- sum(df$chi_squared)
+total_chi_sq <- sum(df$chi_squared) #adding all rows together
 total_chi_sq
-p_value <- pchisq(total_chi_sq, df=9, lower.tail=F)
+p_value <- pchisq(total_chi_sq, df=9, lower.tail=F) #calculating p-value with pchisq function, 9 degrees of freedom 
 p_value
 ```
   
 
   8. Do you reject or fail to reject the null hypothesis of no fraud (use significance level $\alpha$ = .05).
   
-**Because the p-value > .05 (.077), we fail to reject the null hypothesis of no fraud. **
+**Because the p-value(.077) > .05, we fail to reject the null hypothesis of no fraud. **
 
   9. Write 3 paragraphs reporting your findings and explaining the logic that you followed to detect fraud in this election. You are writing this to someone who understands the concepts of sampling and ran- domness, but does not know what a Chi-Square test is. Imagine that this analysis is part of an academic article, and you have been invited to write a non-technical summary of your findings for the Upshot or Wonkblog.
 
-```{r }
 
-In order to determine if election fraud happened, we need to determine if the last digit of each count is really randommly distributed across voting stations. Even if the numbers might look off at first glance - meaning non-random - this might not hold true after statistical tests. If there was no election fraud, then we can expect that the last digit of the vote count for Candidate A across all voting stations is statistcally indepdent from teh count we actially observe. 
+**In order to determine if election fraud happened, we can determine if the last digit of each count is really randomly distributed across voting stations. We would expect that this last digit has nothing to do with the number of votes at each station, if there was no fraud. Even if the numbers might look off at first glance - meaning non-random - this might not hold true after statistical tests. If there was no election fraud, then we can expect that the last digit of the vote count for Candidate A across all voting stations is statistically independent from the count we actually observe.** 
 
-Chi-Squre test can help us determine statistical indepedence. 
+**Chi-Square test can help us determine statistical independence. It quantifies the difference between what we would expect the vote count to be with no fraud and what the vote count we actually observe is at each voting station. If there was no election fraud, then the last digit of the vote count should be independent from the number of votes we actually observe. If the chi-squared test tell us that the last digit and the vote count are dependent, then we have evidence of election fraud.**
 
-```
+**First, we need to set a cutoff point so we know what is a statistically significant result. We set it at .05, which means that we give ourselves a small, 5% risk of concluding there is statistical dependence when there actually isn't. After doing a chi-squared test for each voting station and adding the numbers together, we also get a corresponding "p-value" which we compare against the significance level we set earlier. The p-value we calculate is 0.077, which is greater than the .05 significance level. Since this p-value is greater, our chi-square test of independence tells us that we don't have sufficient evidence to conclude that the last digit and the observed vote count are dependent on each other. Thus, we cannot conclude that election fraud took place.**  
+
 
 # Part 2: Fixed-Effects Model
 
@@ -144,7 +142,9 @@ Variable Name|  Variable Detail
 ```{r}
 sibling_data <- read.dta("sibling_data.dta")
 
+# building ols model
 olsmodel<- lm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data)
+# building fixed effects model
 femodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data, model = "within", index = c("householdid"))
 ```
 
@@ -154,29 +154,31 @@ stargazer(olsmodel, femodel, type = "text")
 ```
 
 3. Interpret the coefficient of `stress` in the OLS model;
+
 **For mothers that experienced stress during pregnancy, their children's birthweight decrease by 0.651 units, holding all else constant**
 
 4. Interpret the coefficient of `stress` in the fixed-effects model; 
 
-**For mothers that experienced stress during pregnancy, their children's birthweight decreased by 0.641 units, holding all else constant**
+**For mothers that experienced stress during pregnancy, their children's birthweight decreased by 0.641 units, holding all else constant.**
 
 5. Interpret the coefficient of `magebirth` in the fixed-effects model;  
 
-**For a one unit increase in mother's age at brith, their children's birthweight increase by 0.049 units**
+**For a one unit increase in mother's age at birth, their children's birthweight increase by 0.049 units, holding all else constant.**
 
 6. Why don’t we get coefficients of `meduy`, `feduy`, and `numsibling` in the fixed-effects model?
 
-**Coefficients are not included for these variable because there is likely missing data**
+**Because we are looking at siblings nested within households, it makes sense these variables are dropped because they do not represent time-invariant, individual-specific variables. In other words, because we are looking at households, we would not expect parents' years of education and number of siblings to be different between siblings in the same household.**
 
 7. Perform a F-test to compare models and interpret outputs (use `pFtest` from the `plm` R package);
 ```{r}
 pFtest(femodel, olsmodel)
 ```
 
-8. Compared to an OLS model, what are the benefits of using a fixed-effect model?  
+**Because the p-value is significantly less than a significance level of 0.05, we reject the null hypothesis that differences between the OLS and fixed-effects models are not statistically significant.**
 
+8. Compared to an OLS model, what are the benefits of using a fixed-effect model?
 
-**OLS models aggregate (or pool) data, so they cannot account for individual-specific differences like fixed effects models can. Most importantly, fixed-effects models allow us to examine the effects of specific variables over time (using panel data). When we assume that individual factors might bias our variables of interest (i.e., children's birthweight), fixed-effect models are useful.**
+**OLS models aggregate (or pool) data, so they cannot account for individual-specific differences like fixed effects models can. Fixed-effects models allow us to examine within-individual changes over time, while holding "fixed" time-invariant variables and getting around the problem of omitted variable bias. When we assume that individual factors might bias our variables of interest (i.e., children's birthweight), fixed-effect models can potentially be useful.**
 
 # Part 3 Random-Effects Model
 
@@ -192,9 +194,13 @@ remodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + fedu
 stargazer(olsmodel, femodel, remodel, type = "text")
 ```
 
-3. How does the coefficient of `stress` change across models? What could be the potential causes that lead to these changes?  
+3. How does the coefficient of `stress` change across models? What could be the potential causes that lead to these changes?
 
-4. Why do we get coefficients of `meduy`, `feduy`, and `numsibling` in the random-effects model?  
+**Across models, the coefficient of stress increased from -0.651 (OLS), to -0.641 (Fixed Effects), to -0.629 (Random Effects). The changes in this coefficient's strength could be due to the fact that the FE and RE models take individual-level factors into account. Thus, the changes in the coefficient are due to accounting for individual variations, unlike in the pooled OLS model. **
+
+4. Why do we get coefficients of `meduy`, `feduy`, and `numsibling` in the random-effects model?
+
+**In contrast to fixed effects models, this time $\eta_i$ is not fixed and instead we are assuming that we can expect it to vary across households but not within them. Thus it makes sense now that these household-specific variables "reappear" because we are no longer adding a source of between-individual heterogeneity.**
 
 5. Perform a Hausman test to compare fixed-effects and random-effects models (figure out how to use the `phtest` function from the `plm` R package; you might look into the help page and examples by typing ?plm::phtest into your console)
 ```{r}
@@ -205,16 +211,13 @@ phtest(femodel, remodel, model = c("within", "random"),
   
   (a) What is the null hypothesis of this model? What is the alternative hypothesis?
   
-  The null hypothesis of this model is that there is no correlation between the unique errors and the regressors in the model. The alternative hypothesis is that there is a correlation between the unique errors and the regressors in the model.
-  
-**$H_0$ = Both models are consistent**
-**$H_a$ = One model is inconsistent**
+**$H_0$ = There is no correlation between the unique errors and the predictors in the model. **
+
+**$H_a$ = There is a correlation between the unique errors and the predictors in the model.**
 
   (b) Is the null hypothesis rejected? Based on the test, which model would you use?
 
-```{r }
-
-```
+**Because the p-value of the Hausman Test (0.68) is > than 0.05, we fail to reject the null hypothesis. Thus, we should use the random effects model.**
 
 # Part 4 Simulate and Plot Correlation
 
@@ -225,7 +228,36 @@ Replicate the following figure which demonstrates the different levels of Pearso
 ![](corr_plot.png){width=100%}
 
 ```{r }
+# Creating a  function to simulate dataframe with different covariances
+covariance_func <- function(x){
+  set.seed(1234)
+  dataframe <-mvrnorm(n=500, mu = c(0,0), Sigma = matrix (c(1, x, x, 1), nrow = 2, ncol = 2)) %>%
+    as_tibble() %>%
+    mutate(covar= x)
+    return(dataframe)
+}
 
+# Generating first value (-1) for dataframe
+set.seed(1234)
+pearson <- mvrnorm(n = 500, mu = c(0,0), Sigma = matrix (c(1, -1, -1, 1), nrow =2, ncol =2)) %>%
+  as_tibble() %>% #converting to table 
+  mutate(covar = -1)
+
+other_covars <- c(-.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1) #creating vector of remaining covariances to feed into function
+
+# calling the covariance function to create the full dataframe with remaining 20 covariances
+for (i in other_covars) {
+  pearson <- rbind(pearson, covariance_func(i))
+}
+# making the plot of Pearsons correlations 
+pearson %>%
+  ggplot() +
+  geom_point(aes(x = V1, y = V2), size = 0.5, color = "blue", alpha = 0.3) +
+  facet_wrap(~covar, nrow=3) +
+  theme(legend.position = "none",
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank())
 ```
 
 # Part 5 (Not Graded) Final Replication Project
