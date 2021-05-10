@@ -305,69 +305,203 @@ m2010blackwomen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + Some
 stargazer(m1980whitewomen, m1980blackwomen, m1990whitewomen, m1990blackwomen, m2000whitewomen, m2000blackwomen, m2010whitewomen, m2010blackwomen, type = "text", omit = "ser", "f")
 ```
 
+
 ```{r}
-dissim1980 <- data_clean %>% filter(YEAR = 1980)
-length(dissim1980$occ_2digit) 
+# Setting up data to calculate index of dissimilarity, men 1980
+
+dissim1 <- table(Nwhitemen1980$occ_2digit)
+dissim1 <- as.data.frame(dissim1)
+dissim1 <- dissim1 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim2 <- table(Nblackmen1980$occ_2digit)
+dissim2 <- as.data.frame(dissim2)
+dissim2 <- dissim2 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+men1980dissim <- full_join(dissim1, dissim2, by = "occ_2digit")
+men1980dissim$occ_2digit <- NULL
+```
+
+
+```{r}
+# Setting up data to calculate index of dissimilarity, men 1990
+dissim3 <- table(Nwhitemen1990$occ_2digit)
+dissim3<- as.data.frame(dissim3)
+dissim3 <- dissim3 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim4 <- table(Nblackmen1990$occ_2digit)
+dissim4 <- as.data.frame(dissim4)
+dissim4 <- dissim4 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+men1990dissim <- full_join(dissim3, dissim4, by = "occ_2digit")
+men1990dissim$occ_2digit <- NULL
 ```
 
 ```{r}
-dissim2000 <- data_clean %>% filter(YEAR == 2000)
-(dissim2000$occ_2digit)
+# Setting up data to calculate index of dissimilarity, men 2000
+dissim5 <- table(Nwhitemen2000$occ_2digit)
+dissim5<- as.data.frame(dissim5)
+dissim5 <- dissim5 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim6 <- table(Nblackmen2000$occ_2digit)
+dissim6 <- as.data.frame(dissim6)
+dissim6 <- dissim6 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+men2000dissim <- full_join(dissim5, dissim6, by = "occ_2digit")
+men2000dissim$occ_2digit <- NULL
 ```
 
 ```{r}
-dissim1 <- data_clean %>% filter(YEAR == 1980) %>% filter(RACEGENDER == "white male")
-w <- table(dissim1$occ_2digit)
-w <- as.data.frame(w)
-w
+# Setting up data to calculate index of dissimilarity, men 2010
+dissim7 <- table(Nwhitemen2010$occ_2digit)
+dissim7 <- as.data.frame(dissim7)
+dissim7 <- dissim7 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim8 <- table(Nblackmen2010$occ_2digit)
+dissim8 <- as.data.frame(dissim8)
+dissim8 <- dissim8 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+men2010dissim <- full_join(dissim7, dissim8, by = "occ_2digit")
+men2010dissim$occ_2digit <- NULL
 ```
 
 ```{r}
-dissim2 <- data_clean %>% filter(YEAR == 1980) %>% filter(RACEGENDER == "black male")
-t <- table(dissim1$occ_2digit)
-t <- as.data.frame(t)
-t
+# Using seg to calculate index of dissimilarity, for men, each decade 
+seg(men1980dissim)
+
+seg(men1990dissim)
+
+seg(men2000dissim)
+
+seg(men2010dissim)
 ```
 
 ```{r}
-dissim3 <- data_clean %>% filter(YEAR == 1990) %>% filter(RACEGENDER == "white male")
-t <- table(dissim1$occ_2digit)
-t <- as.data.frame(t)
-t
+# Setting up data to calculate index of dissimilarity, women 1980
+
+dissim9 <- table(Nwhitewomen1980$occ_2digit)
+dissim9 <- as.data.frame(dissim9)
+dissim9 <- dissim9 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim10 <- table(Nblackwomen1980$occ_2digit)
+dissim10 <- as.data.frame(dissim10)
+dissim10 <- dissim10 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+women1980dissim <- full_join(dissim9, dissim10, by = "occ_2digit")
+women1980dissim$occ_2digit <- NULL
+```
+
+
+```{r}
+# Setting up data to calculate index of dissimilarity, women 1990
+dissim11 <- table(Nwhitewomen1990$occ_2digit)
+dissim11 <- as.data.frame(dissim11)
+dissim11 <- dissim11 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim12 <- table(Nblackwomen1990$occ_2digit)
+dissim12 <- as.data.frame(dissim12)
+dissim12 <- dissim12 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+women1990dissim <- full_join(dissim11, dissim12, by = "occ_2digit")
+women1990dissim$occ_2digit <- NULL
+
+#Changing NAs to 0s so code runs correctly 
+women1990dissim[is.na(women1990dissim)] <- 0
 ```
 
 ```{r}
-dissim4 <- data_clean %>% filter(YEAR == 1990) %>% filter(RACEGENDER == "black male")
-t <- table(dissim1$occ_2digit)
-t <- as.data.frame(t)
-t
+# Setting up data to calculate index of dissimilarity, women 2000
+dissim13 <- table(Nwhitewomen2000$occ_2digit)
+dissim13 <- as.data.frame(dissim13)
+dissim13 <- dissim13 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim14 <- table(Nblackwomen2000$occ_2digit)
+dissim14 <- as.data.frame(dissim14)
+dissim14 <- dissim14 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+women2000dissim <- full_join(dissim13, dissim14, by = "occ_2digit")
+women2000dissim$occ_2digit <- NULL
 ```
 
 ```{r}
-dissim5 <- data_clean %>% filter(YEAR == 2000) %>% filter(RACEGENDER == "white male")
-t <- table(dissim1$occ_2digit)
-t <- as.data.frame(t)
-t
+# Setting up data to calculate index of dissimilarity, women 2010
+dissim15 <- table(Nwhitewomen2010$occ_2digit)
+dissim15 <- as.data.frame(dissim15)
+dissim15 <- dissim15 %>% 
+  rename(
+    occ_2digit = Var1,
+    white = Freq
+)
+dissim16 <- table(Nblackwomen2010$occ_2digit)
+dissim16 <- as.data.frame(dissim16)
+dissim16 <- dissim16 %>% 
+  rename(
+    occ_2digit = Var1,
+    black = Freq
+    )
+
+women2010dissim <- full_join(dissim15, dissim16, by = "occ_2digit")
+women2010dissim$occ_2digit <- NULL
+
+#Changing NAs to 0s so code runs correctly 
+women2010dissim[is.na(women2010dissim)] <- 0
 ```
 
 ```{r}
-dissim6 <- data_clean %>% filter(YEAR == 2000) %>% filter(RACEGENDER == "black male")
-t <- table(dissim1$occ_2digit)
-t <- as.data.frame(t)
-t
-```
+# Using seg function to calculate index of dissimilarity for women, each decade
+seg(women1980dissim)
 
-```{r}
-dissim7 <- data_clean %>% filter(YEAR == 2010) %>% filter(RACEGENDER == "white male")
-t <- table(dissim1$occ_2digit)
-t <- as.data.frame(t)
-t
-```
+seg(women1990dissim)
 
-```{r}
-dissim8 <- data_clean %>% filter(YEAR == 2010)%>% filter(RACEGENDER == "black male")
-t <- table(dissim1$occ_2digit)
-t <- as.data.frame(t)
-t
-```
+seg(women2000dissim)
 
+seg(women2010dissim)
+```

@@ -3,12 +3,12 @@ title: "Problem Set 4"
 author: "Jacob Hood"
 date: 'Due: Saturday, May 8th, 11:59 pm'
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, results = "asis"}
 knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
 p_load(kableExtra, tidyverse, stargazer, plm, MASS, foreign, tibble, car)
@@ -35,12 +35,13 @@ tbl %>% kbl(booktabs = T, align = "c") %>% kable_styling(full_width = F)
   
   1. If the election results had not been manipulated (i.e., fraud did not occur), what would be your best guess for the number of voting stations that reported a vote count for Candidate A ending in 1? And in 6? And in 9?
 
-Ending in 1: $f^e$ = (11/116)(11) = 11.6
-Ending in 6: $f^e$ = (14/116)(14) = 11.6
-Ending in 9: $f^e$ = (13/116)(13) = 11.6
+Ending in 1: $f^e$ = (116/10) = 11.6
+Ending in 6: $f^e$ = (116/10) = 11.6
+Ending in 9: $f^e$ = (116/10) = 11.6
   
   
   2. If the election results had not been manipulated, what is the probability that a vote count for Candidate A ended in1? And in 6? And in 9?  
+  
 Ending in 1: 11.6 out of 116 or = 0.1
 Ending in 6: 11.6 out of 116 or = 0.1
 Ending in 9: 11.6 out of 116 or = 0.1
@@ -64,13 +65,13 @@ tbl2 %>%
 
   4. Do the expected counts and shares match the observed ones? Just by looking at these discrepancies, are you able to determine whether fraud occurred? 
   
-**Our observed counts do no match our expected counts. However, we are not able to determine whether fraud occured from just looking at raw count distributions. Chi-Square test is needed to determine statistcal indepdence or dependence.** 
+**Our observed counts do no match our expected counts. However, we are not able to determine whether fraud occurred from just looking at raw count distributions. Chi-Square test is needed to determine statistical independence or dependence.** 
   
   5. Formally define the null and alternative hypotheses for the test of "no fraud" in that election.
   
 **$H_0$ = The final digit of the vote count across voting stations and the observed count are statistically independent.**
 
-**$H_a$ = The final digit of the vote count across voting stations and the observed count are statistically dependent**
+**$H_a$ = The final digit of the vote count across voting stations and the observed count are statistically dependent.**
   
   6. Calculate the $\chi^2$ statistics for each row in the table (Column 6). Keep in mind that the $\chi^2$ statistic is computed form counts, not from proportions. 
   
@@ -97,7 +98,8 @@ df$chi_squared #chi-squared by row
 ```{r}
 total_chi_sq <- sum(df$chi_squared) #adding all rows together
 total_chi_sq
-p_value <- pchisq(total_chi_sq, df=9, lower.tail=F) #calculating p-value with pchisq function, 9 degrees of freedom 
+p_value <- pchisq(total_chi_sq, df=9, lower.tail=F) 
+# calculating p-value with pchisq function, 9 degrees of freedom 
 p_value
 ```
   
@@ -111,7 +113,7 @@ p_value
 
 **In order to determine if election fraud happened, we can determine if the last digit of each count is really randomly distributed across voting stations. We would expect that this last digit has nothing to do with the number of votes at each station, if there was no fraud. Even if the numbers might look off at first glance - meaning non-random - this might not hold true after statistical tests. If there was no election fraud, then we can expect that the last digit of the vote count for Candidate A across all voting stations is statistically independent from the count we actually observe.** 
 
-**Chi-Square test can help us determine statistical independence. It quantifies the difference between what we would expect the vote count to be with no fraud and what the vote count we actually observe is at each voting station. If there was no election fraud, then the last digit of the vote count should be independent from the number of votes we actually observe. If the chi-squared test tell us that the last digit and the vote count are dependent, then we have evidence of election fraud.**
+**Chi-Square test can help us determine statistical independence. It quantifies the difference between what we would expect the vote count to be with no fraud and what the vote count we actually observe is at each voting station. If the chi-squared test tell us that the last digit and the vote count are dependent, then we have evidence of election fraud.**
 
 **First, we need to set a cutoff point so we know what is a statistically significant result. We set it at .05, which means that we give ourselves a small, 5% risk of concluding there is statistical dependence when there actually isn't. After doing a chi-squared test for each voting station and adding the numbers together, we also get a corresponding "p-value" which we compare against the significance level we set earlier. The p-value we calculate is 0.077, which is greater than the .05 significance level. Since this p-value is greater, our chi-square test of independence tells us that we don't have sufficient evidence to conclude that the last digit and the observed vote count are dependent on each other. Thus, we cannot conclude that election fraud took place.**  
 
@@ -145,7 +147,8 @@ sibling_data <- read.dta("sibling_data.dta")
 # building ols model
 olsmodel<- lm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data)
 # building fixed effects model
-femodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data, model = "within", index = c("householdid"))
+femodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data,  
+               model = "within", index = c("householdid"))
 ```
 
 2. Summarize regression results in a table;
@@ -186,7 +189,8 @@ Let’s continue our discussions about estimating the effect of mother experienc
 
 1. Including all independent variables, build a random-effects model (use the `plm` R package);  
 ```{r}
-remodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data, model = "random", index = c("householdid"))
+remodel <- plm(birthwt ~ stress + female + magebirth + numsibling + meduy + feduy, data = sibling_data,  
+               model = "random", index = c("householdid"))
 ```
 
 2. Summarize regression results from OLS, fixed-effects, and random-effects models in a table;
@@ -196,7 +200,7 @@ stargazer(olsmodel, femodel, remodel, type = "text")
 
 3. How does the coefficient of `stress` change across models? What could be the potential causes that lead to these changes?
 
-**Across models, the coefficient of stress increased from -0.651 (OLS), to -0.641 (Fixed Effects), to -0.629 (Random Effects). The changes in this coefficient's strength could be due to the fact that the FE and RE models take individual-level factors into account. Thus, the changes in the coefficient are due to accounting for individual variations, unlike in the pooled OLS model. **
+**Across models, the coefficient of stress increased from -0.651 (OLS), to -0.641 (Fixed Effects), to -0.629 (Random Effects). The changes in this coefficient's strength could be due to the fact that the FE and RE models take individual-level factors into account. Thus, the changes in the coefficient are due to accounting for individual variations, unlike in the pooled OLS model.**
 
 4. Why do we get coefficients of `meduy`, `feduy`, and `numsibling` in the random-effects model?
 
@@ -240,10 +244,12 @@ covariance_func <- function(x){
 # Generating first value (-1) for dataframe
 set.seed(1234)
 pearson <- mvrnorm(n = 500, mu = c(0,0), Sigma = matrix (c(1, -1, -1, 1), nrow =2, ncol =2)) %>%
-  as_tibble() %>% #converting to table 
+  as_tibble() %>% 
   mutate(covar = -1)
 
-other_covars <- c(-.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1) #creating vector of remaining covariances to feed into function
+other_covars <- c(-.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, 
+                  -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1) 
+#creating vector of remaining covariances to feed into function
 
 # calling the covariance function to create the full dataframe with remaining 20 covariances
 for (i in other_covars) {
