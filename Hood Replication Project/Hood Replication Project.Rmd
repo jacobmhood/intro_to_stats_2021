@@ -236,19 +236,44 @@ nrow(Nblackwomen2010)
 
 ```{r}
 # Plotting Figure 1
-fig1data <- data_clean %>% group_by(YEAR, RACEGENDER) %>% summarise(AVGWKWAGE = mean(WKWAGE)) # grouping data by year/group and averaging weekly wage
 
+data_clean$RACEGENDER <- factor(data_clean$RACEGENDER, levels=c("white male", "white female", "black male", "black female"))
+# Reordering the levels of our group variable so it shows up in the right order
+# when plotting
+
+fig1data <- data_clean %>% group_by(YEAR, RACEGENDER) %>% summarise(AVGWKWAGE = mean(WKWAGE)) # grouping data by year/group and averaging weekly wage
+```
+
+
+```{r}
 fig1 <- fig1data %>%
   ggplot(aes(YEAR, y = AVGWKWAGE, linetype = RACEGENDER)) +
-  geom_line() + 
-  geom_point(aes(shape = RACEGENDER), size = 3) +
+  geom_line(size =1) + 
+  geom_point(aes(shape = RACEGENDER), size = 4) +
   labs(x = "", y = "" , title = "") +
-    scale_linetype_manual(values = c("dashed", "dashed" , "solid", "solid"), label = c("Black Female", "Black Male", "White Female", "White Male")) +
-  scale_shape_manual(values = c(24, 22 , 17, 15), label = c("Black Female", "Black Male", "White Female", "White Male")) + 
+    scale_linetype_manual(values = c("solid", "solid", "dashed", "dashed"), label = c("White Male", "White Female", "Black Male","Black Female")) +
+  scale_shape_manual(values = c(15, 17, 22, 24), label = c("White Male", "White Female" , "Black Male", "Black Female")) + 
+  scale_y_continuous(limits=c(400, 1100), n.breaks = 8) +
   theme(legend.title = element_blank()) +
-  ylim(300, 1100)
+  theme(legend.position = "bottom") +
+  geom_hline(yintercept=500) +
+  geom_hline(yintercept=600) +
+  geom_hline(yintercept=700) +
+  geom_hline(yintercept=800) +
+  geom_hline(yintercept=900) +
+  geom_hline(yintercept=1000) +
+  geom_hline(yintercept=1100) +
+  theme(panel.background = element_blank()) + 
+  theme(axis.line = element_line(color = "black")) +
+  theme(axis.text = element_text(face = "bold", color = "black", size = 12)) +
+  theme(legend.background = element_blank())+
+  theme(legend.box.background = element_rect(colour = "black")) +
+  theme(legend.key = element_rect(fill = NA)) +
+  theme(legend.text = element_text(face = "bold", color = "black", size = 12)) +
+  theme(legend.key.size = unit(1, "cm"))
+  
 
-fig1
+ggsave("fig1.png")
 ```
 
 ## Regression Analysis
