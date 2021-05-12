@@ -246,6 +246,7 @@ fig1data <- data_clean %>% group_by(YEAR, RACEGENDER) %>% summarise(AVGWKWAGE = 
 
 
 ```{r}
+# PLotting figure 1
 fig1 <- fig1data %>%
   ggplot(aes(YEAR, y = AVGWKWAGE, linetype = RACEGENDER)) +
   geom_line(size =1) + 
@@ -273,7 +274,7 @@ fig1 <- fig1data %>%
   theme(legend.key.size = unit(1, "cm"))
   
 
-ggsave("fig1.png")
+ggsave("fig1.png") #saving figure as png to import into overleaf
 ```
 
 ## Regression Analysis
@@ -304,32 +305,20 @@ m1980blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + Som
 m1990whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + LOGUHRS + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen1990)
 
 m1990blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + LOGUHRS + Metro + PublicSector + Midwest + South + West, data = Nblackwomen1990)
-```
 
-
-```{r}
 m2000whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + LOGUHRS + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen2000)
-```
 
-
-```{r}
 m2000blackwomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + LOGUHRS + Metro + PublicSector + Midwest + South + West, data = Nblackwomen2000)
-```
 
-
-```{r}
 m2010whitewomen <- lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + LOGUHRS + Metro + PublicSector + Midwest + South + West, data = Nwhitewomen2010)
-```
 
-
-```{r}
 m2010blackwomen <-lm(LOGWKWAGE ~  PWRKEXP + SQ_PWRKEXP + LessHS +  HSGrad + SomeCol + NCHILD + Child5 + Married + ForeignBorn + LOGUHRS + Metro + PublicSector + Midwest + South + West, data = Nblackwomen2010)
 ```
 
 ```{r}
+# Creating model table for women
 stargazer(m1980whitewomen, m1980blackwomen, m1990whitewomen, m1990blackwomen, m2000whitewomen, m2000blackwomen, m2010whitewomen, m2010blackwomen, type = "text", omit = "ser", "f")
 ```
-
 
 ```{r}
 # Setting up data to calculate index of dissimilarity, men 1980
@@ -418,7 +407,7 @@ men2010dissim$occ_2digit <- NULL
 ```
 
 ```{r}
-# Using seg to calculate index of dissimilarity, for men, each decade 
+# Using seg function to calculate index of dissimilarity, for men, each decade 
 seg(men1980dissim)
 
 seg(men1990dissim)
@@ -430,7 +419,6 @@ seg(men2010dissim)
 
 ```{r}
 # Setting up data to calculate index of dissimilarity, women 1980
-
 dissim9 <- table(Nwhitewomen1980$occ_2digit)
 dissim9 <- as.data.frame(dissim9)
 dissim9 <- dissim9 %>% 
@@ -449,7 +437,6 @@ dissim10 <- dissim10 %>%
 women1980dissim <- full_join(dissim9, dissim10, by = "occ_2digit")
 women1980dissim$occ_2digit <- NULL
 ```
-
 
 ```{r}
 # Setting up data to calculate index of dissimilarity, women 1990
